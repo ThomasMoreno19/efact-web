@@ -1,0 +1,131 @@
+/* Scripts/Administrador/Vista/Css/Listas.css */
+
+/* --- Estilos para la tarjeta de empresa individual (.empresa-item) --- */
+.listas{
+    padding: 0% 1%;  /* <-- punto y coma agregado */
+}
+
+.lista-central {
+    margin: 250px auto 0px;
+}
+
+#titulo-rubros {
+    color: #E89E13;
+    text-align: center;
+    margin: 0px;
+}
+
+#lista-rubros {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px; /* Espacio entre los elementos de la cuadrícula */
+    padding: 10px; /* Añade un poco de padding para mejor presentación */
+}
+
+.articulo-info {
+    display: flex;
+    justify-content: space-between; /* Nombre a la izquierda, precio a la derecha */
+    width: 100%;
+    padding: 0 10px;
+}
+
+.rubro {
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: pointer;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 120px;
+    position: relative; /* NECESARIO */
+    color: white;
+}
+
+.rubro::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+    transition: background 0.3s ease;
+}
+
+.rubro h3 {
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+    position: relative;
+    z-index: 2; /* ENCIMA DEL OSCURECIMIENTO */
+    background-color: transparent; /* QUITAR FONDO DEL H3 */
+}
+
+.rubro:hover {
+    transform: translateY(-4px);
+}
+
+.texto-vacio{
+    color: white;
+    justify-self: center;
+}
+
+.articulo {
+    background-color: transparent; /* Fondo semitransparente */
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column; /* Apila logo y nombre */
+    align-items: center;
+    transition: transform 0.2s ease-in-out;
+    text-align: center; /* Para centrar el texto del nombre de la empresa */
+    padding: 10px 5px;
+}
+
+.articulo p { /* Estilos para el nombre de la empresa */
+    /* Basado en tu '.empresa-info h3' original */
+    margin: 0.3vh;
+    font-size: clamp(0.3em, 4vw, 1.7em);
+    color: #fff;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+#id-articulo {
+    color: #E89E13;
+    font-weight: 600;
+}
+
+p.descripcion{
+    color: #9f9f9f;
+    font-size: clamp(0.1em, 2.7vw, 1em);
+    align-self: self-start;
+}
+
+@media screen and (max-width: 600px) {
+    .lista-central{
+        margin: 280px auto 0px;
+    }
+    .rubro img{
+        height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
+    }
+    .articulo p {
+        font-size: clamp(0.3em, 4.4vw, 2.5em);
+    }
+    
+    p.descripcion{
+        font-size: clamp(0.1em, 3.6vw, 1.8em);
+    }
+}
+
+
+.titulo-rubro{
+    color: #E89E13;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+.hidden {
+    display: none;
+}

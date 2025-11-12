@@ -1,0 +1,53 @@
+.made-by{    
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    margin-top: 20px;
+    /* font-family: 'Inter', 'Segoe UI', sans-serif; */
+    font-size: 13px;
+    font-weight: 400;
+    /* color: #aaa; */
+    letter-spacing: 0.5px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 20px;
+    font-size: 22px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: -10px;
+}
+.social-icons a {
+    transition: color 2.3s;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.social-icons a:hover {
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transform: scale(1.1);
+}
+.instagram {
+    background: linear-gradient(to right, #741233, #715604);
+}
+.facebook {
+    background: #0c3467;
+}
+.instagram:hover {
+    background: linear-gradient(to right, #715604, #741233);
+    
+}
+.facebook:hover {
+    background: #1a6ed8;
+}
+.made-by {
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    margin-top: 20px;
+}

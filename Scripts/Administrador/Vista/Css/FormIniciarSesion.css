@@ -1,0 +1,186 @@
+/* Base styles - similar to your Admin.css for consistency */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex; /* Flexbox for centering */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    min-height: 100vh; /* Full viewport height */
+    background: linear-gradient(to right, #3d3851 0%, #100e16 100%); /* Purple to Blue gradient */
+    color: #f0f0f0; /* Light text for contrast */
+    box-sizing: border-box; /* Include padding/border in element's total width/height */
+}
+
+.login-container {
+    background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent white */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Deeper shadow */
+    text-align: center;
+    width: 100%;
+    max-width: 400px; /* Max width for the form container */
+    backdrop-filter: blur(10px); /* Frosted glass effect */
+    -webkit-backdrop-filter: blur(10px); /* For Safari */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Light border */
+}
+
+h2 {
+    color: #ffffff; /* White heading */
+    margin-bottom: 30px;
+    font-size: 2em;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Subtle text shadow */
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between form groups */
+}
+
+.form-group {
+    text-align: left; /* Align labels and inputs to the left */
+}
+
+.form-group label {
+    display: block; /* Label on its own line */
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #e0e0e0; /* Slightly lighter white for labels */
+}
+
+.form-group input[type="text"],
+.form-group input[type="password"] {
+    width: 100%; /* Full width minus padding */
+    padding: 12px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
+    border-radius: 8px;
+    background-color: #34313d; /* Even more transparent background */
+    color: #ffffff; /* White text input */
+    font-size: 1em;
+    transition: all 0.3s ease; /* Smooth transitions */
+    box-sizing: border-box;  /* padding no aumenta el ancho total */
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="password"]:focus {
+    outline: none;
+    border-color: rgb(216 119 85); /* Highlight border on focus */
+    background-color: rgba(0, 0, 0, 0.02); /* Slightly less transparent on focus */
+    box-sizing: border-box;
+}
+
+/* Placeholder styling */
+.form-group input::placeholder {
+    color: #bbb; /* Lighter placeholder text */
+}
+
+.submit-button {
+    background: linear-gradient(90deg, #d46e64 0%, #e89e13 100%); /* Orange to Red gradient */
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    margin-top: 20px; /* Space above the button */
+}
+
+.submit-button:hover {
+    background: linear-gradient(90deg, #e89e13 0%, #d46e64 100%); /* Reverse gradient on hover */
+    box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3); /* More pronounced shadow on hover */
+    transform: translateY(-2px); /* Slight lift effect */
+}
+
+.submit-button:hover::before {
+  opacity: 1;
+}
+
+.error-message {
+    color: #ffcccc;
+    background-color: rgba(255, 0, 0, 0.2);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-size: 0.95em;
+    border: 1px solid rgba(255, 0, 0, 0.4);
+}
+
+.password-container {
+    position: relative;
+    display: block;          /* usa block para controlar mejor el ancho */
+    width: 100%;
+}
+
+.password-container input {
+    width: 100%;             /* importante: ocupar todo el ancho del contenedor */
+    padding: 12px 44px 12px 10px; /* espacio derecho para el botón (44px) */
+}
+
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%); /* centra verticalmente */
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 4px;
+    z-index: 2;              /* asegurar que quede arriba del input */
+    color: #e0e0e0;          /* adaptar al tema oscuro */
+}
+
+.toggle-password:focus {
+    border-radius: 4px;
+}
+
+.toggle-password svg {
+  width: 22px;
+  height: 22px;
+  stroke: #e0e0e0;
+  transition: stroke 0.3s ease;
+}
+
+.toggle-password:hover svg {
+  stroke: #d67459; /* cambia de color al pasar el mouse */
+}
+
+/* 🔒 Corrección completa del autofill en Chrome, Edge, Opera y Safari */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    /* Mantiene tu fondo oscuro translúcido */
+    -webkit-box-shadow: 0 0 0 1000px rgb(52 49 61) inset !important;
+
+    /* Fuerza el color del texto a blanco incluso al hacer foco */
+    -webkit-text-fill-color: #ffffff !important;
+    color: #ffffff !important;
+
+    /* Mantiene el color del cursor */
+    caret-color: #ffffff !important;
+
+    /* Evita el cambio de fondo forzado por Chrome */
+    transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s !important;
+}
+
+/* Compatibilidad para Firefox */
+input:autofill,
+input:autofill:hover,
+input:autofill:focus {
+    background-color: rgb(52 49 61) !important;
+    color: #ffffff !important;
+    caret-color: #ffffff !important;
+}
+
+
+.hidden {
+    display: none;
+}

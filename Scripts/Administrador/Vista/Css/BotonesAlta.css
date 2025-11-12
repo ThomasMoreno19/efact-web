@@ -1,0 +1,32 @@
+/* Estilos para el botón "Nueva Empresa" */
+.botonesAlta{
+    display: flex;
+    justify-content: center; /* Centra horizontalmente */
+    align-items: center;
+    margin-bottom: 3em;
+    padding-top: 1em;
+}
+
+.boton-alta {
+    background-color: #242130; /* Color moreado */
+    color: white; /* Texto blanco */
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    justify-content: center;
+    align-items: center;
+}
+
+.boton-alta:hover {
+    background-color: #292635; /* Tono de morado más claro al pasar el ratón */
+}
+
+.boton-alta:active {
+    background-color: #292635; /* Tono de morado más oscuro al hacer clic */
+    transform: translateY(2px); /* Efecto de "presionado" */
+}

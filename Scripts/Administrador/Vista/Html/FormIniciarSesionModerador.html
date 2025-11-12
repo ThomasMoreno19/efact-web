@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moderador - Iniciar Sesión</title>
+    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/FormIniciarSesion.css"> 
+    </head>
+<body>
+    <div class="login-container">
+        <h2>Moderador</h2>
+        <form method="POST" class="login-form" id="login-form">
+            
+            
+            <div class="form-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="contrasena">Contraseña:</label>
+                <input type="password" id="contrasena" name="contrasena" required>
+            </div>
+            
+            
+            <button type="submit" class="submit-button">Acceder</button>
+        </form>
+        
+        <p id="mensaje-error" class="error-message hidden"></p>
+        
+    </div>
+    
+    <script src="/Scripts/Administrador/Vista/Js/Moderador/PantallaIniciarSesionModerador.js"></script>
+    <script src="/Scripts/Administrador/Vista/Js/Moderador/GestorModerador.js"></script>
+</body>
+</html>
