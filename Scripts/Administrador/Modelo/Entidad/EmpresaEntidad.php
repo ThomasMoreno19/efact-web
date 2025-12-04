@@ -8,17 +8,19 @@ class Empresa {
     private string $logo_url;
     private string $telefono;
     private string $ubicacion;
+    private bool $tieneCarrito;
     private array $rubros;
 
 
     //Constructor
-    public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, ?array $rubros = []) {
+    public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito , ?array $rubros = []) {
         $this->id = $id;
         $this->nombre = $nombre;
         $this->fecha_creacion = $fecha_creacion;
         $this->logo_url = $logo_url;
         $this->telefono = $telefono;
         $this->ubicacion = $ubicacion;
+        $this->tieneCarrito = $tieneCarrito;
         $this->rubros = $rubros;
     }
     
@@ -46,6 +48,10 @@ class Empresa {
     
     public function getUbicacion(): ?string {
         return $this->ubicacion;
+    }
+
+    public function getTieneCarrito(): bool {
+        return $this->tieneCarrito;
     }
     
     public function getRubros(): array {
@@ -80,6 +86,10 @@ class Empresa {
     
     public function setUbicacion(array $ubicacion): void {
         $this->ubicacion = $ubicacion;
+    }
+
+    public function setTieneCarrito(bool $tieneCarrito): void {
+        $this->tieneCarrito = $tieneCarrito;
     }
     
     public function agregarRubro(Rubro $rubro): void {

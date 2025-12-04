@@ -1,0 +1,45 @@
+#modal-datos-cliente {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999;
+}
+
+.modal-datos {
+    text-align: center;
+    background: #222;
+    padding: 20px;
+    width: 300px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: white;
+}
+
+.modal-datos input {
+    min-height: 20px;
+    padding: 8px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+    resize: none;
+    background-color: transparent;
+    color: white;
+}
+
+.modal-datos .confirmar {
+    background: #c68711;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.labels {
+    display: block;
+    text-align: left;
+}

@@ -1,10 +1,11 @@
 class EmpresaVista {
     
-    constructor(id, nombre, telefono, ubicacion, logo_url) {
+    constructor(id, nombre, telefono, ubicacion, tieneCarrito, logo_url) {
         this.id = id;
         this.nombre = nombre;
         this.telefono = telefono;
         this.ubicacion = ubicacion;
+        this.tieneCarrito = tieneCarrito;
         this.logo_url = logo_url;
     }
     
@@ -19,9 +20,8 @@ class EmpresaVista {
         divEmpresa.appendChild(pNombre);
         
         divEmpresa.addEventListener('click', () => {
-            const event = new CustomEvent('empresaSeleccionada', { detail: { empresaId: this.id, empresaNombre: this.nombre, empresaTelefono: this.telefono, empresaUbicacion: this.ubicacion, empresaLogoUrl: this.logo_url } });
+            const event = new CustomEvent('empresaSeleccionada', { detail: { empresaId: this.id, empresaNombre: this.nombre, empresaTelefono: this.telefono, empresaUbicacion: this.ubicacion, empresaTieneCarrito: this.tieneCarrito, empresaLogoUrl: this.logo_url } });
             document.dispatchEvent(event);
-
             if (typeof window.gestorDeEmpresasCallback === 'function') {
                 window.gestorDeEmpresasCallback(this);
             }
@@ -34,12 +34,6 @@ class EmpresaVista {
         try {
             // Cambiar el título de la pestaña
             document.title = `${texto} ${this.nombre}`;
-            
-            // Eliminar favicon anterior si existe
-            const faviconExistente = document.querySelector("link[rel='icon']");
-            if (faviconExistente) {
-                faviconExistente.remove();
-            }
             
             // Crear nuevo favicon con el logo de la empresa
             const nuevoFavicon = document.createElement("link");
@@ -77,6 +71,10 @@ class EmpresaVista {
                     <input type="text" id="ubicacion" name="ubicacion" required>
                 </div>
                 <div class="form-group">
+                    <label for="tieneCarrito">Módulo Carrito:</label>
+                    <input type="checkbox" id="tieneCarrito" name="tieneCarrito">
+                </div>
+                <div class="form-group">
                     <label for="imagen">Imagen:</label>
                     <input type="file" id="imagen" name="imagen" accept="image/*">
                 </div>
@@ -105,7 +103,6 @@ class EmpresaVista {
 
         const modalConfigurarEmpresaContenido = document.createElement('div');
         modalConfigurarEmpresaContenido.classList.add('modal-content');
-        
         const htmlContent = `
             <form id="form-configurar-empresa">
                 <h2 id = "nombre-empresa-modal">${this.nombre}</h2>
@@ -146,6 +143,10 @@ class EmpresaVista {
                 <div class="form-group">
                     <label for="ubicacion">Direccion:</label>
                     <input type="text" id="ubicacion" name="ubicacion" value="${this.ubicacion}" required>
+                </div>
+                <div class="form-group">
+                    <label for="tieneCarrito">Módulo Carrito:</label>
+                    <input type="checkbox" id="tieneCarrito" name="tieneCarrito" ${this.tieneCarrito ? 'checked' : ''}>
                 </div>
                 <div class="form-group">
                     <label for="usuario">Usuario:</label>

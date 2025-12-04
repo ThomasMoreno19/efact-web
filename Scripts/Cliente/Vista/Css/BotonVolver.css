@@ -6,7 +6,7 @@
     width: 6.0em;
     height: 2.5em;
     border: none;
-    border-radius: 9px;
+    border-radius: 8px;
     transition: all 0.7s ease;
     display: flex;
     align-items: center; /* Centra verticalmente SVG y texto */

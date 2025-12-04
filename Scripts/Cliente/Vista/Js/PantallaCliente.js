@@ -1,4 +1,4 @@
-// Scripts/Administrador/Vista/Js/PantallaAdministrador.js
+// Scripts/Cliente/Vista/Js/PantallaCliente.js
 class PantallaCliente {
     
     constructor() {
@@ -11,10 +11,19 @@ class PantallaCliente {
         this.listaArticulos = document.getElementById('lista-articulos');
         this.listaRubros = document.getElementById('lista-rubros');
         this.barraBusqueda = document.getElementById('barra-busqueda');
+        this.onBuscarGeneral = this.filtrarArticulos.bind(this);
+        this.onBuscarRubro = null;
         this.botonVolver = document.getElementById('boton-volver');
         this.tituloRubros= document.getElementById('titulo-rubros');
         this.loader = document.getElementById('loader');
-        
+        this.botonCarrito = document.getElementById('boton-carrito');
+        this.cantidadArticulosCarrito = document.getElementById('cantidad-articulos-carrito');
+
+        this.listaCentral = document.getElementById('lista-central');
+
+        this.carrito = new Carrito();
+        this.articulo = null;
+        this.listaArticulosSeleccionados = [];
         // Almacenamiento de referencias a los elementos del DOM
         this.todosLosArticulos = [];
         this.todosLosRubros = [];
@@ -24,17 +33,34 @@ class PantallaCliente {
     
     async init() {
         const empresaData = await this.gestor.conocerEmpresa(this.conocerIdEmpresa());
-        this.empresa = new EmpresaVista(empresaData.id, empresaData.nombre, empresaData.telefono, empresaData.ubicacion, empresaData.logo_url);
-        
+        this.empresa = new EmpresaVista(empresaData.id, empresaData.nombre, empresaData.telefono, empresaData.ubicacion, empresaData.tieneCarrito, empresaData.logo_url);
+        if(this.empresa.tieneCarrito){
+            window.gestorDeArticulosCallback = (articulo) => {
+                this.articuloSeleccionado(articulo);
+            }
+            this.botonCarrito.addEventListener('click', () => {
+                this.abrirModalCarrito();
+            });
+            if (!document.getElementById("css-articulo-seleccionado")) {
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.href = "/Scripts/Cliente/Vista/Css/articuloSeleccionado.css";
+                link.id = "css-articulo-seleccionado";
+                document.head.appendChild(link);
+            }
+        }
         const textoAdicional = 'Carta de';
         await this.mostrarLogoEmpresa();
         await this.empresa.asignarIconoYPagina(textoAdicional);
     }
     
     agregarEventListeners() {
-        if (this.barraBusqueda) {
-            this.barraBusqueda.addEventListener('input', () => this.filtrarArticulos());
-        }
+        this.barraBusqueda.removeEventListener('input', this.onBuscarGeneral);
+        this.barraBusqueda.addEventListener('input', this.onBuscarGeneral);
+
+        this.botonVolver.removeEventListener('click', () => {this.restaurarVistaOriginal();
+                this.barraBusqueda.value = '';
+                this.volverAtras();});
         if(this.botonVolver){
             this.botonVolver.addEventListener('click', () => {
                 this.restaurarVistaOriginal();
@@ -101,7 +127,6 @@ class PantallaCliente {
             // 2. Generar la lista de artículos agrupados por rubro
             for (const rubro of rubrosRecibidos) {
                 const id_rubro = rubro['id'];
-                const nombre_rubro = rubro['nombre'];
                 
                 // Crear el contenedor para el rubro
                 const containerRubro = document.createElement('div');
@@ -110,7 +135,6 @@ class PantallaCliente {
                 containerRubro.dataset.rubroId = id_rubro; // Asignar el ID del rubro para filtrar
                 
                 // Obtener la lista de artículos para el rubro actual
-                console.log(this.empresa.id)
                 const listaArticulosRecibidos = await this.gestor.mostrarListaArticulos(id_rubro, this.empresa.id);
                 
                 const listaArticulosDiv = document.createElement('div');
@@ -118,7 +142,7 @@ class PantallaCliente {
                 
                 if (listaArticulosRecibidos.length > 0) {
                     listaArticulosRecibidos.forEach(articulo => {
-                        const articuloRecibido = new ArticuloVista(articulo[0], articulo[1], articulo[2], articulo[3], articulo[4], articulo[5]);
+                        const articuloRecibido = new ArticuloVista(articulo);
                         const elementoArticulo = articuloRecibido.mostrarUna();
                         
                         listaArticulosDiv.appendChild(elementoArticulo);
@@ -158,9 +182,18 @@ class PantallaCliente {
             this.listaArticulos.classList.remove('hidden');
         }
         
-        if (this.barraBusqueda) {
-            this.barraBusqueda.addEventListener('input', () => this.filtrarArticulosEnRubro(idRubroSeleccionado));
+        // Remover búsqueda general
+        this.barraBusqueda.removeEventListener('input', this.onBuscarGeneral);
+
+        // Si había un listener viejo del mismo rubro, lo saco
+        if (this.onBuscarRubro) {
+            this.barraBusqueda.removeEventListener('input', this.onBuscarRubro);
         }
+
+        // Crear y registrar el nuevo listener para este rubro
+        this.onBuscarRubro = () => this.filtrarArticulosEnRubro(idRubroSeleccionado);
+        this.barraBusqueda.addEventListener('input', this.onBuscarRubro);
+
     }
     
     filtrarArticulos() {
@@ -168,6 +201,8 @@ class PantallaCliente {
         const textoBusqueda = this.normalizarTexto(this.barraBusqueda.value);
     
         if (textoBusqueda.length === 0) {
+            console.log('Restaurando vista original');
+            this.tituloRubros.classList.remove('hidden');
             this.restaurarVistaOriginal();
             return;
         }
@@ -210,51 +245,22 @@ class PantallaCliente {
         if (listaPlanaAnterior) listaPlanaAnterior.remove();
     }
     
-    /* Crea una lista plana con los artículos filtrados */
     crearListaPlana(textoBusqueda) {
         const listaPlana = document.createElement('div');
         listaPlana.classList.add('lista-plana');
-    
-        const articulosCoincidentes = this.todosLosArticulos.filter(articulo => {
-            const nombreSinNormalizar = articulo.dataset.nombre?.toLowerCase() || '';
-            const nombre= this.normalizarTexto(nombreSinNormalizar);
-            return nombre.includes(textoBusqueda);
+
+        this.todosLosArticulos.forEach(articulo => {
+            const nombre = this.normalizarTexto(articulo.dataset.nombre || '');
+            if (!nombre.includes(textoBusqueda)) return;
+
+            const clon = articulo.cloneNode(true);
+            clon.addEventListener('click', () => this.articuloSeleccionado(articulo));
+            listaPlana.appendChild(clon);
         });
-    
-        if (articulosCoincidentes.length === 0) {
-            const sinResultados = document.createElement('p');
-            sinResultados.classList.add('texto-vacio');
-            sinResultados.textContent = 'No se encontraron artículos.';
-            listaPlana.appendChild(sinResultados);
-        } else {
-            articulosCoincidentes.forEach(original => {
-                const clon = original.cloneNode(true);
-                listaPlana.appendChild(clon);
-            });
-        }
-    
+
         return listaPlana;
     }
-    
-    /* Aplica colores alternados a los artículos visibles */
-    aplicarColoresAlternados(lista) {
-        let articulos = [];
-    
-        if (Array.isArray(lista)) {
-            // Si es un array de elementos ya obtenidos
-            articulos = lista;
-        } else if (lista instanceof HTMLElement) {
-            // Si es un contenedor del DOM
-            articulos = Array.from(lista.querySelectorAll('.articulo'));
-        } else {
-            console.warn('aplicarColoresAlternados: argumento no válido', lista);
-            return;
-        }
-    
-        articulos.forEach((articulo, index) => {
-            articulo.style.backgroundColor = index % 2 === 0 ? 'rgb(26 24 36 / 96%)' : '#242130';
-        });
-    }
+
 
 
     /* Filtra artículos dentro de un rubro específico según la barra de búsqueda */
@@ -271,11 +277,9 @@ class PantallaCliente {
     
         const containerRubro = this.obtenerContainerRubro(idRubroSeleccionado);
         if (!containerRubro) return;
-    
         const articulosRubro = this.obtenerArticulosDeRubro(containerRubro);
         const articulosFiltrados = articulosRubro.filter(articulo => {
-            const nombreSinNormalizar = articulo.dataset.nombre?.toLowerCase() || '';
-            const nombre = this.normalizarTexto(nombreSinNormalizar);
+            const nombre = this.normalizarTexto(articulo.dataset.nombre);
             return nombre.includes(textoBusqueda);
         });
     
@@ -298,21 +302,21 @@ class PantallaCliente {
     crearListaPlanaDesdeArticulos(articulosFiltrados, mensajeVacio) {
         const listaPlana = document.createElement('div');
         listaPlana.classList.add('lista-plana');
-    
+
         if (articulosFiltrados.length === 0) {
-            const sinResultados = document.createElement('p');
-            sinResultados.classList.add('texto-vacio');
-            sinResultados.textContent = mensajeVacio;
-            listaPlana.appendChild(sinResultados);
-        } else {
-            articulosFiltrados.forEach(original => {
-                const clon = original.cloneNode(true);
-                listaPlana.appendChild(clon);
-            });
+            listaPlana.textContent = mensajeVacio;
+            return listaPlana;
         }
-    
+
+        articulosFiltrados.forEach(a => {
+            const clon = a.cloneNode(true);
+            clon.addEventListener('click', () => this.articuloSeleccionado(a));
+            listaPlana.appendChild(clon);
+        });
+
         return listaPlana;
     }
+
     
     /* Muestra únicamente el rubro seleccionado sin filtrar artículos */
     mostrarSoloRubro(idRubroSeleccionado) {
@@ -452,8 +456,6 @@ class PantallaCliente {
                 .catch(err => console.error('Error al copiar:', err));
         });
     }
-
-
     
     normalizarTexto(texto) {
         return texto
@@ -486,6 +488,95 @@ class PantallaCliente {
         } else {
             this.imagenHeader.src = '/ruta/a/logo-rubro-default.png'; // opcional
         }
+    }
+
+    articuloSeleccionado(articulo) {
+
+        const id = articulo.id;
+        articulo.precio = this.carrito.eliminarPuntoPrecio(articulo.precio);
+
+        // Buscar si ya está seleccionado
+        const index = this.listaArticulosSeleccionados.findIndex(a => a.id === id);
+
+        // Buscar el elemento del DOM correspondiente
+        const elemento = this.todosLosArticulos.find(e => e.dataset.articuloId == id);
+
+        if (!elemento) return;
+
+        if (index === -1) {
+            // No está seleccionado → agregar
+            this.carrito.agregarArticulo(articulo);
+            this.listaArticulosSeleccionados.push(articulo);
+            elemento.classList.add('seleccionado');
+        } else {
+            // Ya estaba seleccionado → eliminar
+            this.carrito.eliminarArticulo(articulo.id);
+            this.listaArticulosSeleccionados.splice(index, 1);
+            elemento.classList.remove('seleccionado');
+            elemento.classList.remove('pulse');
+        }
+
+        if (this.listaArticulosSeleccionados.length > 0) {
+            this.botonCarrito.classList.remove('hidden');
+        }else {
+            this.botonCarrito.classList.add('hidden');
+        }
+        this.cantidadArticulosCarrito.textContent = this.listaArticulosSeleccionados.length;
+    }
+
+    abrirModalCarrito() {
+        const modalCarrito = new ModalCarrito(
+            this.carrito,
+            this.empresa,
+            (idEliminado) => this.removerSeleccionVisual(idEliminado)   // callback
+        );
+        this.listaCentral.classList.add('hidden');
+        modalCarrito.abrirModalCarrito();
+    }
+
+    removerSeleccionVisual(idArticulo) {
+        // sacar de listaArticulosSeleccionados
+        this.listaArticulosSeleccionados = 
+            this.listaArticulosSeleccionados.filter(a => a.id !== Number(idArticulo));
+
+        // quitar clase 'seleccionado' del DOM
+        const elemento = this.todosLosArticulos
+            .find(e => e.dataset.articuloId == idArticulo);
+
+        if (elemento) {
+            elemento.classList.remove('seleccionado');
+            elemento.classList.remove('pulse');
+        }
+
+        // actualizar contador del carrito
+        this.cantidadArticulosCarrito.textContent = 
+            this.listaArticulosSeleccionados.length;
+
+        // ocultar botón si no quedan artículos
+        if (this.listaArticulosSeleccionados.length === 0) {
+            this.botonCarrito.classList.add('hidden');
+        }
+    }
+
+    /* Aplica colores alternados a los artículos visibles */
+    aplicarColoresAlternados(lista) {
+        let articulos = [];
+    
+        if (Array.isArray(lista)) {
+            // Si es un array de elementos ya obtenidos
+            articulos = lista;
+        } else if (lista instanceof HTMLElement) {
+            // Si es un contenedor del DOM
+            articulos = Array.from(lista.querySelectorAll('.articulo'));
+        } else {
+            console.warn('aplicarColoresAlternados: argumento no válido', lista);
+            return;
+        }
+    
+        articulos.forEach((a, i) => {
+            a.classList.toggle("fondo-par", i % 2 === 0);
+            a.classList.toggle("fondo-impar", i % 2 === 1);
+        });
     }
 }
 
@@ -530,7 +621,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             tituloPagina.classList.remove('minimizado');
             imagenHeader.classList.remove('minimizado');
             infoExtra.classList.remove('minimizado');
-        } 
+        }
         // Si subís, mostrarlo de nuevo
         else if(ultimaPosicionScroll > posicionActual) {
             header.classList.remove('oculto');

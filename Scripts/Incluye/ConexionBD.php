@@ -1,5 +1,5 @@
 <?php
-// public_html/Scripts/Incluye/conexionBD.php
+// public_html/Scripts/Incluye/localBD.php
 
 function conectarBD() {
     static $pdo = null; // Se reutiliza la conexión dentro del mismo request

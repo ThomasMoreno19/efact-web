@@ -132,6 +132,7 @@ class GestorEmpresa {
         $nombre = $_POST['nombre'];
         $telefono = $_POST['telefono'];
         $ubicacion = $_POST['ubicacion'];
+        $tieneCarrito = $_POST['tieneCarrito'];
         $archivoImagen = $_FILES['imagen'];
     
         // 2️⃣ Validaciones
@@ -155,7 +156,7 @@ class GestorEmpresa {
             }
     
             // 4️⃣ Crear la empresa en la base de datos
-            $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion);
+            $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito);
     
             // 5️⃣ Devolver respuesta
             http_response_code(200);
@@ -164,6 +165,7 @@ class GestorEmpresa {
                 'nombre' => $empresa['nombre'],
                 'telefono' => $empresa['telefono'],
                 'ubicacion' => $empresa['ubicacion'],
+                'tieneCarrito' => $empresa['tieneCarrito'],
                 'fecha_creacion' => $empresa['fecha_creacion'],
                 'logo_url' => $empresa['logo_url']
             ]);
@@ -183,6 +185,7 @@ class GestorEmpresa {
         $nombre = $datos['nombre'];
         $ubicacion = $datos['ubicacion'];
         $telefono = $datos['telefono'];
+        $tieneCarrito = $datos['tieneCarrito'];
     
         if (empty($id_empresa) || empty($nombre)) {
             http_response_code(400);
@@ -191,7 +194,7 @@ class GestorEmpresa {
         }
     
         try {
-            $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono);
+            $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito);
     
             // 🔥 Borrar caché para esta empresa
             $this->borrarCacheEmpresa($id_empresa);

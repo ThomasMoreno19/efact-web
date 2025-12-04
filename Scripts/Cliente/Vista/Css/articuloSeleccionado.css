@@ -1,0 +1,37 @@
+.articulo {
+    cursor: pointer;
+}
+
+.articulo.seleccionado {
+    background-color: rgb(198, 135, 17) !important;
+}
+
+.articulo.seleccionado #id-articulo {
+    color: #3d2800 !important;
+}
+
+.articulo.seleccionado .descripcion {
+    color: #343333 !important;
+}
+
+/* Animación de pulso para artículos seleccionados */
+.articulo.pulse {
+    animation: pulse 0.25s ease-out;
+}
+
+.articulo:hover {
+    transform: scale(1.02); /* Efecto de zoom al pasar el cursor */
+}
+
+/* Animación tipo latido */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05); /* Se agranda */
+    }
+    100% {
+        transform: scale(1); /* Vuelve a su tamaño */
+    }
+}

@@ -34,10 +34,6 @@ class GestorArticulo {
                     case '':
                         $this->mostrarTodos();
                         break;
-                    
-                    case 'entre':
-                        $this->mostrarEntre();
-                        break;
 
                     case 'rubros':
                         $this->mostrarRubro();
@@ -79,30 +75,34 @@ class GestorArticulo {
     
     private function mostrarTodos(): void {
         $datos = json_decode(file_get_contents('php://input'), true);
-    
+
         $id_rubro = $datos['id_rubro'];
         $id_empresa = $datos['id_empresa'];
         
         // === CACHE EN ARCHIVO ===
         $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/articulos_rubro_{$id_rubro}_empresa_{$id_empresa}.json";
-    
+
         if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
             http_response_code(200);
             echo file_get_contents($cacheFile);
             return;
         }
+
         try {
             $listaArticulos = $this->articuloRepositorio->obtenerTodos($id_rubro);
             
+            // ¡AHORA SÍ! Usa el nombre del campo
             foreach ($listaArticulos as &$articulo) {
-                $articulo[4] = number_format((float)$articulo[4], 0, '', '.');
+                $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
             }
-            
+            unset($articulo); // buena práctica
+
             $json = json_encode($listaArticulos);
-            file_put_contents($cacheFile, $json); // Guarda en cache
-            
+            file_put_contents($cacheFile, $json);
+
             http_response_code(200);
             echo $json;
+
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Error: ' . $e->getMessage()]);

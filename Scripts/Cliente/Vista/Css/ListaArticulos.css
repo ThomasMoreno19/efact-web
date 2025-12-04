@@ -60,6 +60,7 @@
     position: relative;
     z-index: 2; /* ENCIMA DEL OSCURECIMIENTO */
     background-color: transparent; /* QUITAR FONDO DEL H3 */
+    font-size: 16px;
 }
 
 .rubro:hover {
@@ -83,12 +84,18 @@
 }
 
 .articulo p { /* Estilos para el nombre de la empresa */
-    /* Basado en tu '.empresa-info h3' original */
     margin: 0.3vh;
     font-size: clamp(0.3em, 4vw, 1.7em);
     color: #fff;
     word-wrap: break-word;
     overflow-wrap: break-word;
+}
+
+.articulo.fondo-par {
+    background-color: rgb(26 24 36 / 96%);
+}
+.articulo.fondo-impar {
+    background-color: #242130;
 }
 
 #id-articulo {
@@ -101,6 +108,7 @@ p.descripcion{
     font-size: clamp(0.1em, 2.7vw, 1em);
     align-self: self-start;
 }
+
 
 @media screen and (max-width: 600px) {
     .lista-central{

@@ -1,0 +1,4 @@
+#Excluir archivos de configuración local
+Scripts/Incluye/localBD.php
+index.php
+Scripts/cuenta.php

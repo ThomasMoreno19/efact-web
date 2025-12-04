@@ -6,6 +6,7 @@ class PantallaModerador {
         this.gestor = new GestorModerador();
         this.listaArticulos = document.getElementById('lista-articulos');
         this.listaRubros = document.getElementById('lista-rubros');
+        this.articuloSeleccionado = null;
         
         this.botonListaArticulos = document.getElementById('boton-mostrar-articulos');
         this.botonListaRubros = document.getElementById('boton-mostrar-rubros');
@@ -15,7 +16,7 @@ class PantallaModerador {
         this.barraBusqueda = document.getElementById('barra-busqueda');
         this.tituloPagina = document.getElementById('titulo-pagina');
         this.loader = document.getElementById('loader');
-        window.gestorDeArticulosCallback = (id, id_rubro, nombre, descripcion, precio, codigo_carta) => this.modalArticuloSeleccionado(id, id_rubro, nombre, descripcion, precio, codigo_carta);
+        window.gestorDeArticulosCallback = (articulo) => this.modalArticuloSeleccionado(articulo);
         window.gestorDeRubrosCallback = (id, id_empresa, nombre, logo_url) => this.modalRubroSeleccionado(id, id_empresa, nombre, logo_url);
         this.agregarEventListeners();
         this.todosLosArticulos = [];
@@ -24,7 +25,7 @@ class PantallaModerador {
     
     async init() {
         const empresaData = await this.gestor.conocerEmpresa(this.obtenerIdEmpresa());
-        this.empresa = new EmpresaVista(empresaData.id, empresaData.nombre, empresaData.telefono, empresaData.ubicacion, empresaData.logo_url);
+        this.empresa = new EmpresaVista(empresaData.id, empresaData.nombre, empresaData.telefono, empresaData.ubicacion, empresaData.tieneCarrito, empresaData.logo_url);
         const textoAdicional = 'Gestión de';
         await this.asignarTituloPagina(textoAdicional);
         await this.empresa.asignarIconoYPagina(textoAdicional);
@@ -118,11 +119,9 @@ class PantallaModerador {
                     // Iterar sobre los artículos y crear sus vistas
                     if (listaArticulosRecibidos.length > 0) {
                         listaArticulosRecibidos.forEach(articulo => {
-                            const articuloRecibido = new ArticuloVista(articulo[0], articulo[1], articulo[2], articulo[3], articulo[4], articulo[5]);
-                            
+                            const articuloRecibido = new ArticuloVista(articulo);
                             // ✅ Corregido: Crear el elemento solo una vez
                             const elementoArticulo = articuloRecibido.mostrarUna(); 
-                            
                             // ✅ Agregarlo al DOM
                             listaArticulosDiv.appendChild(elementoArticulo); 
                             
@@ -166,10 +165,9 @@ class PantallaModerador {
         }
     }
     
-    async modalArticuloSeleccionado(id, id_rubro, nombre, descripcion, precio, codigo_carta) {
-        const articulo = new ArticuloVista(id, id_rubro, nombre, descripcion, precio, codigo_carta);
-        const modal = articulo.modalConfigurar(id, nombre, descripcion, precio, codigo_carta);
-        
+    async modalArticuloSeleccionado(articulo) {
+        const modal = articulo.modalConfigurar();
+        this.articuloSeleccionado = articulo;
         // Agregamos un ID al modal para poder identificarlo
         document.body.appendChild(modal);
         const botonModificarArticulo = document.getElementById('modificar');
@@ -179,8 +177,8 @@ class PantallaModerador {
             if (event.target === modal) {
                 document.body.removeChild(modal);
         }});
-        botonModificarArticulo.addEventListener('click', (event) => {
-            this.abrirModalModificarArticulo(articulo);
+        botonModificarArticulo.addEventListener('click', () => {
+            this.abrirModalModificarArticulo();
         })
     }
     
@@ -227,33 +225,41 @@ class PantallaModerador {
         });
     }
     
-    abrirModalModificarArticulo(articulo) {
-        const modal = articulo.modalModificar(articulo.nombre, articulo.descripcion, articulo.precio, articulo.codigo_carta);
-    
+    abrirModalModificarArticulo() {
+        const articulo = this.articuloSeleccionado;
+        if (!articulo) return;
+
+        const modal = this.articuloSeleccionado.modalModificar();
         document.body.appendChild(modal);
-        
-        modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            document.body.removeChild(modal);}});
-    
-        const form = document.getElementById('form-modificar-articulo');
-        const botonEnviarDatos = document.getElementById('boton-modificar-articulo');
-        botonEnviarDatos.addEventListener('click', async (event) => {
-            event.preventDefault();
-            const formData = new FormData(form);
-            const nombre = formData.get('nombre');
-            const descripcion = formData.get('descripcion');
-            const precio = formData.get('precio');
-            const codigo_carta = formData.get('codigo_carta');
-            
-            try {
-                // Llamamos al método del gestor con el nombre y el archivo.
-                const articuloModificado = await this.gestor.modificarArticulo(articulo.id, articulo.id_rubro , nombre, descripcion, precio, codigo_carta);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
                 document.body.removeChild(modal);
-                this.habilitarVentanaPrincipal();
-                
+                this.articuloSeleccionado = null;
+            }
+        });
+
+        const form = modal.querySelector('#form-modificar-articulo');
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+
+            try {
+                await this.gestor.modificarArticulo(
+                    articulo.id,
+                    articulo.id_rubro,
+                    formData.get('nombre'),
+                    formData.get('descripcion') || '',
+                    formData.get('precio'),
+                    formData.get('codigo_carta') || ''
+                );
+
+                document.body.removeChild(modal);
+                this.articuloSeleccionado = null;
+                await this.habilitarVentanaPrincipal();
+
             } catch (error) {
-                alert(`Error: ${error.message}`);
+                alert('Error al modificar: ' + error.message);
             }
         });
     }

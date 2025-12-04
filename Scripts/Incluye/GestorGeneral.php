@@ -1,7 +1,14 @@
 <?php
 // Inicia la sesión globalmente, ya que todas las solicitudes pasan por aquí.
 session_start();
-require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
+// Detectar si estás en local o en Hostinger
+if ($_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['SERVER_NAME'] === 'localhost') {
+    // 🖥️ Entorno local
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/localBD.php';
+} else {
+    // ☁️ Entorno Hostinger
+    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/conexionBD.php';
+}
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorEmpresa.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorAdministrador.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorModerador.php';
@@ -48,8 +55,7 @@ try {
         case 'carta':
             require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/PantallaCliente.php';
             exit;
-        
-        
+            
         default:
             http_response_code(404);
             echo "<h1>404 - Página no encontrada</h1>";

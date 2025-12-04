@@ -28,15 +28,16 @@ class PantallaAdministrador {
     async mostrarLista() {
     
         try {
-            const listaRecibida = await this.gestor.mostrarListaEmpresas();
+            const LISTA = await this.gestor.mostrarListaEmpresas();
     
             this.listaEmpresas.innerHTML = '';
-            if (listaRecibida.length === 0) {
+            if (LISTA.length === 0) {
                 this.listaEmpresas.innerHTML = `<p class="texto-vacio"> No hay empresas cargadas. </p>`;
             } else {
-                listaRecibida.forEach(empresa => {
-                    const itemVista = new EmpresaVista(empresa.id, empresa.nombre, empresa.telefono, empresa.ubicacion, empresa.logo_url);
-                    this.listaEmpresas.appendChild(itemVista.mostrarUna());
+                LISTA.forEach(empresa => {
+                    console.log(empresa.tieneCarrito);
+                    const EMPRESA = new EmpresaVista(empresa.id, empresa.nombre, empresa.telefono, empresa.ubicacion, empresa.tieneCarrito, empresa.logo_url);
+                    this.listaEmpresas.appendChild(EMPRESA.mostrarUna());
                 });
             }
         } catch (error) {
@@ -46,73 +47,74 @@ class PantallaAdministrador {
     }
     
     async modalEmpresaSeleccionada(empresa) {
-        const modal = empresa.modalConfigurarEmpresa();
+        const MODAL = empresa.modalConfigurarEmpresa();
         
         // Agregamos un ID al modal para poder identificarlo
-        document.body.appendChild(modal);
-        const botonCambiarLogo = document.getElementById('cambiar-logo');
-        const botonSecccionModificar = document.getElementById('seccion-modificar');
-        const botonGestionArticulos = document.getElementById('visitar-gestion');
-        const botonVisitarPagina = document.getElementById('visitar-pagina');
+        document.body.appendChild(MODAL);
+        const BOTON_CAMBIAR_LOGO = document.getElementById('cambiar-logo');
+        const BOTON_SECCION_MODIFICAR = document.getElementById('seccion-modificar');
+        const BOTON_GESTION_ARTICULOS = document.getElementById('visitar-gestion');
+        const BOTON_VISITAR_PAGINA = document.getElementById('visitar-pagina');
         
         //Se cierra el modal si se clickea afuera
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                document.body.removeChild(modal);
+        MODAL.addEventListener('click', (event) => {
+            if (event.target === MODAL) {
+                document.body.removeChild(MODAL);
         }});
         
-        botonVisitarPagina.addEventListener('click', (event) => {
+        BOTON_VISITAR_PAGINA.addEventListener('click', (event) => {
             event.preventDefault();
             window.open(`/carta/${empresa.id}`, '_blank');
         });
         
-        botonGestionArticulos.addEventListener('click', (event) => {
+        BOTON_GESTION_ARTICULOS.addEventListener('click', (event) => {
             event.preventDefault();
             window.open(`/moderador/${empresa.id}`, '_blank');
         });
         
-        botonSecccionModificar.addEventListener('click', async (event) => {
+        BOTON_SECCION_MODIFICAR.addEventListener('click', async (event) => {
             event.preventDefault();
-            await this.abrirModalModificar(empresa, modal);
-            document.body.removeChild(modal);
+            await this.abrirModalModificar(empresa, MODAL);
+            document.body.removeChild(MODAL);
         });
         
-        botonCambiarLogo.addEventListener('click', async (event) => {
+        BOTON_CAMBIAR_LOGO.addEventListener('click', async (event) => {
             event.preventDefault();
-            await this.abrirModalCambiarLogo(empresa, modal);
-            document.body.removeChild(modal);
+            await this.abrirModalCambiarLogo(empresa, MODAL);
+            document.body.removeChild(MODAL);
         });
     }
     
     abrirModalNuevaEmpresa() {
-        const empresa = new EmpresaVista();
-        const moderador = new ModeradorVista();
-        const modal = empresa.modalNuevaEmpresa();
+        const EMPRESA = new EmpresaVista();
+        const MODAL = EMPRESA.modalNuevaEmpresa();
     
-        document.body.appendChild(modal);
+        document.body.appendChild(MODAL);
         
-        modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            document.body.removeChild(modal);}});
+        MODAL.addEventListener('click', (event) => {
+        if (event.target === MODAL) {
+            document.body.removeChild(MODAL);}});
     
-        const form = document.getElementById('formNuevaEmpresa');
-        form.addEventListener('submit', async (event) => {
+        const FORM = document.getElementById('formNuevaEmpresa');
+        FORM.addEventListener('submit', async (event) => {
             event.preventDefault();
             
-            const formData = new FormData(form);
-            const nombre = formData.get('nombre');
-            const archivoImagen = formData.get('imagen');
-            const usuario = formData.get('usuario');
-            const contrasena = formData.get('contrasena');
-            const telefono = formData.get('telefono');
-            const ubicacion = formData.get('ubicacion');
-            
+            const FORMDATA = new FormData(FORM);
+            const NOMBRE = FORMDATA.get('nombre');
+            const IMAGEN = FORMDATA.get('imagen');
+            const USUARIO = FORMDATA.get('usuario');
+            const CONTRASENA = FORMDATA.get('contrasena');
+            const TELEFONO = FORMDATA.get('telefono');
+            const UBICACION = FORMDATA.get('ubicacion');
+            const TIENE_CARRITO_RAW = FORMDATA.get('tieneCarrito');
+            const TIENE_CARRITO = TIENE_CARRITO_RAW === 'on';
+
             try {
                 // Llamamos al método del gestor con el nombre y el archivo.
-                const nuevaEmpresa = await this.gestor.crearEmpresa(nombre, telefono, ubicacion, archivoImagen);
-                const nuevoModerador = await this.gestor.crearModerador(usuario, nuevaEmpresa.id, contrasena);
-                modal.classList.add('hidden');
-                document.body.removeChild(modal);
+                const EMPRESA = await this.gestor.crearEmpresa(NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, IMAGEN);
+                await this.gestor.crearModerador(USUARIO, EMPRESA.id, CONTRASENA);
+                MODAL.classList.add('hidden');
+                document.body.removeChild(MODAL);
                 await this.mostrarLista();
                 
             } catch (error) {
@@ -122,34 +124,37 @@ class PantallaAdministrador {
     }
     
     async abrirModalModificar(empresa, modalPadre) {
-        const moderador = await this.gestor.obtenerModerador(empresa.id);
-        const modal = empresa.modalModificar(moderador);
+        const MODERADOR = await this.gestor.obtenerModerador(empresa.id);
+        const MODAL = empresa.modalModificar(MODERADOR);
         
-        document.body.appendChild(modal);
+        document.body.appendChild(MODAL);
         
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                modal.classList.add('hidden');
+        MODAL.addEventListener('click', (event) => {
+            if (event.target === MODAL) {
+                MODAL.classList.add('hidden');
                 document.body.appendChild(modalPadre);
-                document.body.removeChild(modal);  
+                document.body.removeChild(MODAL);  
             }});
             
-            const form = document.getElementById('formModificarEmpresa');
-            form.addEventListener('submit', async (event) => {
+            const FORM = document.getElementById('formModificarEmpresa');
+            FORM.addEventListener('submit', async (event) => {
             event.preventDefault();
-            const formData = new FormData(form);
-            const nombre = formData.get('nombre');
-            const telefono = formData.get('telefono');
-            const ubicacion = formData.get('ubicacion');
-            const usuario = formData.get('usuario');
-            const contrasena = formData.get('contrasena');
+            const FORMDATA = new FormData(FORM);
+            const NOMBRE = FORMDATA.get('nombre');
+            const TELEFONO = FORMDATA.get('telefono');
+            const UBICACION = FORMDATA.get('ubicacion');
+            const TIENE_CARRITO_RAW = FORMDATA.get('tieneCarrito');
+            const TIENE_CARRITO = TIENE_CARRITO_RAW === 'on';
+            
+            const USUARIO = FORMDATA.get('usuario');
+            const CONTRASENA = FORMDATA.get('contrasena');
             
             try {
                 // Llamamos al método del gestor con el nombre y el archivo.
-                const moderadorModificado = await this.gestor.modificarModerador(moderador.id, usuario, contrasena);
-                const empresaModificada = this.gestor.modificarEmpresa(empresa.id, nombre, telefono, ubicacion);
-                modal.classList.add('hidden');
-                document.body.removeChild(modal);
+                await this.gestor.modificarModerador(MODERADOR.id, USUARIO, CONTRASENA);
+                this.gestor.modificarEmpresa(empresa.id, NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO);
+                MODAL.classList.add('hidden');
+                document.body.removeChild(MODAL);
                 await this.mostrarLista();
                 
             } catch (error) {
@@ -159,26 +164,26 @@ class PantallaAdministrador {
     }
     
     async abrirModalCambiarLogo(empresa, modalPadre) {
-        const modal = empresa.modalCambiarLogo();
+        const MODAL = empresa.modalCambiarLogo();
         
-        document.body.appendChild(modal);
+        document.body.appendChild(MODAL);
         
-        modal.addEventListener('click', (event) => {
-        if (event.target === modal) {
+        MODAL.addEventListener('click', (event) => {
+        if (event.target === MODAL) {
             document.body.appendChild(modalPadre);
-            document.body.removeChild(modal);
+            document.body.removeChild(MODAL);
         }});
     
-        const form = document.getElementById('formCambiarLogoEmpresa');
-        form.addEventListener('submit', async (event) => {
+        const FORM = document.getElementById('formCambiarLogoEmpresa');
+        FORM.addEventListener('submit', async (event) => {
             event.preventDefault();
-            const formData = new FormData(form);
-            const imagen = formData.get('imagen');
+            const FORMDATA = new FormData(FORM);
+            const IMAGEN = FORMDATA.get('imagen');
             
             try {
-                const empresaModificada = await this.gestor.cambiarLogoEmpresa(empresa.id, imagen, empresa.nombre);
-                modal.classList.add('hidden');
-                document.body.removeChild(modal);
+                await this.gestor.cambiarLogoEmpresa(empresa.id, IMAGEN, empresa.nombre);
+                MODAL.classList.add('hidden');
+                document.body.removeChild(MODAL);
                 await this.mostrarLista();
                 
             } catch (error) {
@@ -192,6 +197,6 @@ class PantallaAdministrador {
 // --- Inicialización ---
 // Se crea una instancia de PantallaAdministrador cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', () => {
-    const pantalla = new PantallaAdministrador();
-    pantalla.habilitarVentanaPrincipal();
+    const PANTALLA = new PantallaAdministrador();
+    PANTALLA.habilitarVentanaPrincipal();
 });

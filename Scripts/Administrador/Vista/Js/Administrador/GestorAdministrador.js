@@ -66,11 +66,12 @@ class GestorAdministrador {
         }
     }
     
-    async crearEmpresa(nombre, telefono, ubicacion, imagen) {
+    async crearEmpresa(nombre, telefono, ubicacion, tienecarrito, imagen) {
         try {
             const formData = new FormData();
             formData.append('nombre', nombre);
             formData.append('telefono', telefono);
+            formData.append('tieneCarrito', tienecarrito);
             formData.append('ubicacion', ubicacion);
             if (imagen) {
                 formData.append('imagen', imagen);
@@ -78,7 +79,7 @@ class GestorAdministrador {
     
             const response = await fetch(`/empresa/crear`, {
                 method: 'POST',
-                body: formData, // 🚫 sin headers JSON aquí
+                body: formData, //sin headers JSON aquí
             });
     
             if (!response.ok) {
@@ -153,12 +154,13 @@ class GestorAdministrador {
         }
     }
     
-    async modificarEmpresa(id, nombre, telefono, ubicacion) {
+    async modificarEmpresa(id, nombre, telefono, ubicacion, tieneCarrito) {
         const bodyData = {
+            id: id,
             nombre: nombre,
             telefono: telefono,
             ubicacion: ubicacion,
-            id: id
+            tieneCarrito: tieneCarrito,
         };
         
         try {

@@ -37,26 +37,29 @@ class ArticuloRepositorio {
         $articulos = [];
         try {
             $stmt = $this->pdo->prepare("
-                SELECT id, id_rubro, nombre, descripcion, precio, codigo_carta FROM Articulo
+                SELECT 
+                    id, 
+                    id_rubro, 
+                    nombre, 
+                    descripcion, 
+                    precio, 
+                    codigo_carta 
+                FROM Articulo
                 WHERE id_rubro = :id_rubro
-                ORDER BY nombre ASC;");
+                ORDER BY nombre ASC
+            ");
             $stmt->bindParam(':id_rubro', $id_rubro, PDO::PARAM_INT);
             $stmt->execute();
             
-            while ($data= $stmt->fetch(PDO::FETCH_ASSOC)){
-                $articulos[] = [$data['id'],
-                    $data['id_rubro'],
-                    $data['nombre'],
-                    $data['descripcion'],
-                    $data['precio'],
-                    $data['codigo_carta'],
-                    ];
-            }
+            // ¡Devuelve directamente el array asociativo!
+            $articulos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
             return $articulos;
+
         } catch (PDOException $e) {
-            error_log("Error al obtener todos las articulos: " . $e->getMessage());
+            error_log("Error al obtener todos los artículos: " . $e->getMessage());
+            return [];
         }
-        return $articulos;
     }
 
     public function crearPorCsv(int $id, int $id_rubro, string $nombre,float $precio, string $codigo_carta = '', string $descripcion = '', ?string $logo_url = 'Archivos/Logos/Vacio.png'): array {

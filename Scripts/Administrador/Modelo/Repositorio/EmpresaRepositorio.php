@@ -45,6 +45,7 @@ class EmpresaRepositorio {
                 'logo_url' => $data['logo_url'],
                 'telefono' => $data['telefono'],
                 'ubicacion' => $data['ubicacion'],
+                'tieneCarrito' => $data['tieneCarrito'],
                 'fecha_creacion' => $data['fecha_creacion'],
                 ];
         }
@@ -61,6 +62,7 @@ class EmpresaRepositorio {
                     nombre,
                     telefono,
                     ubicacion,
+                    tieneCarrito,
                     logo_url,
                     fecha_creacion
                 FROM Empresa
@@ -70,9 +72,10 @@ class EmpresaRepositorio {
                 $empresas[] = [
                 'id' => $data['id'],
                 'nombre' => $data['nombre'],
-                'logo_url' => $data['logo_url'],
                 'telefono' => $data['telefono'],
                 'ubicacion' => $data['ubicacion'],
+                'tieneCarrito' => $data['tieneCarrito'],
+                'logo_url' => $data['logo_url'],
                 'fecha_creacion' => $data['fecha_creacion'],
                 ];
             }
@@ -83,24 +86,26 @@ class EmpresaRepositorio {
     }
     
     
-    public function modificar(int $id, string $nombre, string $ubicacion, string $telefono): bool {
+    public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito): bool {
         try {
             $stmt = $this->pdo->prepare(
                 "UPDATE Empresa
                  SET nombre = :nombre,
                  telefono = :telefono,
-                 ubicacion = :ubicacion
+                 ubicacion = :ubicacion,
+                 tieneCarrito = :tieneCarrito
                  WHERE id = :id;");
                     
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
             $stmt->bindParam(':telefono', $telefono, PDO::PARAM_STR);
             $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
+            $stmt->bindParam(':tieneCarrito', $tieneCarrito, PDO::PARAM_BOOL);
 
             return $stmt->execute();
             
         } catch (PDOException $e) {
-            error_log("Error al modificar el nombre de la empresa: " . $e->getMessage());
+            error_log("Error al modificar la empresa: " . $e->getMessage());
         }
         return null;
     }
@@ -132,16 +137,17 @@ class EmpresaRepositorio {
     }
 
     
-    public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion): array {
+    public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito): array {
         try {
             $fecha_actual= date('Y-m-d');
             $stmt = $this->pdo->prepare(
-                "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion) VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion)"
+                "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito) VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito )"
             );
             $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
             $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
             $stmt->bindParam(':telefono', $telefono, PDO::PARAM_STR);
             $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
+            $stmt->bindParam(':tieneCarrito', $tieneCarrito, PDO::PARAM_BOOL);
             $stmt->bindParam(':fecha_actual', $fecha_actual, PDO::PARAM_STR);
             $stmt->execute();
             

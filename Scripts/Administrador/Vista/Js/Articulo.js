@@ -1,18 +1,20 @@
 class ArticuloVista {
     
-    constructor(id, id_rubro, nombre, descripcion, precio, codigo_carta) {
+    constructor(articulo) {
+        const { id, id_rubro, nombre, descripcion, precio, codigo_carta, seleccionado = false } = articulo;
         this.id = id;
         this.id_rubro = id_rubro;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
         this.codigo_carta = codigo_carta;
+        this.seleccionado = seleccionado;
     }
     
     mostrarUna() {
         const divArticulo = document.createElement('div');
         divArticulo.classList.add('articulo');
-        divArticulo.dataset.ArticuloId = this.id;  //🤣😎
+        divArticulo.dataset.articuloId = this.id;  //🤣😎
         divArticulo.dataset.nombre = this.nombre;
         divArticulo.dataset.descripcion = this.descripcion;
         divArticulo.dataset.precio = this.precio;
@@ -48,80 +50,84 @@ class ArticuloVista {
         }
         
         divArticulo.addEventListener('click', () => {
-            const event = new CustomEvent('articuloSeleccionado', { detail: { articuloId: this.id, articuloIdRubro: this.id_rubro, articuloNombre: this.nombre, articuloDescripcion: this.descripcion, articuloPrecio: this.precio, articuloCodigoCarta : this.codigo_carta } });
+            const event = new CustomEvent('articuloSeleccionado', { detail: this });
             document.dispatchEvent(event);
+            
+            divArticulo.classList.toggle('seleccionado');
+
+            // Reinicia animación si ya estaba activa
+            divArticulo.classList.remove('pulse');
+            void divArticulo.offsetWidth;
+            divArticulo.classList.add('pulse');
 
             if (typeof window.gestorDeArticulosCallback === 'function') {
-                window.gestorDeArticulosCallback(this.id, this.id_rubro, this.nombre, this.descripcion, this.precio, this.codigo_carta);
+                window.gestorDeArticulosCallback(this);
             }
         });
         
         return divArticulo;
     }
     
-    modalConfigurar(id, nombre, descripcion, precio, texto_codigo_carta) {
+    modalConfigurar() {
         const modalConfigurarArticulo = document.createElement('div');
         modalConfigurarArticulo.classList.add('modal-backdrop');
         modalConfigurarArticulo.id = 'modal-configurar-articulo';
 
-        const modalConfigurarArticuloContenido = document.createElement('div');
-        modalConfigurarArticuloContenido.classList.add('modal-content');
-        
-        const codigo_carta = texto_codigo_carta && texto_codigo_carta.trim() !== '' 
-        ? ` (${texto_codigo_carta})` 
-        : '';
-        
+        const modalContenido = document.createElement('div');
+        modalContenido.classList.add('modal-content');
+
+        const codigoCartaTexto = this.codigo_carta ? ` (${this.codigo_carta})` : '';
+
         const htmlContent = `
             <form id="form-configurar-articulo">
-                <h2 id ="nombre-articulo-modal">${nombre} ${codigo_carta}</h2>
-                <p class="descripcion">${descripcion}</p>
-                <h2 id ="id-articulo">$${precio}</h2>
+                <h2 id="nombre-articulo-modal">${this.nombre}${codigoCartaTexto}</h2>
+                <p class="descripcion">${this.descripcion || ''}</p>
+                <h2 id="id-articulo">$${this.precio}</h2>
                 <button type="button" class="submit-button" id="modificar">Modificar</button>
             </form>`;
 
-        modalConfigurarArticuloContenido.innerHTML = htmlContent;
-        modalConfigurarArticulo.appendChild(modalConfigurarArticuloContenido);
-        
+        modalContenido.innerHTML = htmlContent;
+        modalConfigurarArticulo.appendChild(modalContenido);
+
         return modalConfigurarArticulo;
     }
     
-    modalModificar(nombre, descripcion, precioConPuntos, codigo_carta = '') {
-        const modalModificarArticulo = document.createElement('div');
-        modalModificarArticulo.classList.add('modal-backdrop');
-        modalModificarArticulo.id = 'modal-modificar-articulo';
+    modalModificar() {
+        const modal = document.createElement('div');
+        modal.classList.add('modal-backdrop');
+        modal.id = 'modal-modificar-articulo';
 
-        const modalModificarArticuloContenido = document.createElement('div');
-        modalModificarArticuloContenido.classList.add('modal-content');
-        
-        const precio = this.sacarPuntosPrecio(precioConPuntos);
-        
-        const htmlContent = `
-            <form id="form-modificar-articulo" method="POST" enctype="multipart/form-data">
-                <h2 id ="titulo-modal">Modificar Articulo</h2>
+        const contenido = document.createElement('div');
+        contenido.classList.add('modal-content');
+
+        // Quitar puntos del precio (si lo guardas con formato 1.234, etc.)
+        const precioSinPuntos = this.sacarPuntosPrecio(this.precio);
+
+        contenido.innerHTML = `
+            <form id="form-modificar-articulo">
+                <h2>Modificar Artículo</h2>
                 <div class="form-group">
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" id="nombre" name="nombre" value="${nombre}" required>
+                    <label>Nombre:</label>
+                    <input type="text" name="nombre" value="${this.nombre}" required>
                 </div>
                 <div class="form-group">
-                    <label for="codigo_carta">Codigo de carta:</label>
-                    <input type="text" id="codigo de carta" name="codigo_carta" value="${codigo_carta}">
+                    <label>Código de carta:</label>
+                    <input type="text" name="codigo_carta" value="${this.codigo_carta || ''}">
                 </div>
                 <div class="form-group">
-                    <label for="descripcion">Descripcion:</label>
-                    <input type="text" id="descripcion" name="descripcion" value="${descripcion}">
+                    <label>Descripción:</label>
+                    <input type="text" name="descripcion" value="${this.descripcion || ''}">
                 </div>
                 <div class="form-group">
-                    <label for="precio">Precio:</label>
-                    <input type="numeric" id="precio" name="precio" value="${precio}" required>
+                    <label>Precio:</label>
+                    <input type="precio" name="precio" value="${precioSinPuntos}" required>
                 </div>
-                <button type="submit" class="submit-button" id="boton-modificar-articulo">Enviar</button>
+                <button type="submit" class="submit-button">Guardar Cambios</button>
             </form>
         `;
 
-        modalModificarArticuloContenido.innerHTML = htmlContent;
-        modalModificarArticulo.appendChild(modalModificarArticuloContenido);
-        
-        return modalModificarArticulo;
+        modal.appendChild(contenido);
+        return modal;
     }
     
     sacarPuntosPrecio(precioConPuntos){
