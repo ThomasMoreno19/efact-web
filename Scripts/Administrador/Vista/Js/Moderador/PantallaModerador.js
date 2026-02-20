@@ -705,7 +705,15 @@ class PantallaModerador {
         return;
       }
 
-      if (new Date(desde) > new Date(hasta)) {
+      const fechaInicio = this.parsearFechaNoLaboral(desde);
+      const fechaFin = this.parsearFechaNoLaboral(hasta);
+
+      if (!fechaInicio || !fechaFin) {
+        alert('Las fechas deben tener formato DD/MM.');
+        return;
+      }
+
+      if (fechaInicio > fechaFin) {
         alert('La fecha de inicio no puede ser mayor a la fecha de fin.');
         return;
       }
@@ -737,8 +745,8 @@ class PantallaModerador {
     });
   }
 
-  agregarFechaNoLaboral(fechaISO) {
-    const fechaFormateada = this.formatearFechaMMDD(fechaISO);
+  agregarFechaNoLaboral(fechaInput) {
+    const fechaFormateada = this.formatearFechaMMDD(fechaInput);
 
     if (!fechaFormateada) {
       alert('La fecha seleccionada no es válida.');
@@ -750,9 +758,13 @@ class PantallaModerador {
     }
   }
 
-  agregarRangoNoLaboral(inicioISO, finISO) {
-    let cursor = new Date(`${inicioISO}T00:00:00`);
-    const fin = new Date(`${finISO}T00:00:00`);
+  agregarRangoNoLaboral(inicioInput, finInput) {
+    let cursor = this.parsearFechaNoLaboral(inicioInput);
+    const fin = this.parsearFechaNoLaboral(finInput);
+
+    if (!cursor || !fin) {
+      return;
+    }
 
     while (cursor <= fin) {
       const yyyy = cursor.getFullYear();
@@ -764,10 +776,48 @@ class PantallaModerador {
   }
 
   formatearFechaMMDD(fechaISO) {
-    if (!fechaISO || !fechaISO.includes('-')) return null;
-    const [, mes, dia] = fechaISO.split('-');
-    if (!mes || !dia) return null;
-    return `${dia}/${mes}`;
+    if (!fechaISO) return null;
+
+    if (fechaISO.includes('/')) {
+      const [dia, mes] = fechaISO.split('/').map((p) => p.trim());
+      if (!dia || !mes) return null;
+      const dd = String(parseInt(dia, 10)).padStart(2, '0');
+      const mm = String(parseInt(mes, 10)).padStart(2, '0');
+      if (!this.esFechaDiaMesValida(dd, mm)) return null;
+      return `${dd}/${mm}`;
+    }
+
+    if (fechaISO.includes('-')) {
+      const [, mes, dia] = fechaISO.split('-');
+      if (!mes || !dia) return null;
+      if (!this.esFechaDiaMesValida(dia, mes)) return null;
+      return `${dia}/${mes}`;
+    }
+
+    return null;
+  }
+
+  parsearFechaNoLaboral(fechaInput) {
+    const fechaNormalizada = this.formatearFechaMMDD(fechaInput);
+    if (!fechaNormalizada) return null;
+
+    const [dia, mes] = fechaNormalizada.split('/').map(Number);
+    const fecha = new Date(2000, mes - 1, dia);
+    if (fecha.getMonth() + 1 !== mes || fecha.getDate() !== dia) {
+      return null;
+    }
+
+    return fecha;
+  }
+
+  esFechaDiaMesValida(dia, mes) {
+    const dd = Number(dia);
+    const mm = Number(mes);
+    if (!Number.isInteger(dd) || !Number.isInteger(mm)) return false;
+    if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return false;
+
+    const fecha = new Date(2000, mm - 1, dd);
+    return fecha.getMonth() + 1 === mm && fecha.getDate() === dd;
   }
 
   renderDiasNoLaboralesEnModal(modal) {
