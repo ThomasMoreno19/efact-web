@@ -113,9 +113,12 @@ class ModalCarrito {
     const ahora = new Date();
     const dd = String(ahora.getDate()).padStart(2, '0');
     const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+    const yyyy = String(ahora.getFullYear());
     const hoyDm = `${dd}/${mm}`;
+    const hoyCompleta = `${dd}/${mm}/${yyyy}`;
 
-    return (this.horarios.noLab || []).includes(hoyDm);
+    const noLab = this.horarios.noLab || [];
+    return noLab.includes(hoyCompleta) || noLab.includes(hoyDm);
   }
 
 

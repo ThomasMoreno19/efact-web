@@ -302,21 +302,14 @@ class EmpresaRepositorio {
     try {
       $this->pdo->beginTransaction();
 
-      $anioActual = date('Y');
-
-      // BORRAR SOLO LOS DEL AÑO ACTUAL
+      // Reemplazar la lista completa de la empresa.
       $stmtDelete = $this->pdo->prepare(
         "DELETE FROM dias_no_laborales_empresa
-        WHERE id_empresa = :id_empresa
-        AND dia_mes LIKE :anio"
+        WHERE id_empresa = :id_empresa"
       );
-
-      $like = "%/$anioActual";
       $stmtDelete->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-      $stmtDelete->bindParam(':anio', $like, PDO::PARAM_STR);
       $stmtDelete->execute();
 
-      // INSERT
       $stmtInsert = $this->pdo->prepare(
         "INSERT INTO dias_no_laborales_empresa (id_empresa, dia_mes)
         VALUES (:id_empresa, :dia_mes)"
@@ -325,42 +318,31 @@ class EmpresaRepositorio {
       $diasLimpios = [];
 
       foreach ($dias_no_laborales as $dia_mes) {
-
-        // Valida DD/MM
-        if (!is_string($dia_mes) || !preg_match('/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])$/', $dia_mes)) {
+        if (!is_string($dia_mes) || !preg_match('/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/', $dia_mes)) {
           throw new Exception("Formato inválido de día no laboral: $dia_mes");
         }
 
-        // Armamos DD/MM/YYYY
-        $diaCompleto = $dia_mes . "/" . $anioActual;
-
-        // Evitar duplicados
-        $diasLimpios[$diaCompleto] = true;
+        $diasLimpios[$dia_mes] = true;
       }
 
-      // Ordenar por mes/día
       $diasOrdenados = array_keys($diasLimpios);
       usort($diasOrdenados, function($a, $b) {
-        // a = DD/MM/YYYY
-        [$da, $ma] = explode('/', $a);
-        [$db, $mb] = explode('/', $b);
+        [$da, $ma, $ya] = explode('/', $a);
+        [$db, $mb, $yb] = explode('/', $b);
 
+        if ((int)$ya !== (int)$yb) return (int)$ya - (int)$yb;
         if ((int)$ma !== (int)$mb) return (int)$ma - (int)$mb;
         return (int)$da - (int)$db;
       });
 
-      foreach ($diasOrdenados as $diaCompleto) {
+      foreach ($diasOrdenados as $diaMes) {
         $stmtInsert->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-        $stmtInsert->bindParam(':dia_mes', $diaCompleto, PDO::PARAM_STR);
+        $stmtInsert->bindParam(':dia_mes', $diaMes, PDO::PARAM_STR);
         $stmtInsert->execute();
       }
 
       $this->pdo->commit();
-
-      // DEVOLVER al front como DD/MM (sin año)
-      return array_map(function($x) {
-        return substr($x, 0, 5); // "DD/MM"
-      }, $diasOrdenados);
+      return $diasOrdenados;
 
     } catch (Exception $e) {
       if ($this->pdo->inTransaction()) {
@@ -375,12 +357,11 @@ class EmpresaRepositorio {
     try {
       $stmt = $this->pdo->prepare(
         "SELECT
-          SUBSTRING(d.dia_mes, 1, 5) AS dia_mes
+          d.dia_mes AS dia_mes
         FROM dias_no_laborales_empresa d
         WHERE d.id_empresa = :id_empresa
-          AND SUBSTRING(d.dia_mes, 7, 4) = YEAR(CURDATE())
-        ORDER BY d.dia_mes ASC
-      ");
+        ORDER BY STR_TO_DATE(d.dia_mes, '%d/%m/%Y') ASC"
+      );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
 
@@ -391,7 +372,6 @@ class EmpresaRepositorio {
       throw $e;
     }
   }
-
 
   public function obtenerHorariosYDiasNoLaborales(int $id_empresa): array {
     try {

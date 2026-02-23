@@ -656,7 +656,11 @@ class PantallaModerador {
 
     try {
       this.diasNoLaboralesGuardados = Array.isArray(this.horarios.noLab)
-        ? [...new Set(this.horarios.noLab)]
+        ? [...new Set(
+            this.horarios.noLab
+              .map((f) => this.normalizarFechaNoLaboralAlCargar(f))
+              .filter(Boolean)
+          )]
         : [];
     } catch (error) {
       this.diasNoLaboralesGuardados = [];
@@ -709,12 +713,16 @@ class PantallaModerador {
       const fechaFin = this.parsearFechaNoLaboral(hasta);
 
       if (!fechaInicio || !fechaFin) {
-        alert('Las fechas deben tener formato DD/MM.');
+        alert('Las fechas deben tener formato DD/MM/YYYY.');
         return;
       }
 
       if (fechaInicio > fechaFin) {
         alert('La fecha de inicio no puede ser mayor a la fecha de fin.');
+        return;
+      }
+
+      if (!this.confirmarAnioSiCorresponde([desde, hasta])) {
         return;
       }
 
@@ -736,7 +744,11 @@ class PantallaModerador {
         await this.gestor.guardarDiasNoLaborales(this.diasNoLaboralesGuardados, this.empresa.id);
         this.horarios = await this.gestor.obtenerHorarios(this.empresa.id); // Actualizamos los horarios con lo que se guardó
         this.diasNoLaboralesGuardados = Array.isArray(this.horarios.noLab)
-        ? [...new Set(this.horarios.noLab)]
+        ? [...new Set(
+            this.horarios.noLab
+              .map((f) => this.normalizarFechaNoLaboralAlCargar(f))
+              .filter(Boolean)
+          )]
         : [];
         alert('Días no laborales guardados correctamente ✔️');
       } catch (error) {
@@ -745,11 +757,15 @@ class PantallaModerador {
     });
   }
 
-  agregarFechaNoLaboral(fechaInput) {
-    const fechaFormateada = this.formatearFechaMMDD(fechaInput);
+  agregarFechaNoLaboral(fechaInput, validarAnio = true) {
+    const fechaFormateada = this.formatearFechaCompleta(fechaInput);
 
     if (!fechaFormateada) {
       alert('La fecha seleccionada no es válida.');
+      return;
+    }
+
+    if (validarAnio && !this.confirmarAnioSiCorresponde([fechaFormateada])) {
       return;
     }
 
@@ -770,54 +786,111 @@ class PantallaModerador {
       const yyyy = cursor.getFullYear();
       const mm = String(cursor.getMonth() + 1).padStart(2, '0');
       const dd = String(cursor.getDate()).padStart(2, '0');
-      this.agregarFechaNoLaboral(`${yyyy}-${mm}-${dd}`);
+      this.agregarFechaNoLaboral(`${dd}/${mm}/${yyyy}`, false);
       cursor.setDate(cursor.getDate() + 1);
     }
   }
 
-  formatearFechaMMDD(fechaISO) {
+  formatearFechaCompleta(fechaISO) {
     if (!fechaISO) return null;
+    const fecha = String(fechaISO).trim();
+    const partesNumericas = fecha.match(/\d+/g) || [];
 
-    if (fechaISO.includes('/')) {
-      const [dia, mes] = fechaISO.split('/').map((p) => p.trim());
-      if (!dia || !mes) return null;
-      const dd = String(parseInt(dia, 10)).padStart(2, '0');
-      const mm = String(parseInt(mes, 10)).padStart(2, '0');
-      if (!this.esFechaDiaMesValida(dd, mm)) return null;
-      return `${dd}/${mm}`;
+    // Soporta DD/MM/YYYY, DD-MM-YYYY, DDMMYYYY, y YYYY-MM-DD.
+    if (partesNumericas.length === 3) {
+      const [a, b, c] = partesNumericas;
+      let dd = '';
+      let mm = '';
+      let yyyy = '';
+
+      if (a.length === 4) {
+        yyyy = a;
+        mm = b;
+        dd = c;
+      } else {
+        dd = a;
+        mm = b;
+        yyyy = c;
+      }
+
+      const ddNorm = String(parseInt(dd, 10)).padStart(2, '0');
+      const mmNorm = String(parseInt(mm, 10)).padStart(2, '0');
+      const yyyyNorm = String(parseInt(yyyy, 10)).padStart(4, '0');
+      if (!this.esFechaCompletaValida(ddNorm, mmNorm, yyyyNorm)) return null;
+      return `${ddNorm}/${mmNorm}/${yyyyNorm}`;
     }
 
-    if (fechaISO.includes('-')) {
-      const [, mes, dia] = fechaISO.split('-');
-      if (!mes || !dia) return null;
-      if (!this.esFechaDiaMesValida(dia, mes)) return null;
-      return `${dia}/${mes}`;
+    if (/^\d{8}$/.test(fecha)) {
+      const dd = fecha.slice(0, 2);
+      const mm = fecha.slice(2, 4);
+      const yyyy = fecha.slice(4, 8);
+      if (!this.esFechaCompletaValida(dd, mm, yyyy)) return null;
+      return `${dd}/${mm}/${yyyy}`;
     }
 
     return null;
   }
 
+  normalizarFechaNoLaboralAlCargar(fechaInput) {
+    const completa = this.formatearFechaCompleta(fechaInput);
+    if (completa) return completa;
+
+    const fecha = String(fechaInput || '').trim();
+    const partes = fecha.match(/\d+/g) || [];
+    if (partes.length !== 2) return null;
+
+    const dd = String(parseInt(partes[0], 10)).padStart(2, '0');
+    const mm = String(parseInt(partes[1], 10)).padStart(2, '0');
+    const yyyy = String(new Date().getFullYear());
+    if (!this.esFechaCompletaValida(dd, mm, yyyy)) return null;
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
   parsearFechaNoLaboral(fechaInput) {
-    const fechaNormalizada = this.formatearFechaMMDD(fechaInput);
+    const fechaNormalizada = this.formatearFechaCompleta(fechaInput);
     if (!fechaNormalizada) return null;
 
-    const [dia, mes] = fechaNormalizada.split('/').map(Number);
-    const fecha = new Date(2000, mes - 1, dia);
-    if (fecha.getMonth() + 1 !== mes || fecha.getDate() !== dia) {
+    const [dia, mes, anio] = fechaNormalizada.split('/').map(Number);
+    const fecha = new Date(anio, mes - 1, dia);
+    if (
+      fecha.getFullYear() !== anio ||
+      fecha.getMonth() + 1 !== mes ||
+      fecha.getDate() !== dia
+    ) {
       return null;
     }
 
     return fecha;
   }
 
-  esFechaDiaMesValida(dia, mes) {
+  esFechaCompletaValida(dia, mes, anio) {
     const dd = Number(dia);
     const mm = Number(mes);
-    if (!Number.isInteger(dd) || !Number.isInteger(mm)) return false;
+    const yyyy = Number(anio);
+    if (!Number.isInteger(dd) || !Number.isInteger(mm) || !Number.isInteger(yyyy)) return false;
     if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return false;
+    if (yyyy < 1000 || yyyy > 9999) return false;
 
-    const fecha = new Date(2000, mm - 1, dd);
-    return fecha.getMonth() + 1 === mm && fecha.getDate() === dd;
+    const fecha = new Date(yyyy, mm - 1, dd);
+    return (
+      fecha.getFullYear() === yyyy &&
+      fecha.getMonth() + 1 === mm &&
+      fecha.getDate() === dd
+    );
+  }
+
+  confirmarAnioSiCorresponde(fechas) {
+    const anioActual = new Date().getFullYear();
+    const hayAnioDistinto = (fechas || []).some((fechaInput) => {
+      const fecha = this.formatearFechaCompleta(fechaInput);
+      if (!fecha) return false;
+      const anio = Number(fecha.split('/')[2]);
+      return anio !== anioActual;
+    });
+
+    if (!hayAnioDistinto) return true;
+
+    return confirm('La fecha actual pertenece a un año diferente al actual, está seguro que desea registrarlo?');
   }
 
   renderDiasNoLaboralesEnModal(modal) {
@@ -838,10 +911,9 @@ class PantallaModerador {
     if (btnGuardar) btnGuardar.disabled = false;
 
     const ordenados = [...this.diasNoLaboralesGuardados].sort((a, b) => {
-      const [diaA, mesA] = a.split('/').map(Number);
-      const [diaB, mesB] = b.split('/').map(Number);
-      if (mesA !== mesB) return mesA - mesB;
-      return diaA - diaB;
+      const fechaA = this.parsearFechaNoLaboral(a);
+      const fechaB = this.parsearFechaNoLaboral(b);
+      return (fechaA?.getTime() || 0) - (fechaB?.getTime() || 0);
     });
 
     ordenados.forEach((fecha) => {
@@ -1132,3 +1204,4 @@ document.addEventListener('DOMContentLoaded', async () => {
   await pantalla.init();
   pantalla.habilitarVentanaPrincipal();
 });
+
