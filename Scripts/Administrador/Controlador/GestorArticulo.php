@@ -252,13 +252,11 @@ class GestorArticulo {
         $pattern = $cacheDir . "articulos_rubro_*_empresa_{$id_empresa}.json";
     
         $archivos = glob($pattern);
-        if (!$archivos) {
-            return; // si no hay archivos, simplemente termina
-        }
-    
-        foreach ($archivos as $archivo) {
-            if (file_exists($archivo)) {
-                @unlink($archivo); // el @ evita warnings si ya fue borrado
+        if ($archivos) {
+            foreach ($archivos as $archivo) {
+                if (file_exists($archivo)) {
+                    @unlink($archivo); // el @ evita warnings si ya fue borrado
+                }
             }
         }
 
@@ -273,13 +271,11 @@ class GestorArticulo {
         $pattern = $cacheDir . "articulos_rubro_{$id_rubro}_empresa_*.json";
     
         $archivos = glob($pattern);
-        if (!$archivos) {
-            return;
-        }
-    
-        foreach ($archivos as $archivo) {
-            if (file_exists($archivo)) {
-                @unlink($archivo);
+        if ($archivos) {
+            foreach ($archivos as $archivo) {
+                if (file_exists($archivo)) {
+                    @unlink($archivo);
+                }
             }
         }
 

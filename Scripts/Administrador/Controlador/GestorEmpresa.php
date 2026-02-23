@@ -298,6 +298,7 @@ class GestorEmpresa {
 
     try {
       $empresaModificada = $this->empresaRepositorio->modificarLogo($id, $logo_url);
+      $this->borrarCacheEmpresa((int)$id);
       echo json_encode($empresaModificada);
     } catch (Exception $e) {
       http_response_code(500);
@@ -359,6 +360,7 @@ class GestorEmpresa {
 
     try {
       $this->empresaRepositorio->guardarHorarios($id_empresa, $horarios);
+      $this->borrarCacheEmpresa($id_empresa);
       http_response_code(200);
       echo json_encode(true);
     } catch (Exception $e) {
@@ -383,6 +385,7 @@ class GestorEmpresa {
 
     try {
       $diasGuardados = $this->empresaRepositorio->guardarDiasNoLaborales($id_empresa, $dias_no_laborales);
+      $this->borrarCacheEmpresa($id_empresa);
       http_response_code(200);
       echo json_encode([
         'message' => 'Días no laborales guardados correctamente.',

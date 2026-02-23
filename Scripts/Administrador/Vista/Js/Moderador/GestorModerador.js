@@ -65,13 +65,16 @@ class GestorModerador {
         );
     }
     
-    borrarCacheRubroYArticulo(id_empresa) {
+    borrarCachePorEmpresa(id_empresa, incluirEmpresa = true) {
         if (!id_empresa) {
             console.warn("❗ No se proporcionó id_empresa para borrar el caché");
             return;
         }
     
         const keysToRemove = [];
+        const prefijos = incluirEmpresa
+            ? ["rubros_", "articulos_", "articulos_empresa_", "empresa_", "horarios_", "dias_no_laborales_"]
+            : ["rubros_", "articulos_", "articulos_empresa_"];
     
         // Recorremos todas las claves del localStorage
         for (let i = 0; i < localStorage.length; i++) {
@@ -81,7 +84,7 @@ class GestorModerador {
             if (
                 key &&
                 key.includes(`empresa${id_empresa}`) &&
-                (key.startsWith("rubros_") || key.startsWith("articulos_") || key.startsWith("articulos_empresa_"))
+                prefijos.some((prefijo) => key.startsWith(prefijo))
             ) {
                 keysToRemove.push(key);
             }
@@ -95,6 +98,10 @@ class GestorModerador {
     
         // Eliminamos las claves encontradas
         keysToRemove.forEach(k => localStorage.removeItem(k));
+    }
+
+    borrarCacheRubroYArticulo(id_empresa) {
+        this.borrarCachePorEmpresa(id_empresa, false);
     }
 
 
@@ -164,7 +171,9 @@ class GestorModerador {
             }
             
             // 2. Await the .json() call to get the data
-            return await response.json();
+            const data = await response.json();
+            this.borrarCachePorEmpresa(id_empresa);
+            return data;
             
         } catch(error){
             console.error('Error al cambiar el logo de la empresa ', id_empresa, ':', error);
@@ -242,7 +251,9 @@ class GestorModerador {
 
                     // Resolve the promise based on the results of both calls
                     if (booleanoArticulos) {
-                        resolve(await this.borrarRubrosYArtNoUtilizados(id_empresa));
+                        const resultado = await this.borrarRubrosYArtNoUtilizados(id_empresa);
+                        this.borrarCachePorEmpresa(id_empresa);
+                        resolve(resultado);
                     } else {
                         reject(new Error('Algunos datos no se pudieron cargar correctamente.'));
                     }
@@ -375,7 +386,7 @@ class GestorModerador {
         }
     }
     
-    async modificarArticulo(id, id_rubro, nombre, descripcion, precio, codigo_carta = '') {
+    async modificarArticulo(id, id_rubro, id_empresa, nombre, descripcion, precio, codigo_carta = '') {
         const bodyData = {
             id: id,
             id_rubro: id_rubro,
@@ -399,6 +410,7 @@ class GestorModerador {
 
             // El backend debe devolver el objeto del nuevo moderador creado.
             const articulo = await response.json();
+            this.borrarCachePorEmpresa(id_empresa);
             return articulo;
 
         } catch (error) {
@@ -436,6 +448,7 @@ class GestorModerador {
 
             // El backend debe devolver el objeto del nuevo moderador creado.
             const rubro = await response.json();
+            this.borrarCachePorEmpresa(id_empresa);
             return rubro;
 
         } catch (error) {
@@ -516,6 +529,7 @@ class GestorModerador {
             
             // El backend debe devolver el objeto de la nueva empresa creada.
             const empresa = await response.json();
+            this.borrarCachePorEmpresa(id);
             return empresa;   
             
         } catch (error) {   
@@ -587,7 +601,9 @@ class GestorModerador {
             throw new Error(err.error || 'Error guardando horarios');
         }
 
-        return await response.json();
+        const data = await response.json();
+        this.borrarCachePorEmpresa(id_empresa);
+        return data;
     }
 
     async guardarDiasNoLaborales(dias_no_laborales, id_empresa) {
@@ -608,7 +624,9 @@ class GestorModerador {
             throw new Error(err.error || 'Error guardando días no laborales');
         }
 
-        return await response;
+        const data = await response.json();
+        this.borrarCachePorEmpresa(id_empresa);
+        return data;
     }
 
     async obtenerHorarios(id_empresa) {

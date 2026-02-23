@@ -271,6 +271,7 @@ class PantallaModerador {
         await this.gestor.modificarArticulo(
           articulo.id,
           articulo.id_rubro,
+          this.empresa.id,
           formData.get('nombre'),
           formData.get('descripcion') || '',
           formData.get('precio'),
@@ -401,11 +402,18 @@ class PantallaModerador {
         const usuario = formData.get('usuario');
         const contrasena = formData.get('contrasena');
         const contrasenaMesero = formData.get('contrasenaMesero');
+        const imagen = formData.get('imagen');
         
         try {
           // Llamamos al método del gestor con el nombre y el archivo.
           await this.gestor.modificarModerador(moderador.id, usuario, contrasena);
           await this.gestor.modificarEmpresa(this.empresa.id, nombre, telefono, ubicacion, efectivo, tarjeta, transferencia, contrasenaMesero);
+          if (imagen && imagen.size > 0) {
+            const empresaConNuevoLogo = await this.gestor.cambiarLogoEmpresa(this.empresa.id, imagen, nombre);
+            if (empresaConNuevoLogo?.logo_url) {
+              this.empresa.logo_url = empresaConNuevoLogo.logo_url;
+            }
+          }
           this.empresa.update(nombre, telefono, ubicacion, efectivo, tarjeta, transferencia);
           modal.classList.add('hidden');
           document.body.removeChild(modal);
