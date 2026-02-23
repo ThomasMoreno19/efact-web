@@ -19,23 +19,6 @@ class GestorAdministrador {
       }
     }
     
-    async mostrarListaModeradores() {
-      try {
-        const response = await fetch('/moderador/mostrar');
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
-          throw new Error(`Error al obtener moderadores: ${response.status} - ${errorData.error || errorData.message}`);
-        }
-        return await response.json();
-          
-      } catch (error) {
-        console.error('Error cargando la lista de moderadores:', error);
-        // Propagamos el error para que la Pantalla lo maneje
-        throw error;
-      }
-    }
-    
     async subirImagen(id_empresa, archivoImagen) {
       
       const bodyData = {

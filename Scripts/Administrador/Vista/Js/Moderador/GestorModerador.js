@@ -442,11 +442,11 @@ class GestorModerador {
             });
 
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'Error desconocido al modificar articulo' }));
-                throw new Error(errorData.message || `Error al crear el moderador: ${response.status}`);
+                const errorData = await response.json().catch(() => ({ message: 'Error desconocido al modificar rubro' }));
+                throw new Error(errorData.message || `Error al modificar el rubro: ${response.status}`);
             }
 
-            // El backend debe devolver el objeto del nuevo moderador creado.
+            // El backend debe devolver el objeto del nuevo rubro modificado.
             const rubro = await response.json();
             this.borrarCachePorEmpresa(id_empresa);
             return rubro;
@@ -514,7 +514,7 @@ class GestorModerador {
             transferencia: transferencia,
             contrasenaMesero: contrasenaMesero
         };
-        
+
         try {
             const response = await fetch(`/empresa/modificar-para-moderador`, {
                 method: 'POST',
@@ -662,7 +662,6 @@ class GestorModerador {
 
             // Verifica si la respuesta HTTP es exitosa
             if (!responseBack.ok || !response) {
-                console.log("enviando al metodo loguearAdministrador")
                 return this.loguearAdministrador(nombre, contrasena);
             }
             
