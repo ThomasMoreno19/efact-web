@@ -326,3 +326,11 @@
 .rangos-horario{
     margin-bottom: 5px;
 }
+
+.par {
+    background-color: #2a2a2a;
+}
+
+.impar {
+    background-color: #363636;
+}

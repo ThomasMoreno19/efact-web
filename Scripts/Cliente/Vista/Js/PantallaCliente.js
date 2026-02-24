@@ -32,6 +32,7 @@ class PantallaCliente {
       this.horarios = { horarios: [], noLab: [] };
       // Almacenamiento de referencias a los elementos del DOM
       this.todosLosArticulos = [];
+      this.clonesSeleccionados = [];
       this.todosLosRubros = [];
       this.enVistaRubro = false;
 
@@ -282,6 +283,7 @@ class PantallaCliente {
 
         const clon = articulo.cloneNode(true);
         clon.addEventListener('click', () => {
+          this.clonesSeleccionados.push(clon);
           const id = Number(clon.dataset.articuloId);
           if (!this.listaArticulosSeleccionados.includes(id)) {
             clon.classList.add('seleccionado');
@@ -290,6 +292,7 @@ class PantallaCliente {
             this.seleccionarArticulo(id);
           }
           else {
+            this.clonesSeleccionados = this.clonesSeleccionados.filter(c => c.dataset.articuloId != id);
             clon.classList.remove('seleccionado');
             this.carrito.eliminarArticulo(id);
             this.listaArticulosSeleccionados =
@@ -374,6 +377,7 @@ class PantallaCliente {
       articulosFiltrados.forEach(a => {
         const clon = a.cloneNode(true);
         clon.addEventListener('click', () => {
+          this.clonesSeleccionados.push(clon);
           const id = Number(clon.dataset.articuloId);
           if (!this.listaArticulosSeleccionados.includes(id)) {
             clon.classList.add('seleccionado');
@@ -382,6 +386,7 @@ class PantallaCliente {
             this.seleccionarArticulo(id);
           }
           else {
+            this.clonesSeleccionados = this.clonesSeleccionados.filter(c => c.dataset.articuloId != id);
             clon.classList.remove('seleccionado');
             this.carrito.eliminarArticulo(id);
             this.listaArticulosSeleccionados =
@@ -706,7 +711,6 @@ class PantallaCliente {
     }
 
     articuloSeleccionadoPorId(idArticulo) {
-
       const articulo = this.todosLosArticulos.find(a => a.dataset.articuloId == idArticulo);
       articulo.precio = this.carrito.eliminarPuntoPrecio(articulo.dataset.precio);
       const index = this.listaArticulosSeleccionados.findIndex(id => {
@@ -762,10 +766,17 @@ class PantallaCliente {
 
 
     removerSeleccionVisual(idArticulo) {
+      idArticulo = Number(idArticulo);
       // sacar de listaArticulosSeleccionados
       this.listaArticulosSeleccionados = 
         this.listaArticulosSeleccionados.filter(id => id !== idArticulo);
 
+      const clon = this.clonesSeleccionados.find(c => c.dataset.articuloId == idArticulo);
+      if (clon) {
+        clon.classList.remove('seleccionado');
+        clon.classList.remove('pulse');
+        this.clonesSeleccionados = this.clonesSeleccionados.filter(c => c.dataset.articuloId != idArticulo);
+      }
       // quitar clase 'seleccionado' del DOM
       const elemento = this.todosLosArticulos
         .find(e => e.dataset.articuloId == idArticulo);
@@ -778,7 +789,6 @@ class PantallaCliente {
       // actualizar contador del carrito
       this.cantidadArticulosCarrito.textContent = 
         this.listaArticulosSeleccionados.length;
-
       // ocultar botón si no quedan artículos
       if (this.listaArticulosSeleccionados.length === 0) {
         this.botonCarrito.classList.add('hidden');

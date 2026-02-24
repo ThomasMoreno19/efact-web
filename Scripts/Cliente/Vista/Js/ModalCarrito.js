@@ -18,6 +18,7 @@ class ModalCarrito {
       numeroMesa: null
     };
     this.horarios = horarios || [];
+    this.handleEnviarClick = this.enviarPedidoWhatsApp.bind(this);
   }
 
   abrirModalCarrito() {
@@ -63,7 +64,7 @@ class ModalCarrito {
           
           <p id="mensaje-fuera-horario" class="hidden mensaje-fuera-horario"></p>
           <button class = "boton hidden" id="boton-finalizar-compra">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48">
               <!-- ICONO WHATSAPP -->
               <path fill="#fff" d="M4.868,43.303l2.694-9.835C5.9,30.59,5.026,27.324,5.027,23.979C5.032,13.514,13.548,5,24.014,5c5.079,0.002,9.845,1.979,13.43,5.566c3.584,3.588,5.558,8.356,5.556,13.428c-0.004,10.465-8.522,18.98-18.986,18.98c-0.001,0,0,0,0,0h-0.008c-3.177-0.001-6.3-0.798-9.073-2.311L4.868,43.303z"></path>
               <path fill="#40c351" d="M35.176,12.832c-2.98-2.982-6.941-4.625-11.157-4.626c-8.704,0-15.783,7.076-15.787,15.774
@@ -330,8 +331,6 @@ class ModalCarrito {
   }
 
 
-
-
   renderCarrito() {
     const cuerpo = document.getElementById("cuerpo-tabla-carrito");
     const totalSpan = document.querySelector("#monto-total-carrito");
@@ -352,10 +351,13 @@ class ModalCarrito {
       this.botonEnviar.disabled = true;
       this.botonSigPaso?.classList.remove("boton-deshabilitado-horario");
       this.botonSigPaso && (this.botonSigPaso.disabled = true);
+      this.botonSigPaso?.classList.add("desactivado");
       const msg = this.wrapper?.querySelector("#mensaje-fuera-horario");
       if (msg) { msg.classList.add("hidden"); msg.innerHTML = ""; }
       totalSpan.textContent = this.carrito.obtenerTotal() || "0.00";
       return;
+    }else {
+      this.botonSigPaso?.classList.remove("desactivado");
     }
     if (this.esMesero) {
       this.botonEnviar.classList.remove("hidden");
@@ -367,7 +369,7 @@ class ModalCarrito {
 
     this.actualizarDisponibilidadPedido();
 
-    articulos.forEach(articulo => {
+    articulos.forEach((articulo, index) => {
 
       if (typeof articulo.cantidad === "undefined")
         articulo.cantidad = 1;
@@ -382,6 +384,8 @@ class ModalCarrito {
 
       const bloque = document.createElement("div");
       bloque.classList.add("bloque-articulo");
+      // ✅ Agregar clase par o impar
+      bloque.classList.add(index % 2 === 0 ? "par" : "impar");
 
       bloque.innerHTML = `
         <div class="fila-articulo">
@@ -503,6 +507,7 @@ class ModalCarrito {
 
 
   renderDatosPersonales() {
+    this.pendiente = [];
     const listaArticulos = document.getElementById("lista-articulos-wrapper");
     const botonVolver = document.getElementById("boton-volver-carrito");
     const titulo = document.getElementById("titulo-modal-carrito");
@@ -615,13 +620,6 @@ class ModalCarrito {
 
     this.tomarDatosPersonales();
     this.renderizadorFormulario(botonVolver, listaArticulos, titulo, wrapper);
-
-
-    const botonEnviarPedido = document.getElementById("boton-finalizar-compra");
-    botonEnviarPedido.removeEventListener("click", this.onEnviarPedido);
-    botonEnviarPedido.addEventListener("click", () => {
-      this.enviarPedidoWhatsApp();
-    });
   }
 
   inicializarEventos() {
@@ -924,14 +922,23 @@ class ModalCarrito {
     const DOMDireccion = document.getElementById("direccion-cliente");
     const DOMEspecificaciones = document.getElementById("especificaciones-direccion");
 
+    this.pendiente.push('btnTipoEntrega');
     btnDelivery.addEventListener("click", () => {
       if (btnDelivery.classList.contains("active")) {
         DOMDireccion.classList.remove("hidden");
         DOMEspecificaciones.classList.remove("hidden");
+        this.pendiente = this.pendiente.filter(p => p !== 'btnTipoEntrega');
+        this.pendiente.push('direccion');
+        DOMDireccion.addEventListener("input", () => {
+          if (DOMDireccion.value !== "")
+          this.pendiente = this.pendiente.filter(p => p !== 'direccion')
+        });
       } else {
+        DOMDireccion.removeEventListener("input", () => {});
         DOMDireccion.classList.add("hidden");
         DOMEspecificaciones.classList.add("hidden");
       }
+      this.verificarPendientes();
     });
 
     const btnRetirar = document.getElementById("btnRetirar");
@@ -940,10 +947,56 @@ class ModalCarrito {
       if (btnRetirar.classList.contains("active")) {
         DOMDireccion.classList.add("hidden");
         DOMEspecificaciones.classList.add("hidden");
+        this.pendiente = this.pendiente.filter(p => p !== 'btnTipoEntrega');
       } else {
         DOMDireccion.classList.remove("hidden");
         DOMEspecificaciones.classList.remove("hidden");
       }
+      this.verificarPendientes();
     });
+
+    const inputNombre = document.getElementById("input-nombre-cliente");
+    this.pendiente.push('nombre');
+    inputNombre.addEventListener("input", () => {
+      if (inputNombre.value.trim() !== "")
+        this.pendiente = this.pendiente.filter(p => p !== 'nombre');
+      else this.pendiente.push('nombre');
+      this.verificarPendientes();
+    });
+
+    const inputTelefono = document.getElementById("input-telefono-cliente");
+    this.pendiente.push('telefono');
+    inputTelefono.addEventListener("input", () => {
+      if (inputTelefono.value.replace(/\D/g, "") !== "")
+        this.pendiente = this.pendiente.filter(p => p !== 'telefono');
+      else this.pendiente.push('telefono');
+      this.verificarPendientes();
+    });
+    this.pendiente.push('metodoPago');
+
+    const botonesMetodosPago = document.querySelectorAll(".btnes-metodos-pago");
+    botonesMetodosPago.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.classList.contains("active")) {
+          this.pendiente = this.pendiente.filter(p => p !== 'metodoPago');
+
+        } else {
+          this.pendiente.push('metodoPago');
+        }
+        this.verificarPendientes();
+      });
+     });
+    this.botonEnviar.classList.add('desactivado');
+  }
+
+  verificarPendientes() {
+    this.botonEnviar.removeEventListener("click", this.handleEnviarClick);
+
+    if (this.pendiente.length === 0) {
+      this.botonEnviar.classList.remove('desactivado');
+      this.botonEnviar.addEventListener("click", this.handleEnviarClick);
+    } else {
+      this.botonEnviar.classList.add('desactivado');
+    }
   }
 }

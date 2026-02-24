@@ -153,7 +153,7 @@ class GestorEmpresa {
     $efectivo       = filter_var($_POST['efectivo'], FILTER_VALIDATE_BOOLEAN);
     $tarjeta        = filter_var($_POST['tarjeta'], FILTER_VALIDATE_BOOLEAN);
     $transferencia  = filter_var($_POST['transferencia'], FILTER_VALIDATE_BOOLEAN);
-    $contrasenaMesero = trim($_POST['contrasenaMesero'] ?? '');
+    $contrasenaMesero = trim($_POST['contrasenaMesero']);
     $imagen = null;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -190,7 +190,8 @@ class GestorEmpresa {
         'tarjeta' => $empresa['tarjeta'],
         'transferencia' => $empresa['transferencia'],
         'fecha_creacion' => $empresa['fecha_creacion'],
-        'logo_url' => $empresa['logo_url']
+        'logo_url' => $empresa['logo_url'],
+        'contrasenaMesero' => $empresa['contrasenaMesero']
       ]);
 
     } catch (Exception $e) {
@@ -213,7 +214,7 @@ class GestorEmpresa {
     $efectivo = filter_var($_POST['efectivo'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $tarjeta = filter_var($_POST['tarjeta'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $transferencia = filter_var($_POST['transferencia'] ?? false, FILTER_VALIDATE_BOOLEAN);
-    $contrasenaMesero = trim($_POST['contrasenaMesero'] ?? '');
+    $contrasenaMesero = trim($_POST['contrasenaMesero']);
     $imagen = null;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
