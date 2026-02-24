@@ -3,18 +3,18 @@
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/pantalla.css">
-      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/ListaArticulos.css?v=1.1">
-      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesAlta.css">
-      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesMostrarLista.css">
-      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonCargar.css">
-      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BarraBusqueda.css">
-      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/BotonVolver.css">
-      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/MadeBy.css">
-      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/Loader.css">
-      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/modalCarrito.css">
-      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/modalPedirNombreYTel.css">
-      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/formgroup.css">
+      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/pantalla.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/ListaArticulos.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesAlta.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesMostrarLista.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonCargar.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BarraBusqueda.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/BotonVolver.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/MadeBy.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/Loader.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/modalCarrito.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/modalPedirNombreYTel.css?v=<?php echo APP_VERSION; ?>">
+      <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/formgroup.css?v=<?php echo APP_VERSION; ?>">
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   </head>
   <body>
@@ -72,12 +72,12 @@
       <p><?php echo date('Y'); ?> - IteraciON</p>
     </div>
     
-    <script src="/Scripts/Administrador/Vista/Js/Articulo.js"></script>
-    <script src="/Scripts/Administrador/Vista/Js/Rubro.js"></script>
-    <script src="/Scripts/Administrador/Vista/Js/Empresa.js"></script>
-    <script src="/Scripts/Cliente/Vista/Js/Carrito.js"></script>
-    <script src="/Scripts/Cliente/Vista/Js/ModalCarrito.js"></script>
-    <script src="/Scripts/Cliente/Vista/Js/PantallaCliente.js"></script>
-    <script src="/Scripts/Cliente/Vista/Js/GestorCliente.js"></script>
+    <script src="/Scripts/Administrador/Vista/Js/Articulo.js?v=<?php echo APP_VERSION; ?>"></script>
+    <script src="/Scripts/Administrador/Vista/Js/Rubro.js?v=<?php echo APP_VERSION; ?>"></script>
+    <script src="/Scripts/Administrador/Vista/Js/Empresa.js?v=<?php echo APP_VERSION; ?>"></script>
+    <script src="/Scripts/Cliente/Vista/Js/Carrito.js?v=<?php echo APP_VERSION; ?>"></script>
+    <script src="/Scripts/Cliente/Vista/Js/ModalCarrito.js?v=<?php echo APP_VERSION; ?>"></script>
+    <script src="/Scripts/Cliente/Vista/Js/PantallaCliente.js?v=<?php echo APP_VERSION; ?>"></script>
+    <script src="/Scripts/Cliente/Vista/Js/GestorCliente.js?v=<?php echo APP_VERSION; ?>"></script>
   </body>
 </html>

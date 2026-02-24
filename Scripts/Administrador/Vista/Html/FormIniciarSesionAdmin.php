@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administración - Iniciar Sesión</title>
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/FormIniciarSesion.css"> 
+    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/FormIniciarSesion.css?v=<?php echo APP_VERSION; ?>"> 
     </head>
 <body>
     <div class="login-container">
@@ -46,7 +46,7 @@
         
     </div>
     
-    <script src="/Scripts/Administrador/Vista/Js/Administrador/PantallaIniciarSesionAdmin.js"></script>
-    <script src="/Scripts/Administrador/Vista/Js/Administrador/GestorAdministrador.js"></script>
+    <script src="/Scripts/Administrador/Vista/Js/Administrador/PantallaIniciarSesionAdmin.js?v=<?php echo APP_VERSION; ?>"></script>
+    <script src="/Scripts/Administrador/Vista/Js/Administrador/GestorAdministrador.js?v=<?php echo APP_VERSION; ?>"></script>
 </body>
 </html>

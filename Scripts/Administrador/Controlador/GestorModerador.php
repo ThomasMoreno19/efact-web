@@ -18,20 +18,20 @@ class GestorModerador {
         if (is_numeric($url_segmentada[0])) {
             if (!isset($_SESSION['admin_logueado'])) {
                 if(!isset($_SESSION['moderador_logueado'])){
-                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionModerador.html';
+                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionModerador.php';
                     exit;
                 }
                 
                 if($_SESSION['id_moderador'] != (int)$primer_segmento){
-                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionModerador.html';
+                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionModerador.php';
                     exit;
                 }
                 
-                require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/PantallaModerador.html';
+                require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/PantallaModerador.php';
                 exit;
             }else{
                 if(isset($_SESSION['admin_logueado'])){
-                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/PantallaModerador.html';
+                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/PantallaModerador.php';
                     exit;
                 }
             }

@@ -20,11 +20,11 @@ class GestorAdministrador {
             
             case 'panel':
                 if (!isset($_SESSION['admin_logueado'])) {
-                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionAdmin.html';
+                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionAdmin.php';
                     
                     exit;
                 }
-                require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/PantallaAdministrador.html';
+                require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/PantallaAdministrador.php';
                 break;
             
             case 'login':
@@ -40,11 +40,11 @@ class GestorAdministrador {
             
             default:
                 if (!isset($_SESSION['admin_logueado']) || $_SESSION['admin_logueado'] !== true) {
-                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionAdmin.html';
+                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/FormIniciarSesionAdmin.php';
                     
                     exit;
                 } else{
-                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/PantallaAdministrador.html';
+                    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Vista/Html/PantallaAdministrador.php';
                     exit;
                 }
                 break;
