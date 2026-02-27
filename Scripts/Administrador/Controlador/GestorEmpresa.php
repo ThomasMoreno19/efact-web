@@ -150,6 +150,7 @@ class GestorEmpresa {
     $ubicacion = $_POST['ubicacion'];
     $tieneCarrito   = filter_var($_POST['tieneCarrito'], FILTER_VALIDATE_BOOLEAN);
     $moduloMesero   = filter_var($_POST['moduloMesero'], FILTER_VALIDATE_BOOLEAN);
+    $deshabilitar_excel = filter_var($_POST['deshabilitarExcel'], FILTER_VALIDATE_BOOLEAN);
     $efectivo       = filter_var($_POST['efectivo'], FILTER_VALIDATE_BOOLEAN);
     $tarjeta        = filter_var($_POST['tarjeta'], FILTER_VALIDATE_BOOLEAN);
     $transferencia  = filter_var($_POST['transferencia'], FILTER_VALIDATE_BOOLEAN);
@@ -175,7 +176,7 @@ class GestorEmpresa {
       }
 
       // 4️⃣ Crear la empresa en la base de datos
-      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
+      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $moduloMesero, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
 
       // 5️⃣ Devolver respuesta
       http_response_code(200);
@@ -186,6 +187,7 @@ class GestorEmpresa {
         'ubicacion' => $empresa['ubicacion'],
         'tieneCarrito' => $empresa['tieneCarrito'],
         'moduloMesero' => $empresa['moduloMesero'],
+        'deshabilitar_excel' => $empresa['deshabilitar_excel'],
         'efectivo' => $empresa['efectivo'],
         'tarjeta' => $empresa['tarjeta'],
         'transferencia' => $empresa['transferencia'],
@@ -211,6 +213,7 @@ class GestorEmpresa {
     $telefono = $_POST['telefono'] ?? '';
     $tieneCarrito = filter_var($_POST['tieneCarrito'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $moduloMesero = filter_var($_POST['moduloMesero'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $deshabilitar_excel = filter_var($_POST['deshabilitarExcel'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $efectivo = filter_var($_POST['efectivo'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $tarjeta = filter_var($_POST['tarjeta'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $transferencia = filter_var($_POST['transferencia'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -237,7 +240,7 @@ class GestorEmpresa {
         $logo_url = $this->subirLogo($nombre, $imagen);
       }
       
-      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $efectivo, $tarjeta, $transferencia, $contrasenaMesero, $logo_url);
+      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia, $contrasenaMesero, $logo_url);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);

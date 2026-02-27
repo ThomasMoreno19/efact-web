@@ -43,6 +43,10 @@ class GestorArticulo {
                         $this->mostrarTodosPorEmpresa();
                         break;
 
+                    case 'para-cliente':
+                        $this->mostrarParaCliente();
+                        break;
+
                     default:
                         if (is_numeric($url_segmentada[1])) {
                             $this->obtenerPorId();
@@ -170,38 +174,41 @@ class GestorArticulo {
             echo json_encode(['error' => 'Error al mostrar artículos por empresa: ' . $e->getMessage()]);
         }
     }
-    
-    
-    private function crear(): void {
+
+    private function mostrarParaCliente(): void {
         $datos = json_decode(file_get_contents('php://input'), true);
-        
-        $id = $datos['id'];
-        $id_rubro = $datos['nombre_rubro'];
-        $id_empresa = $datos['id_empresa'];
-        $nombre = $datos['nombre'];
-        $descripcion = $datos['descripcion'];
-        $precio = $datos['precio'];
-        $codigo_carta = $datos['codigo_carta'];
-        
-        if (empty($nombre) || empty($id) || empty($id_rubro) || empty($precio)) {
+
+        $id_empresa = (int)($datos['id_empresa'] ?? 0);
+        if ($id_empresa <= 0) {
             http_response_code(400);
-            echo json_encode(['error' => 'Faltan datos para crear el articulo.']);
+            echo json_encode(['error' => 'Falta id_empresa para mostrar los artículos.']);
+            return;
+        }
+
+        $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/articulos_empresa_{$id_empresa}_cliente.json";
+
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
+            http_response_code(200);
+            echo file_get_contents($cacheFile);
             return;
         }
 
         try {
-            $articulo = $this->articuloRepositorio->crear($id, $id_rubro, $id_empresa, $nombre, $precio, $codigo_carta, $descripcion);
-            echo json_encode([
-            'id' => $articulo['id'],
-            'id_rubro' => $articulo['id_rubro'],
-            'id_empresa' => $articulo['id_empresa'],
-            'nombre' => $articulo['nombre'],
-            'descripcion' => $articulo['descripcion'],
-            'precio' => $articulo['precio'],
-            'codigo_carta' => $articulo['codigo_carta']]);
+            $listaArticulos = $this->articuloRepositorio->obtenerParaCliente($id_empresa);
+
+            foreach ($listaArticulos as &$articulo) {
+                $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
+            }
+            unset($articulo);
+
+            $json = json_encode($listaArticulos);
+            file_put_contents($cacheFile, $json);
+
+            http_response_code(200);
+            echo $json;
         } catch (Exception $e) {
             http_response_code(500);
-            echo json_encode(['error' => 'Error al crear el articulo: ' . $e->getMessage()]);
+            echo json_encode(['error' => 'Error al mostrar artículos por empresa: ' . $e->getMessage()]);
         }
     }
     
@@ -232,7 +239,8 @@ class GestorArticulo {
                 'nombre' => $articulo['nombre_articulo'],
                 'descripcion' => $articulo['descripcion'] ?? '',
                 'precio' => $articulo['precio_articulo'],
-                'codigo_carta' => $articulo['codigo_carta_articulo'] ?? ''
+                'codigo_carta' => $articulo['codigo_carta_articulo'] ?? '',
+                'solo_mesero' => $articulo['publica_art'] ?? 0
             ];
         }
     
@@ -261,32 +269,12 @@ class GestorArticulo {
         }
 
         $cacheEmpresa = $cacheDir . "articulos_empresa_{$id_empresa}.json";
+        $cacheCliente = $cacheDir . "articulos_empresa_{$id_empresa}_cliente.json";
         if (file_exists($cacheEmpresa)) {
             @unlink($cacheEmpresa);
         }
-    }
-    
-    private function borrarCacheDeUnRubro(int $id_rubro): void {
-        $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/";
-        $pattern = $cacheDir . "articulos_rubro_{$id_rubro}_empresa_*.json";
-    
-        $archivos = glob($pattern);
-        if ($archivos) {
-            foreach ($archivos as $archivo) {
-                if (file_exists($archivo)) {
-                    @unlink($archivo);
-                }
-            }
-        }
-
-        $cacheEmpresaPattern = $cacheDir . "articulos_empresa_*.json";
-        $cacheEmpresaArchivos = glob($cacheEmpresaPattern);
-        if ($cacheEmpresaArchivos) {
-            foreach ($cacheEmpresaArchivos as $archivoEmpresa) {
-                if (file_exists($archivoEmpresa)) {
-                    @unlink($archivoEmpresa);
-                }
-            }
+        if (file_exists($cacheCliente)) {
+            @unlink($cacheCliente);
         }
     }
 

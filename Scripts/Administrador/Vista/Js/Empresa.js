@@ -7,6 +7,7 @@ class EmpresaVista {
     this.ubicacion = empresa.ubicacion;
     this.tieneCarrito = empresa.tieneCarrito ?? false;
     this.moduloMesero = empresa.moduloMesero ?? false;
+    this.deshabilitarExcel = empresa.deshabilitarExcel ?? false;
     this.efectivo = empresa.efectivo ?? false;
     this.tarjeta = empresa.tarjeta ?? false;
     this.transferencia = empresa.transferencia ?? false;
@@ -33,7 +34,7 @@ class EmpresaVista {
     divEmpresa.appendChild(pNombre);
     
     divEmpresa.addEventListener('click', () => {
-      const event = new CustomEvent('empresaSeleccionada', { detail: { empresaId: this.id, empresaNombre: this.nombre, empresaTelefono: this.telefono, empresaUbicacion: this.ubicacion, empresaTieneCarrito: this.tieneCarrito, empresaModuloMesero: this.moduloMesero, empresaEfectivo: this.efectivo, empresaTarjeta: this.tarjeta, empresaTransferencia: this.transferencia, empresaLogoUrl: this.logo_url } });
+      const event = new CustomEvent('empresaSeleccionada', { detail: { empresaId: this.id, empresaNombre: this.nombre, empresaTelefono: this.telefono, empresaUbicacion: this.ubicacion, empresaTieneCarrito: this.tieneCarrito, empresaModuloMesero: this.moduloMesero, empresaDeshabilitarExcel: this.deshabilitarExcel, empresaEfectivo: this.efectivo, empresaTarjeta: this.tarjeta, empresaTransferencia: this.transferencia, empresaLogoUrl: this.logo_url } });
       document.dispatchEvent(event);
       if (typeof window.gestorDeEmpresasCallback === 'function') {
         window.gestorDeEmpresasCallback(this);
@@ -99,6 +100,12 @@ class EmpresaVista {
               class="toggle-btn ${this.moduloMesero ? 'active' : ''}">
             Módulo Mesero
           </button>
+
+          <button type="button"
+              id="btnDeshabilitarExcel"
+              class="toggle-btn ${this.deshabilitarExcel ? 'active' : ''}">
+            Deshabilitar Excel
+          </button>
         </div>
         <text id="titulo-modulos"> Métodos de pago </text>
         <div class="lista-botones">
@@ -122,6 +129,7 @@ class EmpresaVista {
         </div>
         <input type="hidden" name="tieneCarrito" id="tieneCarrito" value="${!!this.tieneCarrito}">
         <input type="hidden" name="moduloMesero" id="moduloMesero" value="${!!this.moduloMesero}">
+        <input type="hidden" name="deshabilitarExcel" id="deshabilitarExcel" value="${!!this.deshabilitarExcel}">
         <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
@@ -309,6 +317,7 @@ class EmpresaVista {
     const modalNuevaEmpresaContenido = document.createElement('div');
     modalNuevaEmpresaContenido.classList.add('modal-content');
     
+    
     const htmlContent = `
       <form id="formModificarEmpresa">
       <div id="header-wrapper">
@@ -340,6 +349,12 @@ class EmpresaVista {
               class="toggle-btn ${this.moduloMesero ? 'active' : ''}">
             Módulo Mesero
           </button>
+
+          <button type="button"
+              id="btnDeshabilitarExcel"
+              class="toggle-btn ${this.deshabilitarExcel ? 'active' : ''}">
+            Deshabilitar Excel
+          </button>
         </div>
         <text id="titulo-modulos"> Métodos de pago </text>
         <div class="lista-botones">
@@ -363,6 +378,7 @@ class EmpresaVista {
         </div>
         <input type="hidden" name="tieneCarrito" id="tieneCarrito" value="${!!this.tieneCarrito}">
         <input type="hidden" name="moduloMesero" id="moduloMesero" value="${!!this.moduloMesero}">
+        <input type="hidden" name="deshabilitarExcel" id="deshabilitarExcel" value="${!!this.deshabilitarExcel}">
         <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">

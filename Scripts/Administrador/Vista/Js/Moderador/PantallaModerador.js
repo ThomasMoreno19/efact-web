@@ -30,6 +30,9 @@ class PantallaModerador {
   async init() {
     const data = await this.gestor.conocerEmpresa(this.obtenerIdEmpresa());
     this.empresa = new EmpresaVista(data);
+    if (this.empresa.deshabilitarExcel) {
+      this.botonCargarArticulos.classList.add('hidden');
+    }
 
     try {
       this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
@@ -70,10 +73,12 @@ class PantallaModerador {
       this.barraBusqueda.addEventListener('input', () => this.filtrarArticulos());
     }
     this.botonCargarArticulos.addEventListener('click', () => {
+      if(this.empresa.deshabilitarExcel) return;
       this.abrirModalCargarArticulos();
     });
     
     this.botonModificarCafeteria.addEventListener('click', (event) => {
+      if(this.empresa.deshabilitarExcel) return;
       event.preventDefault();
       this.configurarEmpresa();
     })
@@ -187,6 +192,7 @@ class PantallaModerador {
   }
   
   async modalArticuloSeleccionado(articulo) {
+    if(this.empresa.deshabilitarExcel) return;
     const modal = articulo.modalConfigurar();
     this.articuloSeleccionado = articulo;
     // Agregamos un ID al modal para poder identificarlo
@@ -207,6 +213,7 @@ class PantallaModerador {
   }
   
   async modalRubroSeleccionado(id, id_empresa, nombre, logo_url) {
+    if(this.empresa.deshabilitarExcel) return;
     const rubro = new RubroVista(id, id_empresa, nombre, logo_url);
     const modal = rubro.modalModificar(nombre, logo_url);
     

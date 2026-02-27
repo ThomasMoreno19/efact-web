@@ -7,7 +7,7 @@ class GestorCliente {
         // Agregar id_empresa al body
         const requestBody = { ...body, id_empresa };
     
-        const key = `${cacheKeyPrefix}_${JSON.stringify(requestBody)}_empresa${id_empresa}`;
+        const key = `${cacheKeyPrefix}_${JSON.stringify(requestBody)}_empresa${id_empresa}_cliente`;
         const cached = localStorage.getItem(key);
         const now = Date.now();
     
@@ -34,21 +34,9 @@ class GestorCliente {
         return result;
     }
 
-    
-    // El método mostrarListaEmpresas ahora solo devuelve los datos, sin manipular el DOM
-    async mostrarListaArticulos(id_rubro, id_empresa) {
-        return await this.cacheFetch(
-            `/articulo/mostrar`,
-            { id_rubro },
-            'articulos',
-            600, //10 min
-            id_empresa
-        );
-    }
-
     async mostrarListaArticulosPorEmpresa(id_empresa) {
         return await this.cacheFetch(
-            `/articulo/mostrar/empresa`,
+            `/articulo/mostrar/para-cliente`,
             { id_empresa },
             'articulos_empresa',
             600,
@@ -58,7 +46,7 @@ class GestorCliente {
     
     async mostrarListaRubros(id_empresa) {
         return await this.cacheFetch(
-            `/rubro/mostrar`,
+            `/rubro/mostrar/para-cliente`,
             { id_empresa },
             'rubros',
             600,

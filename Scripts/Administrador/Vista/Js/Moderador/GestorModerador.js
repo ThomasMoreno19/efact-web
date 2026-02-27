@@ -205,11 +205,13 @@ class GestorModerador {
                             if (columnas.length >= 4) {
                                 const articulo = {
                                     id_articulo: columnas[0],
-                                    nombre_articulo: columnas[3].trim(),
-                                    descripcion: this.limpiarDescripcion(columnas[8]?.toString().trim() || ""),
-                                    precio_articulo: parseFloat(columnas[4].trim()),
-                                    codigo_carta_articulo: (columnas[1]?.toString().trim() || ""),
-                                    nombre_rubro: columnas[7].trim()
+                                    nombre_articulo: columnas[1].trim(),
+                                    descripcion: this.limpiarDescripcion(columnas[4]?.toString().trim() || ""),
+                                    precio_articulo: parseFloat(columnas[2].trim()),
+                                    codigo_carta_articulo: "",
+                                    nombre_rubro: columnas[3].trim(),
+                                    publica_art: columnas[5].trim(),
+                                    publica_rub: columnas[6].trim()
                                 };
                                 listaObjetos.push(articulo);
                             }
@@ -233,11 +235,13 @@ class GestorModerador {
                     
                             const articulo = {
                                 id_articulo: columnas[0],
-                                nombre_articulo: (columnas[3].toString().trim()),
-                                descripcion: this.limpiarDescripcion(columnas[8]?.toString().trim() || ""), // 👈 Esto evita el error
-                                precio_articulo: parseFloat(columnas[4]),
-                                codigo_carta_articulo: (columnas[1]?.toString().trim() || ""),
-                                nombre_rubro: columnas[7].toString().trim()
+                                nombre_articulo: columnas[1].trim(),
+                                descripcion: this.limpiarDescripcion(columnas[4]?.toString().trim() || ""),
+                                precio_articulo: parseFloat(columnas[2]),
+                                codigo_carta_articulo: "",
+                                nombre_rubro: columnas[3].trim(),
+                                publica_art: columnas[5],
+                                publica_rub: columnas[6]
                             };
                     
                             listaObjetos.push(articulo);
@@ -246,8 +250,8 @@ class GestorModerador {
                     
                     await this.setearEn0(id_empresa);
                     // Now, send both lists to the respective methods
-                    const listaArticulos = await this.cargarRubros(listaObjetos, id_empresa);
-                    const booleanoArticulos = await this.cargarArticulos(listaArticulos, id_empresa);
+                    const listaRubros = await this.cargarRubros(listaObjetos, id_empresa);
+                    const booleanoArticulos = await this.cargarArticulos(listaRubros, id_empresa);
 
                     // Resolve the promise based on the results of both calls
                     if (booleanoArticulos) {

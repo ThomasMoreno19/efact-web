@@ -100,6 +100,9 @@ class PantallaAdministrador {
           if(btn.id === 'btnCarrito') {
             document.getElementById('tieneCarrito').value = activo;
           }
+          if (btn.id === 'btnDeshabilitarExcel') {
+            document.getElementById('deshabilitarExcel').value = activo;
+          }
           if (btn.id === 'btnEfectivo') {
             document.getElementById('efectivo').value = activo;
           }
@@ -129,6 +132,7 @@ class PantallaAdministrador {
       const UBICACION = FORMDATA.get('ubicacion');
       const TIENE_CARRITO = FORMDATA.get('tieneCarrito') === 'true';
       const MODULO_MESERO = FORMDATA.get('moduloMesero') === 'true';
+      const DESHABILITAR_EXCEL = FORMDATA.get('deshabilitarExcel') === 'true';
       const EFECTIVO = FORMDATA.get('efectivo') === 'true';
       const TARJETA = FORMDATA.get('tarjeta') === 'true';
       const TRANSFERENCIA = FORMDATA.get('transferencia') === 'true';
@@ -138,7 +142,7 @@ class PantallaAdministrador {
 
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
-        const EMPRESA = await this.gestor.crearEmpresa(NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, EFECTIVO, TARJETA, TRANSFERENCIA, CONTRASENA_MESERO, IMAGEN);
+        const EMPRESA = await this.gestor.crearEmpresa(NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, DESHABILITAR_EXCEL, EFECTIVO, TARJETA, TRANSFERENCIA, CONTRASENA_MESERO, IMAGEN);
         await this.gestor.crearModerador(USUARIO, EMPRESA.id, CONTRASENA);
         MODAL.classList.add('hidden');
         document.body.removeChild(MODAL);
@@ -176,6 +180,9 @@ class PantallaAdministrador {
         if(btn.id === 'btnCarrito') {
           document.getElementById('tieneCarrito').value = activo;
         }
+        if (btn.id === 'btnDeshabilitarExcel') {
+          document.getElementById('deshabilitarExcel').value = activo;
+        }
         if (btn.id === 'btnEfectivo') {
           document.getElementById('efectivo').value = activo;
         }
@@ -206,6 +213,7 @@ class PantallaAdministrador {
       const UBICACION = FORMDATA.get('ubicacion');
       const TIENE_CARRITO = FORMDATA.get('tieneCarrito') === 'true';
       const MODULO_MESERO = FORMDATA.get('moduloMesero') === 'true';
+      const DESHABILITAR_EXCEL = FORMDATA.get('deshabilitarExcel') === 'true';
       const EFECTIVO = FORMDATA.get('efectivo') === 'true';
       const TARJETA = FORMDATA.get('tarjeta') === 'true';
       const TRANSFERENCIA = FORMDATA.get('transferencia') === 'true';
@@ -217,7 +225,7 @@ class PantallaAdministrador {
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
         await this.gestor.modificarModerador(MODERADOR.id, USUARIO, CONTRASENA);
-        this.gestor.modificarEmpresa(empresa.id, NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, EFECTIVO, TARJETA, TRANSFERENCIA, CONTRASENA_MESERO, IMAGEN);
+        this.gestor.modificarEmpresa(empresa.id, NOMBRE, TELEFONO, UBICACION, TIENE_CARRITO, MODULO_MESERO, DESHABILITAR_EXCEL, EFECTIVO, TARJETA, TRANSFERENCIA, CONTRASENA_MESERO, IMAGEN);
         MODAL.classList.add('hidden');
         document.body.removeChild(MODAL);
         await this.mostrarLista();

@@ -11,28 +11,6 @@ class EmpresaRepositorio {
     $this->pdo = $pdo;
   }
   
-  
-  public function obtenerRubros(int $id): array{
-    $rubros = [];
-    try{
-      $stmt = $this->pdo->prepare(
-        "SELECT * FROM Rubro WHERE id_empresa = :id ORDER BY nombre ASC");
-      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-      $stmt->execute();
-      while ($data= $stmt->fetch(PDO::FETCH_ASSOC)){
-        $rubros[] = [$data['id'],
-          $data['nombre'],
-          $data['id_empresa'],
-          $data['logo_url'],
-          $data['aparece_en_csv'],
-          $data['creado_en_pagina']];
-      }
-    } catch (PDOException $e) {
-      error_log("Error al obtener rubros para la empresa con ID " . $id . ": " . $e->getMessage());
-    }
-    return $rubros; 
-  }
-  
   public function obtenerPorId(int $id): ?array {
     $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id;");
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -47,6 +25,7 @@ class EmpresaRepositorio {
         'ubicacion' => $data['ubicacion'],
         'tieneCarrito' => $data['tieneCarrito'],
         'moduloMesero' => $data['moduloMesero'],
+        'deshabilitarExcel' => $data['deshabilitar_excel'],
         'efectivo' => $data['efectivo'],
         'tarjeta' => $data['tarjeta'],
         'transferencia' => $data['transferencia'],
@@ -71,6 +50,7 @@ class EmpresaRepositorio {
         'ubicacion' => $data['ubicacion'],
         'tieneCarrito' => $data['tieneCarrito'],
         'moduloMesero' => $data['moduloMesero'],
+        'deshabilitarExcel' => $data['deshabilitar_excel'],
         'efectivo' => $data['efectivo'],
         'tarjeta' => $data['tarjeta'],
         'transferencia' => $data['transferencia'],
@@ -85,7 +65,7 @@ class EmpresaRepositorio {
   }
   
   
-  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null, ?string $logo_url = null): bool {
+  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null, ?string $logo_url = null): bool {
     try {
       $sql = "UPDATE Empresa
           SET nombre = :nombre,
@@ -93,6 +73,7 @@ class EmpresaRepositorio {
           ubicacion = :ubicacion,
           tieneCarrito = :tieneCarrito,
           moduloMesero = :moduloMesero,
+          deshabilitar_excel = :deshabilitar_excel,
           efectivo = :efectivo,
           tarjeta = :tarjeta,
           transferencia = :transferencia";
@@ -115,6 +96,7 @@ class EmpresaRepositorio {
       $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
       $stmt->bindParam(':tieneCarrito', $tieneCarrito, PDO::PARAM_BOOL);
       $stmt->bindParam(':moduloMesero', $moduloMesero, PDO::PARAM_BOOL);
+      $stmt->bindParam(':deshabilitar_excel', $deshabilitar_excel, PDO::PARAM_BOOL);
       $stmt->bindParam(':efectivo', $efectivo, PDO::PARAM_BOOL);
       $stmt->bindParam(':tarjeta', $tarjeta, PDO::PARAM_BOOL);
       $stmt->bindParam(':transferencia', $transferencia, PDO::PARAM_BOOL);
@@ -202,12 +184,12 @@ class EmpresaRepositorio {
   }
 
   
-  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array {
+  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array {
     try {
       $fecha_actual= date('Y-m-d');
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, efectivo, tarjeta, transferencia, contrasenaMesero) 
-        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, :efectivo, :tarjeta, :transferencia, :contrasenaMesero)"
+        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, contrasenaMesero) 
+        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia, :contrasenaMesero)"
       );
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
@@ -215,6 +197,7 @@ class EmpresaRepositorio {
       $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
       $stmt->bindParam(':tieneCarrito', $tieneCarrito, PDO::PARAM_BOOL);
       $stmt->bindParam(':moduloMesero', $moduloMesero, PDO::PARAM_BOOL);
+      $stmt->bindParam(':deshabilitar_excel', $deshabilitar_excel, PDO::PARAM_BOOL);
       $stmt->bindParam(':efectivo', $efectivo, PDO::PARAM_BOOL);
       $stmt->bindParam(':tarjeta', $tarjeta, PDO::PARAM_BOOL);
       $stmt->bindParam(':transferencia', $transferencia, PDO::PARAM_BOOL);
@@ -437,13 +420,6 @@ class EmpresaRepositorio {
       error_log("Error al verificar contraseña mesero (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
-  }
-
-
-  
-  public function sosAtributo(string $atributo) {
-    $atributosPermitidos = ['nombre', 'fecha_creacion'];
-    return in_array($atributo, $atributosPermitidos);
   }
 
 }

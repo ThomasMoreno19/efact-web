@@ -46,10 +46,13 @@
   border-radius: 8px;
   transition: background-color 0.2s, color 0.2s;
   font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .toggle-btn.active {
-  background-color: #e69f1a;
+  background: #e69f1a;
   color: black;
 }
 
@@ -89,4 +92,18 @@
   {
     width: 75%;
   }
+}
+
+.toggle-btn .icono {
+  stroke: #e69f1a;
+  fill: #e69f1a;
+}
+
+.toggle-btn.active .icono {
+  fill: black;
+  stroke: black;
+}
+
+#icono-retirar {
+  fill: none !important;
 }

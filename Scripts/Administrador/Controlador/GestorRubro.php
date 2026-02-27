@@ -40,6 +40,10 @@ class GestorRubro {
                         $this->mostrarRubro();
                         break;
 
+                    case 'para-cliente':
+                        $this->mostrarParaCliente();
+                        break;
+
                     default:
                         if (is_numeric($url_segmentada[1])) {
                             $this->obtenerPorId();
@@ -108,6 +112,33 @@ class GestorRubro {
             echo json_encode(['error' => 'Error al mostrar los articulos entre los valores recibidos' . $e->getMessage()]);
         }
     }
+
+    private function mostrarParaCliente(): void {
+        $datos = json_decode(file_get_contents('php://input'), true);
+        $id_empresa = $datos['id_empresa'] ?? 0;
+        
+        // === CACHE EN ARCHIVO ===
+        $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/rubros_empresa_{$id_empresa}_cliente.json";
+        
+        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
+            http_response_code(200);
+            echo file_get_contents($cacheFile);
+            return;
+        }
+        
+        try {
+            $listaRubros = $this->rubroRepositorio->obtenerParaCliente($id_empresa);
+            
+            $json = json_encode($listaRubros);
+            file_put_contents($cacheFile, $json); // Guarda cache
+            
+            http_response_code(200);
+            echo $json;
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Error al mostrar los articulos entre los valores recibidos' . $e->getMessage()]);
+        }
+    }
     
     private function cargarLista(): void {
         $input = json_decode(file_get_contents('php://input'), true);
@@ -116,9 +147,11 @@ class GestorRubro {
         $nuevaLista = [];
         foreach ($datos as $item) {
             $nombre_rubro = $item['nombre_rubro'] ?? '';
+            $para_mesero = (int)$item['publica_rub'] ?? 0;
+
             try {
                 // Llama al repositorio para crear el rubro, pasando el id_empresa extraído
-                $id_rubro = $this->rubroRepositorio->crearPorCsv($id_empresa, $nombre_rubro);
+                $id_rubro = $this->rubroRepositorio->crearPorCsv($id_empresa, $nombre_rubro, $para_mesero);
                 // Crea un nuevo array para el artículo final.
                 $articulo_final = $item;
                 // Añade el id_rubro al nuevo array.
@@ -137,6 +170,10 @@ class GestorRubro {
     
     private function borrarCacheTodos(int $id_empresa): bool {
         $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/";
+        $cacheFileCliente = $cacheDir . "rubros_empresa_{$id_empresa}_cliente.json";
+        if (file_exists($cacheFileCliente)) {
+            unlink($cacheFileCliente);
+        }
         $cacheFile = $cacheDir . "rubros_empresa_{$id_empresa}.json";
     
         if (!file_exists($cacheFile)) {
@@ -179,34 +216,6 @@ class GestorRubro {
             } catch (Exception $e) {
                 error_log("Hubo un error en eliminarRubrosYArtNoUtilizados() (GestorRubro)");
             }
-        }
-    }
-    
-    private function crear(): void {
-        $datos = json_decode(file_get_contents('php://input'), true);
-        
-        
-        $nombre = $datos['nombre'];
-        $logo_url = $datos['logo_url'];
-        
-        if (empty($nombre) || empty($logo_url)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Faltan datos para crear el rubro.']);
-        }
-        
-        if (json_last_error() !== JSON_ERROR_NONE || !is_array($datos)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'No se pudo decodificar el JSON o el formato es incorrecto.']);}
-
-        try {
-            $rubro = $this->rubroRepositorio->crear($id_empresa, $nombre, $logo_url);
-            echo json_encode([
-            'id' => $rubro['id'],
-            'nombre' => $rubro['nombre'],
-            'logo_url' => $rubro['logo_url']]);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Error al crear el rubro: ' . $e->getMessage()]);
         }
     }
     

@@ -90,6 +90,32 @@ class ArticuloRepositorio {
         }
     }
 
+    public function obtenerParaCliente(int $id_empresa): array {
+        try {
+            $stmt = $this->pdo->prepare(" 
+                SELECT
+                    id,
+                    id_rubro,
+                    id_empresa,
+                    nombre,
+                    descripcion,
+                    precio,
+                    codigo_carta
+                FROM Articulo
+                WHERE id_empresa = :id_empresa AND solo_mesero = 0
+                ORDER BY id_rubro ASC, nombre ASC
+            ");
+
+            $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error al obtener artículos por empresa: " . $e->getMessage());
+            return [];
+        }
+    }
+
     public function crearPorCsv(int $id, int $id_rubro, int $id_empresa,string $nombre,float $precio, string $codigo_carta = '', string $descripcion = '', ?string $logo_url = 'Archivos/Logos/Vacio.png'): array {
         try {
             $stmt = $this->pdo->prepare(
@@ -137,7 +163,7 @@ class ArticuloRepositorio {
         $values = [];
         $params = [];
         foreach ($articulos as $i => $a) {
-            $values[] = "(:id$i, :id_rubro$i, :id_empresa$i,:nombre$i, :descripcion$i, :precio$i, :codigo_carta$i, 1, 0, :logo_url$i)";
+            $values[] = "(:id$i, :id_rubro$i, :id_empresa$i,:nombre$i, :descripcion$i, :precio$i, :codigo_carta$i, :solo_mesero$i, 1, 0, :logo_url$i)";
             $params[":id$i"] = $a['id'];
             $params[":id_rubro$i"] = $a['id_rubro'];
             $params[":id_empresa$i"] = $a['id_empresa'];
@@ -145,10 +171,11 @@ class ArticuloRepositorio {
             $params[":descripcion$i"] = $a['descripcion'] ?? '';
             $params[":precio$i"] = (string)$a['precio'];
             $params[":codigo_carta$i"] = $a['codigo_carta'] ?? '';
+            $params[":solo_mesero$i"] = $a['solo_mesero'] ?? 0;
             $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
         }
     
-        $sql = "INSERT INTO Articulo (id, id_rubro, id_empresa, nombre, descripcion, precio, codigo_carta, aparece_en_csv, creado_en_pagina, logo_url)
+        $sql = "INSERT INTO Articulo (id, id_rubro, id_empresa, nombre, descripcion, precio, codigo_carta, solo_mesero, aparece_en_csv, creado_en_pagina, logo_url)
                 VALUES " . implode(', ', $values) . "
                 ON DUPLICATE KEY UPDATE
                     id_rubro = VALUES(id_rubro),
@@ -157,6 +184,7 @@ class ArticuloRepositorio {
                     descripcion = VALUES(descripcion),
                     precio = VALUES(precio),
                     codigo_carta = VALUES(codigo_carta),
+                    solo_mesero = VALUES(solo_mesero),
                     aparece_en_csv = 1;";
     
         try {
@@ -170,47 +198,6 @@ class ArticuloRepositorio {
             error_log("Error al guardar artículos: " . $e->getMessage());
             return [];
         }
-    }
-
-    
-    public function crearPorPagina(int $id, int $id_rubro, string $nombre, string $descripcion, float $precio, string $codigo_carta, ?string $logoUrl = 'Archivos/Logos/Vacio.png'): ?Articulo {
-        try {
-            $stmt = $this->pdo->prepare(
-                "INSERT INTO Articulo (id, id_rubro, nombre, descripcion, precio, codigo_carta, fecha_eliminado, aparece_en_csv, creado_en_pagina, logo_url)
-                VALUES (:id, :id_rubro, :nombre, :descripcion, :precio, :codigo_carta, '', 0, 1, :logo_url)
-                ON DUPLICATE KEY UPDATE
-                    id_rubro = VALUES(id_rubro),
-                    nombre = VALUES(nombre),
-                    descripcion = VALUES(descripcion),
-                    precio = VALUES(precio),
-                    codigo_carta = VALUES(codigo_carta),
-                    creado_en_pagina = 1;");
-            
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-            $stmt->bindParam(':id_rubro', $id_rubro, PDO::PARAM_STR);
-            $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
-            $stmt->bindParam(':descripcion', $descripcion, PDO::PARAM_STR);
-            $stmt->bindParam(':precio', $precio, PDO::PARAM_STR);
-            $stmt->bindParam(':codigo_carta', $codigo_carta, PDO::PARAM_STR);
-            $stmt->bindParam(':logo_url', $logoUrl, PDO::PARAM_STR);
-
-            if ($stmt->execute()) {
-                return new Articulo(
-                    $id,
-                    $id_rubro,
-                    $nombre,
-                    $descripcion,
-                    $precio,
-                    $codigo_carta,
-                    '',
-                    1,
-                    0,
-                    $logo_url);
-            }
-        } catch (PDOException $e) {
-            error_log("Error al guardar nueva articulo: " . $e->getMessage());
-        }
-        return null;
     }
     
     public function modificar(int $id, int $id_rubro, string $nombre, string $descripcion, string $precio, string $codigo_carta): bool {

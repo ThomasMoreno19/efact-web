@@ -11,6 +11,7 @@ class GestorAdministrador {
           const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
           throw new Error(`Error al obtener empresas: ${response.status} - ${errorData.error || errorData.message}`);
         }
+        console.log('Respuesta del servidor al obtener empresas:', await response.clone().json()); // Clonamos la respuesta para poder leerla dos veces
         return await response.json();
           
       } catch (error) {
@@ -49,7 +50,7 @@ class GestorAdministrador {
       }
     }
     
-    async crearEmpresa(nombre, telefono, ubicacion, tienecarrito, moduloMesero, efectivo, tarjeta, transferencia, contrasenaMesero, imagen) {
+    async crearEmpresa(nombre, telefono, ubicacion, tienecarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, contrasenaMesero, imagen) {
       try {
         const formData = new FormData();
         formData.append('nombre', nombre);
@@ -57,6 +58,7 @@ class GestorAdministrador {
         formData.append('ubicacion', ubicacion);
         formData.append('tieneCarrito', tienecarrito ? true : false);
         formData.append('moduloMesero', moduloMesero ? true : false);
+        formData.append('deshabilitarExcel', deshabilitar_excel ? true : false);
         formData.append('efectivo', efectivo ? true : false);
         formData.append('tarjeta', tarjeta ? true : false);
         formData.append('transferencia', transferencia ? true : false);
@@ -143,7 +145,7 @@ class GestorAdministrador {
       }
     }
     
-    async modificarEmpresa(id, nombre, telefono, ubicacion, tieneCarrito, moduloMesero, efectivo, tarjeta, transferencia, contrasenaMesero, imagenFile) {
+    async modificarEmpresa(id, nombre, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, contrasenaMesero, imagenFile) {
       const formData = new FormData();
 
       formData.append('id', id);
@@ -152,6 +154,7 @@ class GestorAdministrador {
       formData.append('ubicacion', ubicacion);
       formData.append('tieneCarrito', tieneCarrito);
       formData.append('moduloMesero', moduloMesero);
+      formData.append('deshabilitarExcel', deshabilitar_excel);
       formData.append('efectivo', efectivo);
       formData.append('tarjeta', tarjeta);
       formData.append('transferencia', transferencia);
