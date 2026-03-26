@@ -1,107 +1,85 @@
 // Scripts/Administrador/Vista/Js/GestorAdministrador.js
 
 class GestorCliente {
-    
-    // cacheFetch.js
-    async cacheFetch(url, body, cacheKeyPrefix, ttl = 600, id_empresa) { // 10 min
-        // Agregar id_empresa al body
-        const requestBody = { ...body, id_empresa };
-    
-        const key = `${cacheKeyPrefix}_${JSON.stringify(requestBody)}_empresa${id_empresa}_cliente`;
-        const cached = localStorage.getItem(key);
-        const now = Date.now();
-    
-        if (cached) {
-            const data = JSON.parse(cached);
-            if (now - data.timestamp < ttl) {
-                return data.value;
-            }
-        }
-    
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(requestBody)
-        });
-    
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({ error: 'Error' }));
-            throw new Error(err.error || 'Error de red');
-        }
-    
-        const result = await response.json();
-        localStorage.setItem(key, JSON.stringify({ value: result, timestamp: now }));
-        return result;
+  async cacheFetch(url, body, id_empresa) {
+    const requestBody = { ...body, id_empresa };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({ error: "Error" }));
+      throw new Error(err.error || "Error de red");
     }
 
-    async mostrarListaArticulosPorEmpresa(id_empresa) {
-        return await this.cacheFetch(
-            `/articulo/mostrar/para-cliente`,
-            { id_empresa },
-            'articulos_empresa',
-            600,
-            id_empresa
-        );
-    }
-    
-    async mostrarListaRubros(id_empresa) {
-        return await this.cacheFetch(
-            `/rubro/mostrar/para-cliente`,
-            { id_empresa },
-            'rubros',
-            600,
-            id_empresa
-        );
-    }
-    
-    async conocerEmpresa(id_empresa) {
-        // Validación básica
-        if (!id_empresa || isNaN(parseInt(id_empresa))) {
-            throw new Error("ID de empresa inválido");
-        }
-    
-        const bodyData = { id_empresa: parseInt(id_empresa) };
-    
-        return await this.cacheFetch(
-            `/empresa/mostrar/id`,
-            bodyData,
-            'empresa',        // Prefijo único para esta entidad
-            600,            // 10 minutos
-            id_empresa
-        );
+    return await response.json();
+  }
+
+  async mostrarListaArticulosPorEmpresa(id_empresa) {
+    return await this.cacheFetch(
+      `/articulo/mostrar/para-cliente`,
+      { id_empresa },
+      id_empresa,
+    );
+  }
+
+  async mostrarListaRubros(id_empresa) {
+    return await this.cacheFetch(
+      `/rubro/mostrar/para-cliente`,
+      { id_empresa },
+      id_empresa,
+    );
+  }
+
+  async conocerEmpresa(id_empresa) {
+    // Validación básica
+    if (!id_empresa || isNaN(parseInt(id_empresa))) {
+      throw new Error("ID de empresa inválido");
     }
 
-    async obtenerHorarios(id_empresa) {
-        const bodyData = { id_empresa };
+    const bodyData = { id_empresa: parseInt(id_empresa) };
 
-        const response = await fetch(`/empresa/mostrar-horarios`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(bodyData),
-        });
+    return await this.cacheFetch(`/empresa/mostrar/id`, bodyData, id_empresa);
+  }
 
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({ error: 'Error obteniendo horarios' }));
-            throw new Error(err.error || 'Error obteniendo horarios');
-        }
+  async obtenerHorarios(id_empresa) {
+    const bodyData = { id_empresa };
 
-        return await response.json();
+    const response = await fetch(`/empresa/mostrar-horarios`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error obteniendo horarios" }));
+      throw new Error(err.error || "Error obteniendo horarios");
     }
 
-    async verificarContrasenaMesero(id_empresa, contrasena) {
-        const bodyData = { id_empresa: parseInt(id_empresa), contrasena };
+    return await response.json();
+  }
 
-        const response = await fetch(`/empresa/verificar-contrasena-mesero`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(bodyData),
-        });
+  async verificarContrasenaMesero(id_empresa, contrasena) {
+    const bodyData = { id_empresa: parseInt(id_empresa), contrasena };
 
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({ error: 'Error al verificar contraseña de mesero' }));
-            throw new Error(err.error || 'Error al verificar contraseña de mesero');
-        }
+    const response = await fetch(`/empresa/verificar-contrasena-mesero`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
 
-        return await response.json();
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error al verificar contraseña de mesero" }));
+      throw new Error(err.error || "Error al verificar contraseña de mesero");
     }
+
+    return await response.json();
+  }
 }

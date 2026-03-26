@@ -35,10 +35,6 @@ class GestorArticulo {
                         $this->mostrarTodos();
                         break;
 
-                    case 'rubros':
-                        $this->mostrarRubro();
-                        break;
-
                     case 'empresa':
                         $this->mostrarTodosPorEmpresa();
                         break;
@@ -46,31 +42,15 @@ class GestorArticulo {
                     case 'para-cliente':
                         $this->mostrarParaCliente();
                         break;
-
-                    default:
-                        if (is_numeric($url_segmentada[1])) {
-                            $this->obtenerPorId();
-                        }
-                        break;
-                    break;
                 }
                 break;
             
             case 'modificar':
                 $this->modificar();
                 break;
-
-            case 'crear':
-                $this->crear();
-                break;
             
             case 'cargar-lista':
                 $this->cargarLista();
-                break;
-            
-            
-            case 'subir-logo':
-                $this->subirLogo();
                 break;
             
             default:
@@ -114,27 +94,6 @@ class GestorArticulo {
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['error' => 'Error: ' . $e->getMessage()]);
-        }
-    }
-
-    private function mostrarRubro(): void {
-        $datos = json_decode(file_get_contents('php://input'), true);
-
-        $id = (int)$datos['id'];
-
-        if (is_null($id)) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Faltan datos para mostrar el rubro']);
-            return;
-        }
-
-        try {
-            $rubro = $this->articuloRepositorio->obtenerRubro($id);
-            http_response_code(200);
-            echo json_encode($rubro);
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Error al mostrar los rubros: ' . $e->getMessage()]);
         }
     }
 
@@ -286,13 +245,14 @@ class GestorArticulo {
         
         $id = $datos['id'];
         $id_rubro = $datos['id_rubro'];
+        $id_empresa = $datos['id_empresa'];
         $nombre = $datos['nombre'];
         $descripcion = $datos['descripcion'];
         $precio = $datos['precio'];
         $codigo_carta = $datos['codigo_carta'];
         
         
-        $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/cache/articulos_rubro_{$id_rubro}.json";
+        $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/cache/articulos_empresa_{$id_empresa}.json";
         if (file_exists($cacheFile)) {
             unlink($cacheFile); // Borra cache
         }
@@ -305,7 +265,7 @@ class GestorArticulo {
 
         try {
             $articuloModificado = $this->articuloRepositorio->modificar($id, $id_rubro, $nombre, $descripcion, $precio, $codigo_carta);
-            $this->borrarCacheDeUnRubro($id_rubro);
+            $this->borrarCacheTodos($id_empresa);
             echo json_encode($articuloModificado);
         } catch (Exception $e) {
             http_response_code(500);

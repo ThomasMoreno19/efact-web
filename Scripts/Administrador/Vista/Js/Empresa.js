@@ -1,5 +1,4 @@
 class EmpresaVista {
-  
   constructor(empresa) {
     this.id = empresa.id;
     this.nombre = empresa.nombre;
@@ -14,7 +13,7 @@ class EmpresaVista {
     this.logo_url = empresa.logo_url;
   }
 
-  update(nombre, telefono, ubicacion, efectivo, tarjeta, transferencia){
+  update(nombre, telefono, ubicacion, efectivo, tarjeta, transferencia) {
     this.nombre = nombre;
     this.telefono = telefono;
     this.ubicacion = ubicacion;
@@ -24,51 +23,68 @@ class EmpresaVista {
   }
 
   mostrarUna() {
-    const divEmpresa = document.createElement('div');
-    divEmpresa.classList.add('empresa');
-    divEmpresa.dataset.empresaId = this.id;  //🤣😎
-    divEmpresa.style.backgroundImage = `url('${this.logo_url || '/Archivos/Logos/Vacio.png'}')`;
-    
-    const pNombre = document.createElement('p');
+    const divEmpresa = document.createElement("div");
+    divEmpresa.classList.add("empresa");
+    divEmpresa.dataset.empresaId = this.id; //🤣😎
+    divEmpresa.style.backgroundImage = `url('${this.logo_url || "/Archivos/Logos/Vacio.png"}')`;
+
+    const pNombre = document.createElement("p");
     pNombre.textContent = this.nombre;
     divEmpresa.appendChild(pNombre);
-    
-    divEmpresa.addEventListener('click', () => {
-      const event = new CustomEvent('empresaSeleccionada', { detail: { empresaId: this.id, empresaNombre: this.nombre, empresaTelefono: this.telefono, empresaUbicacion: this.ubicacion, empresaTieneCarrito: this.tieneCarrito, empresaModuloMesero: this.moduloMesero, empresaDeshabilitarExcel: this.deshabilitarExcel, empresaEfectivo: this.efectivo, empresaTarjeta: this.tarjeta, empresaTransferencia: this.transferencia, empresaLogoUrl: this.logo_url } });
+
+    divEmpresa.addEventListener("click", () => {
+      const event = new CustomEvent("empresaSeleccionada", {
+        detail: {
+          empresaId: this.id,
+          empresaNombre: this.nombre,
+          empresaTelefono: this.telefono,
+          empresaUbicacion: this.ubicacion,
+          empresaTieneCarrito: this.tieneCarrito,
+          empresaModuloMesero: this.moduloMesero,
+          empresaDeshabilitarExcel: this.deshabilitarExcel,
+          empresaEfectivo: this.efectivo,
+          empresaTarjeta: this.tarjeta,
+          empresaTransferencia: this.transferencia,
+          empresaLogoUrl: this.logo_url,
+        },
+      });
       document.dispatchEvent(event);
-      if (typeof window.gestorDeEmpresasCallback === 'function') {
+      if (typeof window.gestorDeEmpresasCallback === "function") {
         window.gestorDeEmpresasCallback(this);
       }
     });
-    
+
     return divEmpresa;
   }
-  
+
   async asignarIconoYPagina(texto) {
     try {
       // Cambiar el título de la pestaña
       document.title = `${this.nombre} ${texto}`;
-      
+
       // Crear nuevo favicon con el logo de la empresa
       const nuevoFavicon = document.createElement("link");
       nuevoFavicon.rel = "icon";
       nuevoFavicon.type = "image/png";
       nuevoFavicon.href = this.logo_url || "/Archivos/Logos/Vacio.png";
-      
+
       document.head.appendChild(nuevoFavicon);
     } catch (error) {
-      console.error('Error al asignar el ícono o el título de la pestaña:', error);
+      console.error(
+        "Error al asignar el ícono o el título de la pestaña:",
+        error,
+      );
     }
   }
-  
-  static modalNuevaEmpresa() {
-    const modalNuevaEmpresa = document.createElement('div');
-    modalNuevaEmpresa.classList.add('modal-backdrop');
-    modalNuevaEmpresa.id = 'modalNuevaEmpresa';
 
-    const modalNuevaEmpresaContenido = document.createElement('div');
-    modalNuevaEmpresaContenido.classList.add('modal-content');
-    
+  static modalNuevaEmpresa() {
+    const modalNuevaEmpresa = document.createElement("div");
+    modalNuevaEmpresa.classList.add("modal-backdrop");
+    modalNuevaEmpresa.id = "modalNuevaEmpresa";
+
+    const modalNuevaEmpresaContenido = document.createElement("div");
+    modalNuevaEmpresaContenido.classList.add("modal-content");
+
     const htmlContent = `
       <form id="formNuevaEmpresa">
       <div id="header-wrapper">
@@ -91,19 +107,19 @@ class EmpresaVista {
         <div class="lista-botones">
           <button type="button"
               id="btnCarrito"
-              class="toggle-btn ${this.tieneCarrito ? 'active' : ''}">
+              class="toggle-btn ${this.tieneCarrito ? "active" : ""}">
             Módulo Carrito
           </button>
 
           <button type="button"
               id="btnMesero"
-              class="toggle-btn ${this.moduloMesero ? 'active' : ''}">
+              class="toggle-btn ${this.moduloMesero ? "active" : ""}">
             Módulo Mesero
           </button>
 
           <button type="button"
               id="btnDeshabilitarExcel"
-              class="toggle-btn ${this.deshabilitarExcel ? 'active' : ''}">
+              class="toggle-btn ${this.deshabilitarExcel ? "active" : ""}">
             Deshabilitar Excel
           </button>
         </div>
@@ -111,19 +127,19 @@ class EmpresaVista {
         <div class="lista-botones">
           <button type="button"
               id="btnEfectivo"
-              class="toggle-btn ${this.efectivo ? 'active' : ''}">
+              class="toggle-btn ${this.efectivo ? "active" : ""}">
             Efectivo
           </button>
 
           <button type="button"
               id="btnTarjeta"
-              class="toggle-btn ${this.tarjeta ? 'active' : ''}">
+              class="toggle-btn ${this.tarjeta ? "active" : ""}">
             Tarjeta
           </button>
 
           <button type="button"
               id="btnTransferencia"
-              class="toggle-btn ${this.transferencia ? 'active' : ''}">
+              class="toggle-btn ${this.transferencia ? "active" : ""}">
             Transferencia
           </button>
         </div>
@@ -157,32 +173,36 @@ class EmpresaVista {
 
     modalNuevaEmpresaContenido.innerHTML = htmlContent;
     modalNuevaEmpresa.appendChild(modalNuevaEmpresaContenido);
-    
+
     return modalNuevaEmpresa;
   }
 
   modalConfigurarHorarios() {
-    const modalHorarios = document.createElement('div');
-    modalHorarios.classList.add('wrapper');
-    modalHorarios.id = 'modalConfigurarHorarios';
+    const modalHorarios = document.createElement("div");
+    modalHorarios.classList.add("wrapper");
+    modalHorarios.id = "modalConfigurarHorarios";
 
-    const modalHorarioContenido = document.createElement('div');
-    modalHorarioContenido.classList.add('wrapper-content');
-    
-    const dias = DIAS_SEMANA.map(nombre => ({
+    const modalHorarioContenido = document.createElement("div");
+    modalHorarioContenido.classList.add("wrapper-content");
+
+    const dias = DIAS_SEMANA.map((nombre) => ({
       nombre,
       abierto: false,
-      horaApertura: '',
-      horaCierre: ''
+      horaApertura: "",
+      horaCierre: "",
     }));
 
-    const botonesDiasHTML = dias.map((dia, index) => `
+    const botonesDiasHTML = dias
+      .map(
+        (dia, index) => `
       <button type="button"
           id="btnDia${index}"
-          class="toggle-btn ${dia.abierto ? 'active' : ''}">
+          class="toggle-btn ${dia.abierto ? "active" : ""}">
         ${dia.nombre}
       </button>
-    `).join('');
+    `,
+      )
+      .join("");
 
     const htmlContent = `
       <form id="formConfigurarHorariosEmpresa">
@@ -235,27 +255,25 @@ class EmpresaVista {
       </form>
     `;
 
-
     modalHorarioContenido.innerHTML = htmlContent;
     modalHorarios.appendChild(modalHorarioContenido);
-
 
     return modalHorarios;
   }
 
   modalConfigurarDiasNoLaborales() {
-    const modalDiasNoLaborales = document.createElement('div');
-    modalDiasNoLaborales.classList.add('wrapper');
-    modalDiasNoLaborales.id = 'modalConfigurarDiasNoLaborales';
+    const modalDiasNoLaborales = document.createElement("div");
+    modalDiasNoLaborales.classList.add("wrapper");
+    modalDiasNoLaborales.id = "modalConfigurarDiasNoLaborales";
 
-    const modalContenido = document.createElement('div');
-    modalContenido.classList.add('wrapper-content');
+    const modalContenido = document.createElement("div");
+    modalContenido.classList.add("wrapper-content");
 
     const htmlContent = `
       <form id="formConfigurarDiasNoLaborales">
         <header id="header-wrapper">
           <h2 id="titulo-wrapper" class="titulo">Configuración de días no laborales</h2>
-          <button id="cerrar-wrapper-dias-no-laborales" class="boton-cerrar">&times;</button>
+          <button type="button" id="cerrar-wrapper-dias-no-laborales" class="boton-cerrar">&times;</button>
         </header>
 
         <div class="modulos">
@@ -306,18 +324,15 @@ class EmpresaVista {
 
     return modalDiasNoLaborales;
   }
-  
-  
-  
-  modalModificar(moderador) {
-    const modalNuevaEmpresa = document.createElement('div');
-    modalNuevaEmpresa.classList.add('modal-backdrop');
-    modalNuevaEmpresa.id = 'modalModificarEmpresa';
 
-    const modalNuevaEmpresaContenido = document.createElement('div');
-    modalNuevaEmpresaContenido.classList.add('modal-content');
-    
-    
+  modalModificar(moderador) {
+    const modalNuevaEmpresa = document.createElement("div");
+    modalNuevaEmpresa.classList.add("modal-backdrop");
+    modalNuevaEmpresa.id = "modalModificarEmpresa";
+
+    const modalNuevaEmpresaContenido = document.createElement("div");
+    modalNuevaEmpresaContenido.classList.add("modal-content");
+
     const htmlContent = `
       <form id="formModificarEmpresa">
       <div id="header-wrapper">
@@ -340,19 +355,19 @@ class EmpresaVista {
         <div class="lista-botones">
           <button type="button"
               id="btnCarrito"
-              class="toggle-btn ${this.tieneCarrito ? 'active' : ''}">
+              class="toggle-btn ${this.tieneCarrito ? "active" : ""}">
             Módulo Carrito
           </button>
 
           <button type="button"
               id="btnMesero"
-              class="toggle-btn ${this.moduloMesero ? 'active' : ''}">
+              class="toggle-btn ${this.moduloMesero ? "active" : ""}">
             Módulo Mesero
           </button>
 
           <button type="button"
               id="btnDeshabilitarExcel"
-              class="toggle-btn ${this.deshabilitarExcel ? 'active' : ''}">
+              class="toggle-btn ${this.deshabilitarExcel ? "active" : ""}">
             Deshabilitar Excel
           </button>
         </div>
@@ -360,19 +375,19 @@ class EmpresaVista {
         <div class="lista-botones">
           <button type="button"
               id="btnEfectivo"
-              class="toggle-btn ${this.efectivo ? 'active' : ''}">
+              class="toggle-btn ${this.efectivo ? "active" : ""}">
             Efectivo
           </button>
 
           <button type="button"
               id="btnTarjeta"
-              class="toggle-btn ${this.tarjeta ? 'active' : ''}">
+              class="toggle-btn ${this.tarjeta ? "active" : ""}">
             Tarjeta
           </button>
 
           <button type="button"
               id="btnTransferencia"
-              class="toggle-btn ${this.transferencia ? 'active' : ''}">
+              class="toggle-btn ${this.transferencia ? "active" : ""}">
             Transferencia
           </button>
         </div>
@@ -406,17 +421,17 @@ class EmpresaVista {
     modalNuevaEmpresaContenido.innerHTML = htmlContent;
 
     modalNuevaEmpresa.appendChild(modalNuevaEmpresaContenido);
-    
+
     return modalNuevaEmpresa;
   }
 
   modalConfigurarEmpresa() {
-    const modalConfigurarEmpresa = document.createElement('div');
-    modalConfigurarEmpresa.classList.add('modal-configurar');
-    modalConfigurarEmpresa.id = 'modal-configuracion-empresa';
+    const modalConfigurarEmpresa = document.createElement("div");
+    modalConfigurarEmpresa.classList.add("modal-configurar");
+    modalConfigurarEmpresa.id = "modal-configuracion-empresa";
 
-    const modalConfigurarEmpresaContenido = document.createElement('div');
-    modalConfigurarEmpresaContenido.classList.add('modal-content-configurar');
+    const modalConfigurarEmpresaContenido = document.createElement("div");
+    modalConfigurarEmpresaContenido.classList.add("modal-content-configurar");
     const htmlContent = `
       <form id="form-configurar-empresa">
         <h2 id = "nombre-empresa-modal">Configuración</h2>
@@ -429,18 +444,18 @@ class EmpresaVista {
 
     modalConfigurarEmpresaContenido.innerHTML = htmlContent;
     modalConfigurarEmpresa.appendChild(modalConfigurarEmpresaContenido);
-    
+
     return modalConfigurarEmpresa;
   }
 
   modalModificarParaModerador(moderador) {
-    const modalNuevaEmpresa = document.createElement('div');
-    modalNuevaEmpresa.classList.add('modal-backdrop');
-    modalNuevaEmpresa.id = 'modalModificarEmpresa';
+    const modalNuevaEmpresa = document.createElement("div");
+    modalNuevaEmpresa.classList.add("modal-backdrop");
+    modalNuevaEmpresa.id = "modalModificarEmpresa";
 
-    const modalNuevaEmpresaContenido = document.createElement('div');
-    modalNuevaEmpresaContenido.classList.add('modal-content');
-    
+    const modalNuevaEmpresaContenido = document.createElement("div");
+    modalNuevaEmpresaContenido.classList.add("modal-content");
+
     const htmlContent = `
       <form id="formModificarEmpresa">
         <div id="header-wrapper">
@@ -463,19 +478,19 @@ class EmpresaVista {
         <div class="lista-botones">
           <button type="button"
               id="btnEfectivo"
-              class="toggle-btn ${this.efectivo ? 'active' : ''}">
+              class="toggle-btn ${this.efectivo ? "active" : ""}">
             Efectivo
           </button>
 
           <button type="button"
               id="btnTarjeta"
-              class="toggle-btn ${this.tarjeta ? 'active' : ''}">
+              class="toggle-btn ${this.tarjeta ? "active" : ""}">
             Tarjeta
           </button>
 
           <button type="button"
               id="btnTransferencia"
-              class="toggle-btn ${this.transferencia ? 'active' : ''}">
+              class="toggle-btn ${this.transferencia ? "active" : ""}">
             Transferencia
           </button>
         </div>
@@ -506,22 +521,25 @@ class EmpresaVista {
     `;
     modalNuevaEmpresaContenido.innerHTML = htmlContent;
     if (!this.tieneCarrito) {
-      const listaBotones = modalNuevaEmpresaContenido.querySelector('.lista-botones');
-      const btnEfectivo = modalNuevaEmpresaContenido.querySelector('#btnEfectivo');
-      const btnTarjeta = modalNuevaEmpresaContenido.querySelector('#btnTarjeta');
-      const btnTransferencia = modalNuevaEmpresaContenido.querySelector('#btnTransferencia');
-      const textoMetodosPago = modalNuevaEmpresaContenido.querySelector('#titulo-modulos');
-      listaBotones.classList.add('hidden');
-      textoMetodosPago.classList.add('hidden');
-      btnEfectivo.classList.add('hidden');
-      btnTarjeta.classList.add('hidden');
-      btnTransferencia.classList.add('hidden');
+      const listaBotones =
+        modalNuevaEmpresaContenido.querySelector(".lista-botones");
+      const btnEfectivo =
+        modalNuevaEmpresaContenido.querySelector("#btnEfectivo");
+      const btnTarjeta =
+        modalNuevaEmpresaContenido.querySelector("#btnTarjeta");
+      const btnTransferencia =
+        modalNuevaEmpresaContenido.querySelector("#btnTransferencia");
+      const textoMetodosPago =
+        modalNuevaEmpresaContenido.querySelector("#titulo-modulos");
+      listaBotones.classList.add("hidden");
+      textoMetodosPago.classList.add("hidden");
+      btnEfectivo.classList.add("hidden");
+      btnTarjeta.classList.add("hidden");
+      btnTransferencia.classList.add("hidden");
     }
 
     modalNuevaEmpresa.appendChild(modalNuevaEmpresaContenido);
-    
+
     return modalNuevaEmpresa;
   }
 }
-
-
