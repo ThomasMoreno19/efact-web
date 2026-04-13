@@ -1,7 +1,7 @@
 // Scripts/Administrador/Vista/Js/GestorAdministrador.js
 class GestorModerador {
   // El método mostrarListaEmpresas ahora solo devuelve los datos, sin manipular el DOM
-  async cacheFetch(url, body, id_empresa) {
+  async llamadaAlBackend(url, body, id_empresa) {
     const requestBody = { ...body, id_empresa };
 
     const response = await fetch(url, {
@@ -20,11 +20,15 @@ class GestorModerador {
 
   // El método mostrarListaEmpresas ahora solo devuelve los datos, sin manipular el DOM
   async mostrarListaArticulos(id_rubro, id_empresa) {
-    return await this.cacheFetch(`/articulo/mostrar`, { id_rubro }, id_empresa);
+    return await this.llamadaAlBackend(
+      `/articulo/mostrar`,
+      { id_rubro },
+      id_empresa,
+    );
   }
 
   async mostrarListaArticulosPorEmpresa(id_empresa) {
-    return await this.cacheFetch(
+    return await this.llamadaAlBackend(
       `/articulo/mostrar/empresa`,
       { id_empresa },
       id_empresa,
@@ -32,7 +36,11 @@ class GestorModerador {
   }
 
   async mostrarListaRubros(id_empresa) {
-    return await this.cacheFetch(`/rubro/mostrar`, { id_empresa }, id_empresa);
+    return await this.llamadaAlBackend(
+      `/rubro/mostrar`,
+      { id_empresa },
+      id_empresa,
+    );
   }
 
   async asignarImagen(id, id_empresa, nombre, archivoImagen, logo_url = "") {
@@ -146,13 +154,15 @@ class GestorModerador {
                   id_articulo: columnas[0],
                   nombre_articulo: columnas[1].trim(),
                   descripcion: this.limpiarDescripcion(
-                    columnas[4]?.toString().trim() || "",
+                    columnas[6]?.toString().trim() || "",
                   ),
-                  precio_articulo: parseFloat(columnas[2].trim()),
+                  precio1: parseFloat(columnas[2].trim()),
+                  precio2: parseFloat(columnas[3].trim()),
+                  precio3: parseFloat(columnas[4].trim()),
                   codigo_carta_articulo: "",
-                  nombre_rubro: columnas[3].trim(),
-                  publica_art: columnas[5].trim(),
-                  publica_rub: columnas[6].trim(),
+                  nombre_rubro: columnas[5].trim(),
+                  publica_art: columnas[7].trim(),
+                  publica_rub: columnas[8].trim(),
                 };
                 listaObjetos.push(articulo);
               }
@@ -183,13 +193,15 @@ class GestorModerador {
                 id_articulo: columnas[0],
                 nombre_articulo: columnas[1].trim(),
                 descripcion: this.limpiarDescripcion(
-                  columnas[4]?.toString().trim() || "",
+                  columnas[6]?.toString().trim() || "",
                 ),
-                precio_articulo: parseFloat(columnas[2]),
+                precio1: parseFloat(columnas[2]),
+                precio2: parseFloat(columnas[3]),
+                precio3: parseFloat(columnas[4]),
                 codigo_carta_articulo: "",
-                nombre_rubro: columnas[3].trim(),
-                publica_art: columnas[5],
-                publica_rub: columnas[6],
+                nombre_rubro: columnas[5].trim(),
+                publica_art: columnas[7],
+                publica_rub: columnas[8],
               };
 
               listaObjetos.push(articulo);
@@ -359,7 +371,9 @@ class GestorModerador {
     id_empresa,
     nombre,
     descripcion,
-    precio,
+    precio1,
+    precio2,
+    precio3,
     codigo_carta = "",
   ) {
     const bodyData = {
@@ -368,7 +382,9 @@ class GestorModerador {
       id_empresa: id_empresa,
       descripcion: descripcion,
       nombre: nombre,
-      precio: precio,
+      precio1: precio1,
+      precio2: precio2,
+      precio3: precio3,
       codigo_carta: codigo_carta,
     };
 
@@ -446,7 +462,11 @@ class GestorModerador {
 
     const bodyData = { id_empresa: parseInt(id_empresa) };
 
-    return await this.cacheFetch(`/empresa/mostrar/id`, bodyData, id_empresa);
+    return await this.llamadaAlBackend(
+      `/empresa/mostrar/id`,
+      bodyData,
+      id_empresa,
+    );
   }
 
   async modificarModerador(id, nombre, contrasena) {
@@ -491,6 +511,7 @@ class GestorModerador {
     tarjeta,
     transferencia,
     contrasenaMesero,
+    precio_activo,
   ) {
     const bodyData = {
       id: id,
@@ -501,6 +522,7 @@ class GestorModerador {
       tarjeta: tarjeta,
       transferencia: transferencia,
       contrasenaMesero: contrasenaMesero,
+      precio_activo: precio_activo,
     };
 
     try {

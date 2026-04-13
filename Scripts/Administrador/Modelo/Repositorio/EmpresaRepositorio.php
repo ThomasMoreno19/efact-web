@@ -29,6 +29,7 @@ class EmpresaRepositorio {
         'efectivo' => $data['efectivo'],
         'tarjeta' => $data['tarjeta'],
         'transferencia' => $data['transferencia'],
+        'precio_activo' => $data['precio_activo'],
         'fecha_creacion' => $data['fecha_creacion'],
       ];
     }
@@ -118,7 +119,7 @@ class EmpresaRepositorio {
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null): bool {
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, int $precio_activo, ?string $contrasenaMesero = null): bool {
     try {
       $sql = "UPDATE Empresa
           SET nombre = :nombre,
@@ -126,7 +127,8 @@ class EmpresaRepositorio {
           ubicacion = :ubicacion,
           efectivo = :efectivo,
           tarjeta = :tarjeta,
-          transferencia = :transferencia";
+          transferencia = :transferencia,
+          precio_activo = :precio_activo";
 
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $sql .= ", contrasenaMesero = :contrasenaMesero";
@@ -143,6 +145,7 @@ class EmpresaRepositorio {
       $stmt->bindParam(':efectivo', $efectivo, PDO::PARAM_BOOL);
       $stmt->bindParam(':tarjeta', $tarjeta, PDO::PARAM_BOOL);
       $stmt->bindParam(':transferencia', $transferencia, PDO::PARAM_BOOL);
+      $stmt->bindParam(':precio_activo', $precio_activo, PDO::PARAM_INT);
 
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $contrasenaMeseroHash = password_hash($contrasenaMesero, PASSWORD_DEFAULT);
@@ -153,7 +156,7 @@ class EmpresaRepositorio {
 
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
-      return null;
+      return false;
     }
   }
   
@@ -184,12 +187,12 @@ class EmpresaRepositorio {
   }
 
   
-  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array {
+  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): bool {
     try {
       $fecha_actual= date('Y-m-d');
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, contrasenaMesero) 
-        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia, :contrasenaMesero)"
+        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, contrasenaMesero, precio_activo) 
+        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia, :contrasenaMesero, 1)"
       );
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
@@ -215,12 +218,12 @@ class EmpresaRepositorio {
 
       
       if ($data) {
-        return $data;
+        return true;
       }
     } catch (PDOException $e) {
       error_log("Error al guardar nueva empresa: " . $e->getMessage());
     }
-    return null;
+    return false;
   }
   
   public function guardarHorarios(int $id_empresa, array $horarios): bool {

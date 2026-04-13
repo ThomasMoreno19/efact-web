@@ -1,12 +1,21 @@
 class ModalCarrito {
-  constructor(carrito, empresa, onEliminarArticulo, onFinalizarCompra, esMesero, horarios) {
+  constructor(
+    carrito,
+    empresa,
+    onEliminarArticulo,
+    onFinalizarCompra,
+    esMesero,
+    horarios,
+    moduloCarrito,
+  ) {
     this.carrito = carrito;
     this.empresa = empresa;
     this.onEliminarArticulo = onEliminarArticulo;
     this.onFinalizarCompra = onFinalizarCompra;
     this.esMesero = esMesero;
+    this.moduloCarrito = moduloCarrito;
     this.horarios = horarios || { horarios: [], noLab: [] };
-    this.listaCentral = document.getElementById('lista-central');
+    this.listaCentral = document.getElementById("lista-central");
     this.wrapper = null;
     this.datosPersonales = {
       nombre: "",
@@ -15,16 +24,16 @@ class ModalCarrito {
       formaEntrega: "",
       direccion: "",
       referencia: "",
-      numeroMesa: null
+      numeroMesa: null,
     };
     this.horarios = horarios || [];
     this.handleEnviarClick = this.enviarPedidoWhatsApp.bind(this);
 
-    window.addEventListener('popstate', (event) => {
+    window.addEventListener("popstate", (event) => {
       const state = event.state;
       if (!state) return;
 
-      if (state.vista === 'modal') {
+      if (state.vista === "modal") {
         if (state.paso === 1) {
           this.volverAPaso1();
         }
@@ -33,9 +42,9 @@ class ModalCarrito {
   }
 
   abrirModalCarrito() {
-    this.crearModal();        // crea el HTML del modal en el DOM
+    this.crearModal(); // crea el HTML del modal en el DOM
     this.botonEnviar = this.wrapper.querySelector("#boton-finalizar-compra");
-    this.renderCarrito();     // dibuja las filas en base al carrito actual
+    this.renderCarrito(); // dibuja las filas en base al carrito actual
     this.inicializarEventos(); // agrega delegación de eventos sobre elementos ya presentes
   }
 
@@ -43,7 +52,7 @@ class ModalCarrito {
     // Elimino modal previo si existe (evita duplicados)
     this.wrapper = document.getElementById("modal-carrito-wrapper");
     if (this.wrapper) this.wrapper.remove();
-    
+
     this.wrapper = document.createElement("div");
     this.wrapper.id = "modal-carrito-wrapper";
     this.wrapper.innerHTML = `
@@ -109,27 +118,34 @@ class ModalCarrito {
       </div>
     </div>
     `;
-    
+
     this.botonSigPaso = this.wrapper.querySelector("#boton-siguiente-paso");
 
     document.body.appendChild(this.wrapper);
     window.history.pushState(
-      { vista: 'modal', paso: 1 },
-      '',
-      window.location.href
+      { vista: "modal", paso: 1 },
+      "",
+      window.location.href,
     );
   }
 
-
   diaIndexToNombre(diaIndex) {
-    const mapa = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    const mapa = [
+      "Domingo",
+      "Lunes",
+      "Martes",
+      "Miércoles",
+      "Jueves",
+      "Viernes",
+      "Sábado",
+    ];
     return mapa[diaIndex] || `Día ${diaIndex}`;
   }
 
   esDiaNoLaboralHoy() {
     const ahora = new Date();
-    const dd = String(ahora.getDate()).padStart(2, '0');
-    const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+    const dd = String(ahora.getDate()).padStart(2, "0");
+    const mm = String(ahora.getMonth() + 1).padStart(2, "0");
     const yyyy = String(ahora.getFullYear());
     const hoyDm = `${dd}/${mm}`;
     const hoyCompleta = `${dd}/${mm}/${yyyy}`;
@@ -137,7 +153,6 @@ class ModalCarrito {
     const noLab = this.horarios.noLab || [];
     return noLab.includes(hoyCompleta) || noLab.includes(hoyDm);
   }
-
 
   estaAbiertoPorHorarioAhora() {
     const ahora = new Date();
@@ -150,16 +165,20 @@ class ModalCarrito {
 
     const horarios = this.horarios.horarios || [];
 
-    const registroHoy = horarios.find(h => Number(h.diaIndex) === diaIndexHoy);
-    const registroAyer = horarios.find(h => Number(h.diaIndex) === diaIndexAyer);
+    const registroHoy = horarios.find(
+      (h) => Number(h.diaIndex) === diaIndexHoy,
+    );
+    const registroAyer = horarios.find(
+      (h) => Number(h.diaIndex) === diaIndexAyer,
+    );
 
     const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
 
     const estaEnRango = (r, permitirCruce) => {
       if (!r?.apertura || !r?.cierre) return false;
 
-      const [ha, ma] = r.apertura.split(':').map(Number);
-      const [hc, mc] = r.cierre.split(':').map(Number);
+      const [ha, ma] = r.apertura.split(":").map(Number);
+      const [hc, mc] = r.cierre.split(":").map(Number);
 
       const apertura = ha * 60 + ma;
       const cierre = hc * 60 + mc;
@@ -176,15 +195,17 @@ class ModalCarrito {
     };
 
     // 1) Horarios del día de hoy
-    const abiertoHoy = (registroHoy?.rangos || []).some(r => estaEnRango(r, true));
+    const abiertoHoy = (registroHoy?.rangos || []).some((r) =>
+      estaEnRango(r, true),
+    );
     if (abiertoHoy) return true;
 
     // 2) Horarios del día anterior que cruzan medianoche
-    const abiertoPorAyer = (registroAyer?.rangos || []).some(r => {
+    const abiertoPorAyer = (registroAyer?.rangos || []).some((r) => {
       if (!r?.apertura || !r?.cierre) return false;
 
-      const [ha, ma] = r.apertura.split(':').map(Number);
-      const [hc, mc] = r.cierre.split(':').map(Number);
+      const [ha, ma] = r.apertura.split(":").map(Number);
+      const [hc, mc] = r.cierre.split(":").map(Number);
 
       const apertura = ha * 60 + ma;
       const cierre = hc * 60 + mc;
@@ -199,57 +220,65 @@ class ModalCarrito {
     return abiertoPorAyer;
   }
 
-
   actualizarDisponibilidadPedido() {
-    const mensaje = this.wrapper?.querySelector('#mensaje-fuera-horario');
+    const mensaje = this.wrapper?.querySelector("#mensaje-fuera-horario");
     if (!mensaje) return;
 
-    const abierto = this.estaAbiertoPorHorarioAhora() && !this.esDiaNoLaboralHoy();
+    const abierto =
+      (this.estaAbiertoPorHorarioAhora() &&
+        !this.esDiaNoLaboralHoy() &&
+        this.moduloCarrito) ||
+      this.esMesero;
 
     if (this.esMesero) {
       this.botonEnviar.desactivado = !abierto;
-      this.botonEnviar.classList.toggle('desactivado', !abierto);
+      this.botonEnviar.classList.toggle("desactivado", !abierto);
     } else {
       this.botonSigPaso.desactivado = !abierto;
-      this.botonSigPaso.classList.toggle('desactivado', !abierto);
+      this.botonSigPaso.classList.toggle("desactivado", !abierto);
     }
 
     if (abierto) {
-      mensaje.classList.add('hidden');
-      mensaje.innerHTML = '';
+      mensaje.classList.add("hidden");
+      mensaje.innerHTML = "";
       return;
     }
 
-    mensaje.classList.remove('hidden');
-    mensaje.innerHTML = 'No se pueden realizar pedidos fuera de horario <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
-    if (this.esDiaNoLaboralHoy()) mensaje.innerHTML = 'Hoy es día no laboral <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
-    const btn = mensaje.querySelector('#btn-consultar-horarios');
-    btn?.addEventListener('click', () => this.mostrarModalHorarios());
+    mensaje.classList.remove("hidden");
+    mensaje.innerHTML =
+      'No se pueden realizar pedidos fuera de horario <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
+    if (this.esDiaNoLaboralHoy())
+      mensaje.innerHTML =
+        'Hoy es día no laboral <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
+    const btn = mensaje.querySelector("#btn-consultar-horarios");
+    btn?.addEventListener("click", () => this.mostrarModalHorarios());
   }
 
   mostrarModalHorarios() {
-    const viejo = document.getElementById('modal-horarios-cafeteria');
+    const viejo = document.getElementById("modal-horarios-cafeteria");
     if (viejo) viejo.remove();
 
-    const modal = document.createElement('div');
-    modal.id = 'modal-horarios-cafeteria';
-    modal.className = 'modal-horarios-cafeteria';
+    const modal = document.createElement("div");
+    modal.id = "modal-horarios-cafeteria";
+    modal.className = "modal-horarios-cafeteria";
 
     const grupos = this.agruparHorariosPorRangos(this.horarios.horarios);
 
     const items = (grupos || [])
-      .map(g => {
+      .map((g) => {
         const titulo =
           g.desde === g.hasta
             ? this.diaIndexToNombre(g.desde)
-            : (g.desde < g.hasta
-                ? `De ${this.diaIndexToNombre(g.desde)} a ${this.diaIndexToNombre(g.hasta)}`
-                : `De ${this.diaIndexToNombre(g.desde)} a ${this.diaIndexToNombre(g.hasta)}`);
-
+            : g.desde < g.hasta
+              ? `De ${this.diaIndexToNombre(g.desde)} a ${this.diaIndexToNombre(g.hasta)}`
+              : `De ${this.diaIndexToNombre(g.desde)} a ${this.diaIndexToNombre(g.hasta)}`;
 
         const rangosHTML = (g.rangos || [])
-          .map(r => `<div class="rango-horario">${r.apertura} - ${r.cierre}</div>`)
-          .join('');
+          .map(
+            (r) =>
+              `<div class="rango-horario">${r.apertura} - ${r.cierre}</div>`,
+          )
+          .join("");
 
         return `
           <li class="dia-horario-item">
@@ -260,28 +289,28 @@ class ModalCarrito {
           </li>
         `;
       })
-      .join('');
+      .join("");
 
     modal.innerHTML = `
       <div class="modal-horarios-contenido">
         <h3 class="titulo-horarios-cafeteria">Horarios de la cafetería</h3>
 
         <ul class="horarios-cafeteria">
-          ${items || '<li>No hay horarios configurados</li>'}
+          ${items || "<li>No hay horarios configurados</li>"}
         </ul>
       </div>
     `;
 
     document.body.appendChild(modal);
 
-    modal.addEventListener('click', (e) => {
+    modal.addEventListener("click", (e) => {
       if (e.target === modal) modal.remove();
     });
 
-    modal.querySelector('#cerrar-modal-horarios-cafeteria')
-      ?.addEventListener('click', () => modal.remove());
+    modal
+      .querySelector("#cerrar-modal-horarios-cafeteria")
+      ?.addEventListener("click", () => modal.remove());
   }
-
 
   agruparHorariosPorRangos(horarios) {
     const ordenados = (horarios || [])
@@ -294,18 +323,19 @@ class ModalCarrito {
     for (const dia of ordenados) {
       const diaIndex = Number(dia.diaIndex);
 
-      const firma = (dia.rangos || [])
-        .slice()
-        .sort((a, b) => a.apertura.localeCompare(b.apertura))
-        .map(r => `${r.apertura}-${r.cierre}`)
-        .join('|') || 'CERRADO';
+      const firma =
+        (dia.rangos || [])
+          .slice()
+          .sort((a, b) => a.apertura.localeCompare(b.apertura))
+          .map((r) => `${r.apertura}-${r.cierre}`)
+          .join("|") || "CERRADO";
 
       if (!grupoActual) {
         grupoActual = {
           desde: diaIndex,
           hasta: diaIndex,
           firma,
-          rangos: dia.rangos || []
+          rangos: dia.rangos || [],
         };
         continue;
       }
@@ -321,7 +351,7 @@ class ModalCarrito {
           desde: diaIndex,
           hasta: diaIndex,
           firma,
-          rangos: dia.rangos || []
+          rangos: dia.rangos || [],
         };
       }
     }
@@ -336,7 +366,11 @@ class ModalCarrito {
       const primeroEsDomingo = primero.desde === 0;
       const ultimoEsSabado = ultimo.hasta === 6;
 
-      if (primeroEsDomingo && ultimoEsSabado && primero.firma === ultimo.firma) {
+      if (
+        primeroEsDomingo &&
+        ultimoEsSabado &&
+        primero.firma === ultimo.firma
+      ) {
         // Unimos: el grupo final absorbe el primero
         ultimo.hasta = primero.hasta; // normalmente 0
         grupos.shift(); // sacamos el primero
@@ -345,7 +379,6 @@ class ModalCarrito {
 
     return grupos;
   }
-
 
   renderCarrito() {
     const cuerpo = document.getElementById("cuerpo-tabla-carrito");
@@ -369,10 +402,13 @@ class ModalCarrito {
       this.botonSigPaso && (this.botonSigPaso.disabled = true);
       this.botonSigPaso?.classList.add("desactivado");
       const msg = this.wrapper?.querySelector("#mensaje-fuera-horario");
-      if (msg) { msg.classList.add("hidden"); msg.innerHTML = ""; }
+      if (msg) {
+        msg.classList.add("hidden");
+        msg.innerHTML = "";
+      }
       totalSpan.textContent = this.carrito.obtenerTotal() || "0.00";
       return;
-    }else {
+    } else {
       this.botonSigPaso?.classList.remove("desactivado");
     }
     if (this.esMesero) {
@@ -386,28 +422,28 @@ class ModalCarrito {
     this.actualizarDisponibilidadPedido();
 
     articulos.forEach((articulo, index) => {
+      if (typeof articulo.cantidad === "undefined") articulo.cantidad = 1;
+      if (!articulo.observaciones) articulo.observaciones = ["", "", ""];
 
-      if (typeof articulo.cantidad === "undefined")
-        articulo.cantidad = 1;
-      if (typeof articulo.subtotal === "undefined")
-        articulo.subtotal = this.carrito.eliminarPuntoPrecio(articulo.precio) * articulo.cantidad;
-      if (!articulo.observaciones)
-        articulo.observaciones = ["", "", ""];
+      // 🔥 precio base (numérico limpio)
+      const precioBase = this.carrito.eliminarPuntoPrecio(articulo.precio);
 
-      articulo.subtotal = this.carrito.eliminarPuntoPrecio(articulo.precio) * articulo.cantidad;
-      articulo.precio = this.carrito.insertarPuntoPrecio(articulo.precio);
-      articulo.subtotal = this.carrito.insertarPuntoPrecio(articulo.subtotal);
+      // 🔥 cálculos
+      const subtotal = precioBase * articulo.cantidad;
+
+      // 🔥 formateo SOLO para mostrar
+      const precioFormateado = this.carrito.insertarPuntoPrecio(precioBase);
+      const subtotalFormateado = this.carrito.insertarPuntoPrecio(subtotal);
 
       const bloque = document.createElement("div");
       bloque.classList.add("bloque-articulo");
-      // ✅ Agregar clase par o impar
       bloque.classList.add(index % 2 === 0 ? "par" : "impar");
 
       bloque.innerHTML = `
         <div class="fila-articulo">
           <div class="nombre-precioUnitario">
             <div class="col-nombre">${articulo.nombre}</div>
-            <div class="col-precio">$${articulo.precio} c/u</div>
+            <div class="col-precio">$${precioFormateado} c/u</div>
           </div>
 
           <div class="observacion-wrapper">
@@ -432,23 +468,23 @@ class ModalCarrito {
               placeholder="Observación del platillo">
             </textarea>
           </div>
-            
         </div>
 
         <div class="info-extra">
           <div class="subtotal-eliminar">
-            <div class="celda col-subtotal">$${articulo.subtotal}</div>
-            <button class="btn-eliminar" data-id="${articulo.id}" aria-label="Eliminar">
+            <div class="celda col-subtotal">$${subtotalFormateado}</div>
+            <button class="btn-eliminar" data-id="${articulo.id}">
               <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#ffffff" version="1.1" id="Capa_1" width="19px" height="19px" viewBox="0 0 485 485" xml:space="preserve">
-              <g>
                 <g>
-                  <rect x="67.224" width="350.535" height="71.81"/>
-                  <path d="M417.776,92.829H67.237V485h350.537V92.829H417.776z M165.402,431.447h-28.362V146.383h28.362V431.447z M256.689,431.447    h-28.363V146.383h28.363V431.447z M347.97,431.447h-28.361V146.383h28.361V431.447z"/>
+                  <g>
+                    <rect x="67.224" width="350.535" height="71.81"></rect>
+                    <path d="M417.776,92.829H67.237V485h350.537V92.829H417.776z M165.402,431.447h-28.362V146.383h28.362V431.447z M256.689,431.447    h-28.363V146.383h28.363V431.447z M347.97,431.447h-28.361V146.383h28.361V431.447z"></path>
+                  </g>
                 </g>
-              </g>
-              </svg>
+                </svg>
             </button>
           </div>
+
           <div class="col-cantidad">
             <button class="btn-cant menos" data-id="${articulo.id}">-</button>
             <span class="cantidad" data-id="${articulo.id}">${articulo.cantidad}</span>
@@ -463,19 +499,16 @@ class ModalCarrito {
       textareas.forEach((ta, i) => {
         ta.value = articulo.observaciones[i] || "";
 
-        if (i > 0 && articulo.observaciones[i - 1].length <= 35) 
+        if (i > 0 && articulo.observaciones[i - 1].length <= 35)
           ta.classList.add("hidden");
-        else 
-          ta.classList.remove("hidden");
+        else ta.classList.remove("hidden");
       });
-
     });
 
     totalSpan.textContent = this.carrito.obtenerTotal();
 
     // Listener para textarea
-    cuerpo.querySelectorAll(".observacion-textarea").forEach(textarea => {
-
+    cuerpo.querySelectorAll(".observacion-textarea").forEach((textarea) => {
       // ✅ Keydown solo una vez
       textarea.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
@@ -489,8 +522,9 @@ class ModalCarrito {
         const id = textarea.dataset.id;
         const index = Number(textarea.dataset.index);
 
-        const articulo = this.carrito.mostrarArticulos()
-          .find(a => String(a.id) === String(id));
+        const articulo = this.carrito
+          .mostrarArticulos()
+          .find((a) => String(a.id) === String(id));
 
         if (!articulo) return;
 
@@ -518,9 +552,7 @@ class ModalCarrito {
         }
       });
     });
-
   }
-
 
   renderDatosPersonales() {
     this.pendiente = [];
@@ -532,7 +564,6 @@ class ModalCarrito {
     this.listaArticulos.classList.add("hidden");
     this.botonVolver.classList.remove("hidden");
     this.titulo.textContent = "Complete con sus datos personales";
-    
 
     const viejo = document.getElementById("pedir-datos-wrapper");
     if (viejo) viejo.remove();
@@ -614,7 +645,7 @@ class ModalCarrito {
           <button type="button"
               id="btnEfectivo"
               data-value = "Efectivo"
-              class="toggle-btn btnes-metodos-pago ${!!this.empresa.efectivo ? '' : 'hidden'}">
+              class="toggle-btn btnes-metodos-pago ${!!this.empresa.efectivo ? "" : "hidden"}">
               <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" width="19" height="19" x="0" y="0" viewBox="0 0 128 128" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><path d="M123.1 21.9H14.97a4.4 4.4 0 0 0-4.4 4.4v5.67H4.9a4.4 4.4 0 0 0-4.4 4.4v65.68a4.4 4.4 0 0 0 4.4 4.4h108.13a4.4 4.4 0 0 0 4.4-4.4v-5.67h5.67a4.4 4.4 0 0 0 4.4-4.4V26.3a4.4 4.4 0 0 0-4.4-4.4zm-9.67 80.15c0 .22-.18.4-.4.4H4.9c-.22 0-.4-.18-.4-.4V36.37c0-.22.18-.4.4-.4h108.13c.22 0 .4.18.4.4zm10.07-10.07c0 .22-.18.4-.4.4h-5.67V36.37a4.4 4.4 0 0 0-4.4-4.4H14.57V26.3c0-.22.18-.4.4-.4H123.1c.22 0 .4.18.4.4z" class=""></path><path d="M105.86 50.99c-4.11 0-7.45-3.34-7.45-7.45 0-1.1-.9-2-2-2h-74.9c-1.1 0-2 .9-2 2 0 4.11-3.34 7.45-7.45 7.45-1.1 0-2 .9-2 2v32.43c0 1.1.9 2 2 2 4.11 0 7.45 3.34 7.45 7.45 0 1.1.9 2 2 2h74.91c1.1 0 2-.9 2-2 0-4.11 3.34-7.45 7.45-7.45 1.1 0 2-.9 2-2V52.99c-.01-1.1-.9-2-2.01-2zm-2 32.61a11.47 11.47 0 0 0-9.27 9.27H23.34a11.47 11.47 0 0 0-9.27-9.27V54.82a11.47 11.47 0 0 0 9.27-9.27h71.25a11.47 11.47 0 0 0 9.27 9.27z" class=""></path><path d="M58.97 51.96c-9.51 0-17.25 7.74-17.25 17.25s7.74 17.25 17.25 17.25 17.25-7.74 17.25-17.25c-.01-9.51-7.74-17.25-17.25-17.25zm0 30.5c-7.3 0-13.25-5.94-13.25-13.25s5.94-13.25 13.25-13.25 13.25 5.94 13.25 13.25-5.95 13.25-13.25 13.25zM27.63 61.54c-4.23 0-7.67 3.44-7.67 7.67s3.44 7.67 7.67 7.67 7.67-3.44 7.67-7.67-3.44-7.67-7.67-7.67zm0 11.34c-2.02 0-3.67-1.65-3.67-3.67s1.65-3.67 3.67-3.67 3.67 1.65 3.67 3.67-1.65 3.67-3.67 3.67zM90.3 61.54c-4.23 0-7.67 3.44-7.67 7.67s3.44 7.67 7.67 7.67 7.67-3.44 7.67-7.67-3.44-7.67-7.67-7.67zm0 11.34c-2.02 0-3.67-1.65-3.67-3.67s1.65-3.67 3.67-3.67 3.67 1.65 3.67 3.67-1.65 3.67-3.67 3.67z"   class=""></path></g></svg>
             Efectivo
           </button>
@@ -622,7 +653,7 @@ class ModalCarrito {
           <button type="button"
               id="btnTarjeta"
               data-value = "Tarjeta"
-              class="toggle-btn btnes-metodos-pago ${!!this.empresa.tarjeta ? '' : 'hidden'}">
+              class="toggle-btn btnes-metodos-pago ${!!this.empresa.tarjeta ? "" : "hidden"}">
               <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" width="19" height="19" x="0" y="0" viewBox="0 0 512.002 512.002" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><path d="M502.903 96.829c-6.634-7.842-15.924-12.632-26.161-13.487L116.185 53.236c-10.238-.855-20.192 2.328-28.035 8.961-7.811 6.607-12.594 15.85-13.476 26.037L67.42 156.29H38.455C17.251 156.29 0 173.541 0 194.745v225.702c0 21.204 17.251 38.455 38.455 38.455h361.813c21.205 0 38.456-17.251 38.456-38.455v-36.613l12.839 1.072c1.083.09 2.16.135 3.228.135 19.768 0 36.62-15.209 38.294-35.257l18.781-224.919c.854-10.237-2.329-20.193-8.963-28.036zM38.455 176.29h361.813c10.176 0 18.456 8.279 18.456 18.455v20.566H20v-20.566c0-10.176 8.279-18.455 18.455-18.455zM20 235.311h398.724V276.8H20zm380.268 203.591H38.455c-10.176 0-18.455-8.279-18.455-18.455V296.8h398.724v123.647c0 10.176-8.28 18.455-18.456 18.455zM491.935 123.2l-18.781 224.919c-.847 10.141-9.788 17.706-19.927 16.856l-14.503-1.211V194.745c0-21.204-17.251-38.455-38.456-38.455H87.534l7.039-66.04c.008-.076.015-.151.021-.228.847-10.141 9.783-17.705 19.927-16.855l360.558 30.106c4.913.41 9.372 2.709 12.555 6.473s4.711 8.541 4.301 13.454z"  ></path><path d="M376.873 326.532h-96.242c-5.523 0-10 4.477-10 10v62.789c0 5.523 4.477 10 10 10h96.242c5.523 0 10-4.477 10-10v-62.789c0-5.523-4.477-10-10-10zm-10 62.789h-76.242v-42.789h76.242z" class=""></path></g></svg>
             Tarjeta
           </button>
@@ -630,7 +661,7 @@ class ModalCarrito {
           <button type="button"
               id="btnTransferencia"
               data-value = "Transferencia"
-              class="toggle-btn btnes-metodos-pago ${!!this.empresa.transferencia ? '' : 'hidden'}">
+              class="toggle-btn btnes-metodos-pago ${!!this.empresa.transferencia ? "" : "hidden"}">
               <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" fill="currentColor" width="19" height="19" x="0" y="0" viewBox="0 0 24 24" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><g ><path d="M21 11H7c-.6 0-1-.4-1-1s.4-1 1-1h11.6l-2.3-2.3c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l4 4c.3.3.4.7.2 1.1-.1.4-.5.6-.9.6zM7 19c-.3 0-.5-.1-.7-.3l-4-4c-.3-.3-.4-.7-.2-1.1s.5-.6.9-.6h14c.6 0 1 .4 1 1s-.4 1-1 1H5.4l2.3 2.3c.4.4.4 1 0 1.4-.2.2-.4.3-.7.3z" class=""></path></g></g></svg>
               Transferencia
           </button>
@@ -662,30 +693,33 @@ class ModalCarrito {
         const btnEliminar = e.target.closest(".btn-eliminar");
         if (btnEliminar) {
           const id = btnEliminar.dataset.id;
-          
+
           this.carrito.eliminarArticulo(id);
 
           // notificar a PantallaCliente
-          if (this.onEliminarArticulo)
-            this.onEliminarArticulo(id);
+          if (this.onEliminarArticulo) this.onEliminarArticulo(id);
 
           this.renderCarrito();
           return;
         }
 
-
         // Aumentar / Disminuir
         const btnCant = e.target.closest(".btn-cant");
         if (btnCant && cuerpo.contains(btnCant)) {
           const id = btnCant.dataset.id;
-          const articulo = this.carrito.mostrarArticulos().find(a => String(a.id) === String(id));
+          const articulo = this.carrito
+            .mostrarArticulos()
+            .find((a) => String(a.id) === String(id));
           if (!articulo) return;
 
           if (btnCant.classList.contains("mas") && articulo.cantidad < 15)
             articulo.cantidad = (Number(articulo.cantidad) || 0) + 1;
-          else if (btnCant.classList.contains("menos") && Number(articulo.cantidad) > 1)
+          else if (
+            btnCant.classList.contains("menos") &&
+            Number(articulo.cantidad) > 1
+          )
             articulo.cantidad = Number(articulo.cantidad) - 1;
-          
+
           this.renderCarrito();
           return;
         }
@@ -695,7 +729,6 @@ class ModalCarrito {
     }
 
     this.botonEnviar?.addEventListener("click", () => {
-
       if (this.botonEnviar.desactivado) return;
 
       // Si el botón enviar SOLO existe para mesero:
@@ -707,17 +740,17 @@ class ModalCarrito {
     this.botonSigPaso?.addEventListener("click", () => {
       if (this.botonSigPaso.desactivado) return;
       window.history.pushState(
-        { vista: 'modal', paso: 2 },
-        '',
-        window.location.href
+        { vista: "modal", paso: 2 },
+        "",
+        window.location.href,
       );
-        this.renderDatosPersonales();
+      this.renderDatosPersonales();
     });
 
     // Listener para cerrar
     if (botonCerrar) {
       botonCerrar.addEventListener("click", () => {
-        this.listaCentral.classList.remove('hidden');
+        this.listaCentral.classList.remove("hidden");
         if (this.wrapper) this.wrapper.remove();
       });
     }
@@ -733,53 +766,55 @@ class ModalCarrito {
     // Construyo el mensaje
     if (this.datosPersonales.numeroMesa !== null) {
       var mensaje = `Mesa: ${this.datosPersonales.numeroMesa}\n####################################\n`;
-    }
-    else{
+    } else {
       var mensaje = `Nombre: ${this.datosPersonales.nombre}\n`;
       mensaje += `Celular: ${this.datosPersonales.telefono}\n\n`;
 
       mensaje += `+Fecha: ${new Date().toLocaleString()}\n`;
       mensaje += `+Forma de pago: ${this.datosPersonales.metodoPago}\n`;
       mensaje += `+Entrega: ${this.datosPersonales.formaEntrega}\n`;
-      if(this.datosPersonales.formaEntrega === "Delivery"){
-        if (this.datosPersonales.direccion) mensaje += `+Dirección: ${this.datosPersonales.direccion}\n`;
-        if (this.datosPersonales.referencia) mensaje += `+Referencia: ${this.datosPersonales.referencia}\n`;
+      if (this.datosPersonales.formaEntrega === "Delivery") {
+        if (this.datosPersonales.direccion)
+          mensaje += `+Dirección: ${this.datosPersonales.direccion}\n`;
+        if (this.datosPersonales.referencia)
+          mensaje += `+Referencia: ${this.datosPersonales.referencia}\n`;
       }
       mensaje += `\n`;
     }
 
-    articulos.forEach(a => {
-      const id      = String(a.id).padEnd(6).slice(0, 6);
-      const nombre  = String(a.nombre).padEnd(30).slice(0, 30);
-      const cant    = String(a.cantidad).padEnd(10).slice(0, 10);
-      const obs     = this.formatearObservacion(a.observaciones || ["", "", ""]);
+    articulos.forEach((a) => {
+      const id = String(a.id).padEnd(6).slice(0, 6);
+      const nombre = String(a.nombre).padEnd(30).slice(0, 30);
+      const cant = String(a.cantidad).padEnd(10).slice(0, 10);
+      const obs = this.formatearObservacion(a.observaciones || ["", "", ""]);
 
       mensaje += `${id}${nombre}${cant}${obs}\n`;
     });
 
     // Teléfono del cliente
-    const numeroWhatsApp = this.empresa.telefono.replace(/[^0-9]/g, '');
+    const numeroWhatsApp = this.empresa.telefono.replace(/[^0-9]/g, "");
 
     // Codifico el mensaje para URL
     const mensajeCodificado = encodeURIComponent(mensaje);
 
-    const esMovil = /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+    const esMovil = /Android|iPhone|iPad|iPod|Windows Phone/i.test(
+      navigator.userAgent,
+    );
 
     // Seleccionar la URL según el dispositivo
     const url = esMovil
       ? `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}` // Si el dispositivo es móvil
       : `https://web.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensajeCodificado}`; // Si el dispositivo es escritorio
-    
+
     // Abrir WhatsApp
     window.open(url, "_blank");
 
-    articulos.forEach(articulo => {
+    articulos.forEach((articulo) => {
       this.onEliminarArticulo(articulo.id);
     });
     this.onFinalizarCompra();
     document.getElementById("modal-carrito-wrapper").remove();
-    this.listaCentral.classList.remove('hidden');
-                  
+    this.listaCentral.classList.remove("hidden");
   }
 
   pedirMesa() {
@@ -805,51 +840,54 @@ class ModalCarrito {
 
     // Cerrar modal al hacer click fuera
     wrapper.addEventListener("click", (e) => {
-      if (!modalContenido.contains(e.target)){
+      if (!modalContenido.contains(e.target)) {
         wrapper.remove();
       }
     });
 
     document.getElementById("btn-confirmar-datos").onclick = () => {
-      this.datosPersonales.numeroMesa = document.getElementById("input-numero-mesa").value.trim();
+      this.datosPersonales.numeroMesa = document
+        .getElementById("input-numero-mesa")
+        .value.trim();
 
       if (!this.datosPersonales.numeroMesa) return;
       wrapper.remove();
       this.enviarPedidoWhatsApp();
       this.carrito.vaciarCarrito();
       const modalCarrito = document.getElementById("modal-carrito-wrapper");
-      if (modalCarrito)
-        modalCarrito.remove();
-      this.listaCentral.classList.remove('hidden');
+      if (modalCarrito) modalCarrito.remove();
+      this.listaCentral.classList.remove("hidden");
     };
   }
 
   formatearObservacion(observaciones) {
     return observaciones
-      .map(obs => (obs || "").padEnd(50, " ").slice(0, 50))
+      .map((obs) => (obs || "").padEnd(50, " ").slice(0, 50))
       .join("");
   }
 
-  tomarDatosPersonales(){
+  tomarDatosPersonales() {
     //Nombre
-    document.getElementById("input-nombre-cliente")
-      .addEventListener("input", e => {
+    document
+      .getElementById("input-nombre-cliente")
+      .addEventListener("input", (e) => {
         this.datosPersonales.nombre = e.target.value.trim();
       });
 
     //Telefono
-    document.getElementById("input-telefono-cliente")
-      .addEventListener("input", e => {
+    document
+      .getElementById("input-telefono-cliente")
+      .addEventListener("input", (e) => {
         this.datosPersonales.telefono = e.target.value.replace(/\D/g, "");
       });
 
     const botonesFormaEntrega = document.querySelectorAll(
-      ".btnes-forma-entrega"
-    )
+      ".btnes-forma-entrega",
+    );
     //Forma de entrega
-    botonesFormaEntrega.forEach(btn => {
+    botonesFormaEntrega.forEach((btn) => {
       btn.addEventListener("click", () => {
-        botonesFormaEntrega.forEach(b => b.classList.remove("active"));
+        botonesFormaEntrega.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
 
         this.datosPersonales.formaEntrega = btn.dataset.value;
@@ -857,24 +895,24 @@ class ModalCarrito {
     });
 
     //Dirección
-    document.getElementById("input-direccion-cliente")
-      .addEventListener("input", e => {
+    document
+      .getElementById("input-direccion-cliente")
+      .addEventListener("input", (e) => {
         this.datosPersonales.direccion = e.target.value.trim();
       });
 
     //Referencia
-    document.getElementById("input-especificaciones-direccion")
-      .addEventListener("input", e => {
+    document
+      .getElementById("input-especificaciones-direccion")
+      .addEventListener("input", (e) => {
         this.datosPersonales.referencia = e.target.value.trim();
       });
 
     //Metodo de pago
-    const botonesMetodosPago = document.querySelectorAll(
-      ".btnes-metodos-pago"
-    );
-    botonesMetodosPago.forEach(btn => {
+    const botonesMetodosPago = document.querySelectorAll(".btnes-metodos-pago");
+    botonesMetodosPago.forEach((btn) => {
       btn.addEventListener("click", () => {
-        botonesMetodosPago.forEach(b => b.classList.remove("active"));
+        botonesMetodosPago.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
         this.datosPersonales.metodoPago = btn.dataset.value;
       });
@@ -891,10 +929,9 @@ class ModalCarrito {
   }
 
   renderizadorFormulario() {
-
     // Estado inicial
-    this.pendiente = ['nombre', 'telefono', 'btnTipoEntrega', 'metodoPago'];
-    this.botonEnviar.classList.add('desactivado');
+    this.pendiente = ["nombre", "telefono", "btnTipoEntrega", "metodoPago"];
+    this.botonEnviar.classList.add("desactivado");
 
     // BOTÓN VOLVER
     this.botonVolver.onclick = () => {
@@ -905,16 +942,15 @@ class ModalCarrito {
     // INPUTS (nombre, telefono, direccion)
     // =========================
     this.wrapperA.addEventListener("input", (e) => {
-
       const id = e.target.id;
       const valor = e.target.value.trim();
 
       // NOMBRE
       if (id === "input-nombre-cliente") {
         if (valor !== "") {
-          this.pendiente = this.pendiente.filter(p => p !== 'nombre');
-        } else if (!this.pendiente.includes('nombre')) {
-          this.pendiente.push('nombre');
+          this.pendiente = this.pendiente.filter((p) => p !== "nombre");
+        } else if (!this.pendiente.includes("nombre")) {
+          this.pendiente.push("nombre");
         }
       }
 
@@ -923,18 +959,18 @@ class ModalCarrito {
         const soloNumeros = valor.replace(/\D/g, "");
 
         if (soloNumeros.length > 0) {
-          this.pendiente = this.pendiente.filter(p => p !== 'telefono');
-        } else if (!this.pendiente.includes('telefono')) {
-          this.pendiente.push('telefono');
+          this.pendiente = this.pendiente.filter((p) => p !== "telefono");
+        } else if (!this.pendiente.includes("telefono")) {
+          this.pendiente.push("telefono");
         }
       }
 
       // DIRECCION (solo si Delivery está activo)
       if (id === "input-direccion-cliente") {
         if (valor !== "") {
-          this.pendiente = this.pendiente.filter(p => p !== 'direccion');
-        } else if (!this.pendiente.includes('direccion')) {
-          this.pendiente.push('direccion');
+          this.pendiente = this.pendiente.filter((p) => p !== "direccion");
+        } else if (!this.pendiente.includes("direccion")) {
+          this.pendiente.push("direccion");
         }
       }
 
@@ -945,7 +981,6 @@ class ModalCarrito {
     // CLICKS (entrega + pago)
     // =========================
     this.wrapperA.addEventListener("click", (e) => {
-
       const btn = e.target.closest("button");
       if (!btn) return;
 
@@ -953,28 +988,30 @@ class ModalCarrito {
       // FORMA ENTREGA
       // -----------------
       if (btn.classList.contains("btnes-forma-entrega")) {
-
-        const botonesEntrega = this.wrapperA.querySelectorAll(".btnes-forma-entrega");
-        botonesEntrega.forEach(b => b.classList.remove("active"));
+        const botonesEntrega = this.wrapperA.querySelectorAll(
+          ".btnes-forma-entrega",
+        );
+        botonesEntrega.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
 
         const DOMDireccion = document.getElementById("direccion-cliente");
-        const DOMEspecificaciones = document.getElementById("especificaciones-direccion");
+        const DOMEspecificaciones = document.getElementById(
+          "especificaciones-direccion",
+        );
 
-        this.pendiente = this.pendiente.filter(p => p !== 'btnTipoEntrega');
+        this.pendiente = this.pendiente.filter((p) => p !== "btnTipoEntrega");
 
         if (btn.dataset.value === "Delivery") {
           DOMDireccion.classList.remove("hidden");
           DOMEspecificaciones.classList.remove("hidden");
 
-          if (!this.pendiente.includes('direccion')) {
-            this.pendiente.push('direccion');
+          if (!this.pendiente.includes("direccion")) {
+            this.pendiente.push("direccion");
           }
-
         } else {
           DOMDireccion.classList.add("hidden");
           DOMEspecificaciones.classList.add("hidden");
-          this.pendiente = this.pendiente.filter(p => p !== 'direccion');
+          this.pendiente = this.pendiente.filter((p) => p !== "direccion");
         }
       }
 
@@ -982,12 +1019,13 @@ class ModalCarrito {
       // METODO PAGO
       // -----------------
       if (btn.classList.contains("btnes-metodos-pago")) {
-
-        const botonesPago = this.wrapperA.querySelectorAll(".btnes-metodos-pago");
-        botonesPago.forEach(b => b.classList.remove("active"));
+        const botonesPago = this.wrapperA.querySelectorAll(
+          ".btnes-metodos-pago",
+        );
+        botonesPago.forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
 
-        this.pendiente = this.pendiente.filter(p => p !== 'metodoPago');
+        this.pendiente = this.pendiente.filter((p) => p !== "metodoPago");
       }
 
       this.verificarPendientes();
@@ -998,10 +1036,10 @@ class ModalCarrito {
     this.botonEnviar.removeEventListener("click", this.handleEnviarClick);
 
     if (this.pendiente.length === 0) {
-      this.botonEnviar.classList.remove('desactivado');
+      this.botonEnviar.classList.remove("desactivado");
       this.botonEnviar.addEventListener("click", this.handleEnviarClick);
     } else {
-      this.botonEnviar.classList.add('desactivado');
+      this.botonEnviar.classList.add("desactivado");
     }
   }
 }

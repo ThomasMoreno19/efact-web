@@ -10,16 +10,26 @@ class EmpresaVista {
     this.efectivo = empresa.efectivo ?? false;
     this.tarjeta = empresa.tarjeta ?? false;
     this.transferencia = empresa.transferencia ?? false;
+    this.precio_activo = empresa.precio_activo || 1;
     this.logo_url = empresa.logo_url;
   }
 
-  update(nombre, telefono, ubicacion, efectivo, tarjeta, transferencia) {
+  update(
+    nombre,
+    telefono,
+    ubicacion,
+    efectivo,
+    tarjeta,
+    transferencia,
+    precio_activo,
+  ) {
     this.nombre = nombre;
     this.telefono = telefono;
     this.ubicacion = ubicacion;
     this.efectivo = efectivo;
     this.tarjeta = tarjeta;
     this.transferencia = transferencia;
+    this.precio_activo = precio_activo;
   }
 
   mostrarUna() {
@@ -45,6 +55,7 @@ class EmpresaVista {
           empresaEfectivo: this.efectivo,
           empresaTarjeta: this.tarjeta,
           empresaTransferencia: this.transferencia,
+          empresaPrecioActivo: this.precio_activo,
           empresaLogoUrl: this.logo_url,
         },
       });
@@ -497,6 +508,21 @@ class EmpresaVista {
         <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
+
+        <text id="titulo-modulos"> Precios </text>
+        <div class="lista-botones">
+          <button class="toggle-btn-precios ${this.precio_activo === 1 ? "active" : ""}" type="button" data-precio="1">
+            Precio 1
+          </button>
+
+          <button class="toggle-btn-precios ${this.precio_activo === 2 ? "active" : ""}" type="button" data-precio="2">
+            Precio 2
+          </button>
+
+          <button class="toggle-btn-precios ${this.precio_activo === 3 ? "active" : ""}" type="button" data-precio="3">
+            Precio 3
+          </button>
+        </div>
         
         <div class="form-group">
           <label for="imagen">Imagen</label>

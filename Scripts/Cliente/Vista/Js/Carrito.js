@@ -1,55 +1,60 @@
 class Carrito {
-    
-    constructor() {
-        this.articulos = [];
-    }
-    
-    agregarArticulo(articulo) {
-        const copia = {
-            id: articulo.id,
-            nombre: articulo.nombre,
-            precio: articulo.precio,
-            cantidad: 1
-        };
-        if (articulo.nombre === undefined) {
-            copia.nombre = articulo.dataset.nombre;
-            copia.id = articulo.dataset.articuloId;
-            copia.precio = articulo.dataset.precio;
-        }
-        this.articulos.push(copia);
-    }
-    
-    eliminarArticulo(articuloId) {
-        const idNum = Number(articuloId);
-        this.articulos = this.articulos.filter(articulo => Number(articulo.id) !== idNum);
-    }
+  constructor() {
+    this.articulos = [];
+  }
 
+  agregarArticulo(articulo, precio_activo) {
+    const copia = {
+      id: articulo.id,
+      nombre: articulo.nombre,
+      precio: articulo.precio,
+      cantidad: 1,
+    };
+    if (articulo.nombre === undefined) {
+      copia.nombre = articulo.dataset.nombre;
+      copia.id = articulo.dataset.articuloId;
+      copia.precio = articulo.dataset[`precio${precio_activo}`];
+    }
+    this.articulos.push(copia);
+  }
 
-    cambiarCantidad(nuevaCantidad, articuloId) {
-        const articulo = this.articulos.find(art => art.id === articuloId);
-        if (articulo) {
-            articulo.cantidad = nuevaCantidad;
-        }
-    }
-    
-    obtenerTotal() {
-        const total = this.articulos.reduce((total, articulo) => total + Number(this.eliminarPuntoPrecio(articulo.precio) * articulo.cantidad), 0);
-        return this.insertarPuntoPrecio(total);
-    }
+  eliminarArticulo(articuloId) {
+    const idNum = Number(articuloId);
+    this.articulos = this.articulos.filter(
+      (articulo) => Number(articulo.id) !== idNum,
+    );
+  }
 
-    mostrarArticulos() {
-        return this.articulos;
+  cambiarCantidad(nuevaCantidad, articuloId) {
+    const articulo = this.articulos.find((art) => art.id === articuloId);
+    if (articulo) {
+      articulo.cantidad = nuevaCantidad;
     }
+  }
 
-    eliminarPuntoPrecio(precio) {
-        return precio.replace(/\./g, '');
-    }
+  obtenerTotal() {
+    const total = this.articulos.reduce(
+      (total, articulo) =>
+        total +
+        Number(this.eliminarPuntoPrecio(articulo.precio) * articulo.cantidad),
+      0,
+    );
+    return this.insertarPuntoPrecio(total);
+  }
 
-    insertarPuntoPrecio(precio) {
-        return precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    }
+  mostrarArticulos() {
+    return this.articulos;
+  }
 
-    vaciarCarrito() {
-        this.articulos = [];
-    }
+  eliminarPuntoPrecio(precio) {
+    return precio.replace(/\./g, "");
+  }
+
+  insertarPuntoPrecio(precio) {
+    return precio.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+
+  vaciarCarrito() {
+    this.articulos = [];
+  }
 }

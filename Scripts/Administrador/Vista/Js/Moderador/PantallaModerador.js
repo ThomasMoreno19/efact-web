@@ -41,6 +41,7 @@ class PantallaModerador {
     if (this.empresa.deshabilitarExcel) {
       this.botonCargarArticulos.classList.add("hidden");
     }
+    this.precio_activo = this.empresa.precio_activo || 1;
 
     try {
       this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
@@ -161,7 +162,9 @@ class PantallaModerador {
             listaArticulosRecibidos.forEach((articulo) => {
               const articuloRecibido = new ArticuloVista(articulo);
               // ✅ Corregido: Crear el elemento solo una vez
-              const elementoArticulo = articuloRecibido.mostrarUna();
+              const elementoArticulo = articuloRecibido.mostrarUna(
+                this.precio_activo,
+              );
               // ✅ Agregarlo al DOM
               listaArticulosDiv.appendChild(elementoArticulo);
 
@@ -309,7 +312,9 @@ class PantallaModerador {
           this.empresa.id,
           formData.get("nombre"),
           formData.get("descripcion") || "",
-          formData.get("precio"),
+          formData.get("precio1"),
+          formData.get("precio2"),
+          formData.get("precio3"),
           formData.get("codigo-carta") || "",
         );
 
@@ -414,6 +419,18 @@ class PantallaModerador {
       });
     });
 
+    document.querySelectorAll(".toggle-btn-precios").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".toggle-btn-precios").forEach((b) => {
+          b.classList.remove("active");
+        });
+
+        btn.classList.add("active");
+
+        this.precio_activo = Number(btn.dataset.precio);
+      });
+    });
+
     const botonCerrar = document.getElementById("cerrar-wrapper");
     botonCerrar.addEventListener("click", () => {
       modal.classList.add("hidden");
@@ -449,6 +466,7 @@ class PantallaModerador {
           tarjeta,
           transferencia,
           contrasenaMesero,
+          this.precio_activo,
         );
         if (imagen && imagen.size > 0) {
           const empresaConNuevoLogo = await this.gestor.cambiarLogoEmpresa(
@@ -467,7 +485,9 @@ class PantallaModerador {
           efectivo,
           tarjeta,
           transferencia,
+          this.precio_activo,
         );
+        this.mostrarLista(this.listaArticulos);
         modal.classList.add("hidden");
         document.body.removeChild(modal);
         this.listaCentral.classList.remove("hidden");

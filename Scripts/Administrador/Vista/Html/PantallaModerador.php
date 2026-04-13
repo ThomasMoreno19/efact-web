@@ -24,10 +24,7 @@
         <button class="boton-cargar" type="button" id="modificar-cafeteria">
           <img src="../../../../Archivos/Iconos/SVG-Settings.svg" alt="Configurar" width="35" height="35">
         </button>
-
     </div>
-    
-    
     
     <div class="lista-central" id="lista-central">
         <div class="botones-lista">

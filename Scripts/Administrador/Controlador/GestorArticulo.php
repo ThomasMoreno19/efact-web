@@ -81,7 +81,9 @@ class GestorArticulo {
             
             // ¡AHORA SÍ! Usa el nombre del campo
             foreach ($listaArticulos as &$articulo) {
-                $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
+                $articulo['precio1'] = number_format((float)$articulo['precio1'], 0, '', '.');
+                $articulo['precio2'] = number_format((float)$articulo['precio2'], 0, '', '.');
+                $articulo['precio3'] = number_format((float)$articulo['precio3'], 0, '', '.');
             }
             unset($articulo); // buena práctica
 
@@ -119,7 +121,9 @@ class GestorArticulo {
             $listaArticulos = $this->articuloRepositorio->obtenerTodosPorEmpresa($id_empresa);
 
             foreach ($listaArticulos as &$articulo) {
-                $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
+                $articulo['precio1'] = number_format((float)$articulo['precio1'], 0, '', '.');
+                $articulo['precio2'] = number_format((float)$articulo['precio2'], 0, '', '.');
+                $articulo['precio3'] = number_format((float)$articulo['precio3'], 0, '', '.');
             }
             unset($articulo);
 
@@ -156,7 +160,9 @@ class GestorArticulo {
             $listaArticulos = $this->articuloRepositorio->obtenerParaCliente($id_empresa);
 
             foreach ($listaArticulos as &$articulo) {
-                $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
+                $articulo['precio1'] = number_format((float)$articulo['precio1'], 0, '', '.');
+                $articulo['precio2'] = number_format((float)$articulo['precio2'], 0, '', '.');
+                $articulo['precio3'] = number_format((float)$articulo['precio3'], 0, '', '.');
             }
             unset($articulo);
 
@@ -197,7 +203,9 @@ class GestorArticulo {
                 'id_empresa' => $id_empresa,
                 'nombre' => $articulo['nombre_articulo'],
                 'descripcion' => $articulo['descripcion'] ?? '',
-                'precio' => $articulo['precio_articulo'],
+                'precio1' => $articulo['precio1'],
+                'precio2' => $articulo['precio2'],
+                'precio3' => $articulo['precio3'],
                 'codigo_carta' => $articulo['codigo_carta_articulo'] ?? '',
                 'solo_mesero' => $articulo['publica_art'] ?? 0
             ];
@@ -248,7 +256,9 @@ class GestorArticulo {
         $id_empresa = $datos['id_empresa'];
         $nombre = $datos['nombre'];
         $descripcion = $datos['descripcion'];
-        $precio = $datos['precio'];
+        $precio1 = $datos['precio1'];
+        $precio2 = $datos['precio2'];
+        $precio3 = $datos['precio3'];
         $codigo_carta = $datos['codigo_carta'];
         
         
@@ -257,14 +267,14 @@ class GestorArticulo {
             unlink($cacheFile); // Borra cache
         }
         
-        if (empty($nombre) || empty($id) || empty($id_rubro) || empty($precio)) {
+        if (empty($nombre) || empty($id) || empty($id_rubro) || empty($precio1) || empty($precio2) || empty($precio3)) {
             http_response_code(400);
             echo json_encode(['error' => 'Faltan datos válidos para modificar el articulo con el id recibido']);
             return;
         }
 
         try {
-            $articuloModificado = $this->articuloRepositorio->modificar($id, $id_rubro, $nombre, $descripcion, $precio, $codigo_carta);
+            $articuloModificado = $this->articuloRepositorio->modificar($id, $id_rubro, $nombre, $descripcion, $precio1, $precio2, $precio3, $codigo_carta);
             $this->borrarCacheTodos($id_empresa);
             echo json_encode($articuloModificado);
         } catch (Exception $e) {

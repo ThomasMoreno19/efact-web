@@ -24,22 +24,9 @@ class GestorEmpresa {
             echo json_encode($this->empresaRepositorio->obtenerTodas());
             break;
           
-          case 'entre':
-            $this->mostrarEntre();
-            break;
-
-          case 'rubros':
-            $this->mostrarRubro();
-            break;
           case 'id':
             $this->mostrarPorId();
             break;
-          default:
-            if (is_numeric($url_segmentada[1])) {
-              $this->obtenerPorId();
-            }
-            break;
-          break;
         }
         break;
       
@@ -79,28 +66,6 @@ class GestorEmpresa {
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Empresa.']);
         break;
-    }
-  }
-  
-  
-  private function mostrarRubro(): void {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id = (int)$datos['id'];
-
-    if (is_null($id)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para mostrar los rubros.']);
-      return;
-    }
-
-    try {
-      $listaRubros = $this->empresaRepositorio->obtenerRubros($id);
-      http_response_code(200);
-      echo json_encode($listaRubros);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar los rubros: ' . $e->getMessage()]);
     }
   }
   
@@ -264,6 +229,7 @@ class GestorEmpresa {
     $tarjeta = $datos['tarjeta'];
     $transferencia = $datos['transferencia'];
     $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
+    $precio_activo = (int)($datos['precio_activo']);
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -273,7 +239,7 @@ class GestorEmpresa {
 
     
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $precio_activo, $contrasenaMesero);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);

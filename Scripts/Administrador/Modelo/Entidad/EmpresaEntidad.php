@@ -86,11 +86,11 @@ class Empresa {
     $this->rubros = $rubros;
   }
   
-  public function setTelefono(array $telefono): void {
+  public function setTelefono(string $telefono): void {
     $this->telefono = $telefono;
   }
   
-  public function setUbicacion(array $ubicacion): void {
+  public function setUbicacion(string $ubicacion): void {
     $this->ubicacion = $ubicacion;
   }
 
