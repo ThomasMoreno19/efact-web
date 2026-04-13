@@ -115,7 +115,7 @@ class EmpresaRepositorio {
 
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
-      return null;
+      return false;
     }
   }
 
@@ -187,7 +187,7 @@ class EmpresaRepositorio {
   }
 
   
-  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): bool {
+  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array {
     try {
       $fecha_actual= date('Y-m-d');
       $stmt = $this->pdo->prepare(
@@ -218,12 +218,27 @@ class EmpresaRepositorio {
 
       
       if ($data) {
-        return true;
+        return [
+          'id' => $data['id'],
+          'nombre' => $data['nombre'],
+          'fecha_creacion' => $data['fecha_creacion'],
+          'logo_url' => $data['logo_url'],
+          'telefono' => $data['telefono'],
+          'ubicacion' => $data['ubicacion'],
+          'tieneCarrito' => $data['tieneCarrito'],
+          'moduloMesero' => $data['moduloMesero'],
+          'deshabilitar_excel' => $data['deshabilitar_excel'],
+          'efectivo' => $data['efectivo'],
+          'tarjeta' => $data['tarjeta'],
+          'transferencia' => $data['transferencia'],
+          'contrasenaMesero' => $data['contrasenaMesero'],
+          'precio_activo' => $data['precio_activo'],
+        ];
       }
     } catch (PDOException $e) {
       error_log("Error al guardar nueva empresa: " . $e->getMessage());
     }
-    return false;
+    return [];
   }
   
   public function guardarHorarios(int $id_empresa, array $horarios): bool {
