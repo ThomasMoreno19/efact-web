@@ -151,12 +151,12 @@ class ArticuloRepositorio {
                     'codigo_carta' => $codigo_carta,
                 ];
             }else{
-                return null;
+                return [];
             }
         } catch (PDOException $e) {
             error_log("Error al guardar nueva articulo: " . $e->getMessage());
         }
-        return null;
+        return [];
     }
     
     public function crearListaCsv(array $articulos): array {

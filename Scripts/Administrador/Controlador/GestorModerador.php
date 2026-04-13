@@ -48,16 +48,6 @@ class GestorModerador {
                     case '':
                         echo json_encode($this->moderadorRepositorio->obtenerTodos());
                         break;
-                    
-                    case 'entre':
-                        $this->mostrarEntre();
-                        break;
-
-                    default:
-                        if (is_numeric($url_segmentada[1])) {
-                            $this->obtenerPorId();
-                        }
-                        break;
                     break;
                 }
                 break;

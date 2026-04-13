@@ -14,6 +14,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/Ges
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorModerador.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorArticulo.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorRubro.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorMesero.php';
 
 $url = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'); // Tomar la url (Elimina barras iniciales/finales).
 
@@ -49,6 +50,11 @@ try {
             
         case 'rubro':
             $controlador = new GestorRubro($pdo);
+            $controlador->derivarURL($porcionURL);
+            break;
+
+        case 'mesero':
+            $controlador = new GestorMesero($pdo);
             $controlador->derivarURL($porcionURL);
             break;
             

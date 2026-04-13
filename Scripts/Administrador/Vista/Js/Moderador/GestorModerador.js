@@ -638,6 +638,161 @@ class GestorModerador {
     return await response.json();
   }
 
+  async mostrarListaMeseros(id_empresa) {
+    const bodyData = { id_empresa };
+
+    const response = await fetch(`/mesero/mostrar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error obteniendo meseros" }));
+      throw new Error(err.error || "Error obteniendo meseros");
+    }
+
+    return await response.json();
+  }
+
+  async registrarMesero(nombre, abreviaturaNombre, contrasena, id_empresa) {
+    const bodyData = {
+      nombre: nombre,
+      abreviaturaNombre: abreviaturaNombre,
+      contrasena: contrasena,
+      id_empresa: id_empresa,
+    };
+
+    const response = await fetch(`/mesero/crear`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error registrando mesero" }));
+      throw new Error(err.error || "Error registrando mesero");
+    }
+
+    return await response.json();
+  }
+
+  async cargarMeseros(archivo, id_empresa) {
+    try {
+      const data = await archivo.arrayBuffer(); // ← clave para Excel
+
+      const workbook = XLSX.read(data, { type: "array" });
+      const hoja = workbook.Sheets[workbook.SheetNames[0]];
+
+      const filas = XLSX.utils.sheet_to_json(hoja, {
+        header: 1,
+        raw: false,
+      });
+      // header:1 → devuelve array de arrays (más control)
+
+      const meseros = [];
+
+      // Saltar las primeras 2 filas → empezamos en índice 2
+      for (let i = 2; i < filas.length; i++) {
+        const fila = filas[i];
+
+        if (!fila || fila.length === 0) continue; // evitar filas vacías
+
+        const mesero = {
+          codigo: fila[0]?.toString().trim(),
+          nombre: fila[1]?.toString().trim(),
+          abreviaturaNombre: fila[2]?.toString().trim(),
+          contrasena: fila[3]?.toString().trim(),
+        };
+
+        // evitar filas incompletas
+        if (!mesero.codigo || !mesero.nombre) continue;
+
+        meseros.push(mesero);
+      }
+
+      const bodyData = {
+        meseros,
+        id_empresa,
+      };
+
+      const response = await fetch(`/mesero/cargar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const err = await response
+          .json()
+          .catch(() => ({ error: "Error cargando meseros" }));
+        throw new Error(err.error || "Error cargando meseros");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error cargando meseros:", error);
+      throw error;
+    }
+  }
+
+  async eliminarMesero(id) {
+    try {
+      const bodyData = { id };
+
+      const response = await fetch(`/mesero/eliminar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const err = await response
+          .json()
+          .catch(() => ({ error: "Error eliminando mesero" }));
+        throw new Error(err.error || "Error eliminando mesero");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error eliminando mesero:", error);
+      throw error;
+    }
+  }
+
+  async modificarMesero(id, nombre, abreviaturaNombre, contrasena) {
+    try {
+      const bodyData = {
+        id: id,
+        nombre: nombre,
+        abreviaturaNombre: abreviaturaNombre,
+        contrasena: contrasena,
+      };
+
+      const response = await fetch(`/mesero/modificar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const err = await response
+          .json()
+          .catch(() => ({ error: "Error modificando mesero" }));
+        throw new Error(err.error || "Error modificando mesero");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error modificando mesero:", error);
+      throw error;
+    }
+  }
+
   async loguearModerador(nombre, contrasena, id_empresa) {
     try {
       const bodyData = {

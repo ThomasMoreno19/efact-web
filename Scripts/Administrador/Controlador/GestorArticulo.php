@@ -13,125 +13,124 @@ class GestorArticulo {
     private RubroRepositorio $rubroRepositorio;
 
     public function __construct(PDO $pdo) {
-        $this->pdo = $pdo;
-        $this->articuloRepositorio = new ArticuloRepositorio($pdo);
-        $this->rubroRepositorio = new RubroRepositorio($pdo);
+      $this->pdo = $pdo;
+      $this->articuloRepositorio = new ArticuloRepositorio($pdo);
+      $this->rubroRepositorio = new RubroRepositorio($pdo);
     }
 
     
     public function derivarURL(string $porcionURL): void {
-        header('Content-Type: application/json');
-        $url_segmentada = explode('/', $porcionURL);
-        $primer_segmento = $url_segmentada[0]; //mostrar || modificar || crear
+      header('Content-Type: application/json');
+      $url_segmentada = explode('/', $porcionURL);
+      $primer_segmento = $url_segmentada[0]; //mostrar || modificar || crear
+      
+      switch (strtolower($primer_segmento)) {
         
-        switch (strtolower($primer_segmento)) {
-            
-            
-            case 'mostrar':
-                
-                switch (strtolower($url_segmentada[1] ?? '')) {
-                    
-                    case '':
-                        $this->mostrarTodos();
-                        break;
+        
+        case 'mostrar':
+          
+          switch (strtolower($url_segmentada[1] ?? '')) {
+            case '':
+              $this->mostrarTodos();
+              break;
 
-                    case 'empresa':
-                        $this->mostrarTodosPorEmpresa();
-                        break;
+            case 'empresa':
+              $this->mostrarTodosPorEmpresa();
+              break;
 
-                    case 'para-cliente':
-                        $this->mostrarParaCliente();
-                        break;
-                }
-                break;
-            
-            case 'modificar':
-                $this->modificar();
-                break;
-            
-            case 'cargar-lista':
-                $this->cargarLista();
-                break;
-            
-            default:
-                http_response_code(404);
-                echo json_encode(['error' => 'Acción no encontrada para Articulo.']);
-                break;
-        }
+            case 'para-cliente':
+              $this->mostrarParaCliente();
+              break;
+          }
+          break;
+        
+        case 'modificar':
+          $this->modificar();
+          break;
+      
+        case 'cargar-lista':
+          $this->cargarLista();
+          break;
+        
+        default:
+          http_response_code(404);
+          echo json_encode(['error' => 'Acción no encontrada para Articulo.']);
+          break;
+      }
     }
     
     
     private function mostrarTodos(): void {
-        $datos = json_decode(file_get_contents('php://input'), true);
+      $datos = json_decode(file_get_contents('php://input'), true);
 
-        $id_rubro = $datos['id_rubro'];
-        $id_empresa = $datos['id_empresa'];
+      $id_rubro = $datos['id_rubro'];
+      $id_empresa = $datos['id_empresa'];
+      
+      // === CACHE EN ARCHIVO ===
+      $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/articulos_rubro_{$id_rubro}_empresa_{$id_empresa}.json";
+
+      if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
+        http_response_code(200);
+        echo file_get_contents($cacheFile);
+        return;
+      }
+
+      try {
+        $listaArticulos = $this->articuloRepositorio->obtenerTodos($id_rubro);
         
-        // === CACHE EN ARCHIVO ===
-        $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/articulos_rubro_{$id_rubro}_empresa_{$id_empresa}.json";
-
-        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
-            http_response_code(200);
-            echo file_get_contents($cacheFile);
-            return;
+        // ¡AHORA SÍ! Usa el nombre del campo
+        foreach ($listaArticulos as &$articulo) {
+          $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
         }
+        unset($articulo); // buena práctica
 
-        try {
-            $listaArticulos = $this->articuloRepositorio->obtenerTodos($id_rubro);
-            
-            // ¡AHORA SÍ! Usa el nombre del campo
-            foreach ($listaArticulos as &$articulo) {
-                $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
-            }
-            unset($articulo); // buena práctica
+        $json = json_encode($listaArticulos);
+        file_put_contents($cacheFile, $json);
 
-            $json = json_encode($listaArticulos);
-            file_put_contents($cacheFile, $json);
+        http_response_code(200);
+        echo $json;
 
-            http_response_code(200);
-            echo $json;
-
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Error: ' . $e->getMessage()]);
-        }
+      } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Error: ' . $e->getMessage()]);
+      }
     }
 
     private function mostrarTodosPorEmpresa(): void {
-        $datos = json_decode(file_get_contents('php://input'), true);
+      $datos = json_decode(file_get_contents('php://input'), true);
 
-        $id_empresa = (int)($datos['id_empresa'] ?? 0);
-        if ($id_empresa <= 0) {
-            http_response_code(400);
-            echo json_encode(['error' => 'Falta id_empresa para mostrar los artículos.']);
-            return;
+      $id_empresa = (int)($datos['id_empresa'] ?? 0);
+      if ($id_empresa <= 0) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Falta id_empresa para mostrar los artículos.']);
+        return;
+      }
+
+      $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/articulos_empresa_{$id_empresa}.json";
+
+      if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
+        http_response_code(200);
+        echo file_get_contents($cacheFile);
+        return;
+      }
+
+      try {
+        $listaArticulos = $this->articuloRepositorio->obtenerTodosPorEmpresa($id_empresa);
+
+        foreach ($listaArticulos as &$articulo) {
+            $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
         }
+        unset($articulo);
 
-        $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/articulos_empresa_{$id_empresa}.json";
+        $json = json_encode($listaArticulos);
+        file_put_contents($cacheFile, $json);
 
-        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
-            http_response_code(200);
-            echo file_get_contents($cacheFile);
-            return;
-        }
-
-        try {
-            $listaArticulos = $this->articuloRepositorio->obtenerTodosPorEmpresa($id_empresa);
-
-            foreach ($listaArticulos as &$articulo) {
-                $articulo['precio'] = number_format((float)$articulo['precio'], 0, '', '.');
-            }
-            unset($articulo);
-
-            $json = json_encode($listaArticulos);
-            file_put_contents($cacheFile, $json);
-
-            http_response_code(200);
-            echo $json;
-        } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Error al mostrar artículos por empresa: ' . $e->getMessage()]);
-        }
+        http_response_code(200);
+        echo $json;
+      } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['error' => 'Error al mostrar artículos por empresa: ' . $e->getMessage()]);
+      }
     }
 
     private function mostrarParaCliente(): void {

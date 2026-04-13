@@ -23,21 +23,9 @@ class GestorEmpresa {
           case '':
             echo json_encode($this->empresaRepositorio->obtenerTodas());
             break;
-          
-          case 'entre':
-            $this->mostrarEntre();
-            break;
 
-          case 'rubros':
-            $this->mostrarRubro();
-            break;
           case 'id':
             $this->mostrarPorId();
-            break;
-          default:
-            if (is_numeric($url_segmentada[1])) {
-              $this->obtenerPorId();
-            }
             break;
           break;
         }
@@ -53,6 +41,10 @@ class GestorEmpresa {
 
       case 'crear':
         $this->crear();
+        break;
+
+      case 'eliminar':
+        $this->eliminarEmpresa();
         break;
       
       case 'modificar-logo':
@@ -79,28 +71,6 @@ class GestorEmpresa {
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Empresa.']);
         break;
-    }
-  }
-  
-  
-  private function mostrarRubro(): void {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id = (int)$datos['id'];
-
-    if (is_null($id)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para mostrar los rubros.']);
-      return;
-    }
-
-    try {
-      $listaRubros = $this->empresaRepositorio->obtenerRubros($id);
-      http_response_code(200);
-      echo json_encode($listaRubros);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar los rubros: ' . $e->getMessage()]);
     }
   }
   
@@ -441,6 +411,28 @@ class GestorEmpresa {
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al verificar contraseña de mesero: ' . $e->getMessage()]);
+    }
+  }
+
+  private function eliminarEmpresa(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta id_empresa para eliminar la empresa.']);
+      return;
+    }
+
+    try {
+      $this->empresaRepositorio->eliminar($id_empresa);
+      $this->borrarCacheEmpresa($id_empresa);
+      http_response_code(200);
+      echo json_encode(['message' => 'Empresa eliminada correctamente.']);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al eliminar la empresa: ' . $e->getMessage()]);
     }
   }
 

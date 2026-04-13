@@ -1,5 +1,4 @@
 <?php
-//Scripts/Administrador/Modelo/Entidad/EmpresaEntidad.php
 
 class Empresa {
   private int $id;
@@ -10,11 +9,12 @@ class Empresa {
   private string $ubicacion;
   private bool $tieneCarrito;
   private bool $moduloMesero;
+  private bool $gestionMesero;
   private array $rubros;
 
 
   //Constructor
-  public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, ?array $rubros = []) {
+  public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $gestionMesero, ?array $rubros = []) {
     $this->id = $id;
     $this->nombre = $nombre;
     $this->fecha_creacion = $fecha_creacion;
@@ -23,6 +23,7 @@ class Empresa {
     $this->ubicacion = $ubicacion;
     $this->tieneCarrito = $tieneCarrito;
     $this->moduloMesero = $moduloMesero;
+    $this->gestionMesero = $gestionMesero;
     $this->rubros = $rubros;
   }
   
@@ -86,11 +87,11 @@ class Empresa {
     $this->rubros = $rubros;
   }
   
-  public function setTelefono(array $telefono): void {
+  public function setTelefono(string $telefono): void {
     $this->telefono = $telefono;
   }
   
-  public function setUbicacion(array $ubicacion): void {
+  public function setUbicacion(string $ubicacion): void {
     $this->ubicacion = $ubicacion;
   }
 

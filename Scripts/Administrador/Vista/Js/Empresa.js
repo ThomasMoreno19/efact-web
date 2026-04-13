@@ -325,6 +325,133 @@ class EmpresaVista {
     return modalDiasNoLaborales;
   }
 
+  modalMeseros() {
+    return `
+      <div class="wrapper" id="modalMeseros">
+        <div class="wrapper-content">
+          <form id="formConfigurarHorariosEmpresa">
+            <header id="header-wrapper">
+              <h2 id="titulo-wrapper" class="titulo">Configuración de Meseros</h2>
+              <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+            </header>
+
+            <div class="modulos">
+              <div class="lista-meseros"></div>
+            </div>
+          </form>
+        </div>
+        <div class="boton-final-container-meseros">
+          <button type="button" class="boton-mesero" id="btnRegistrarMesero">
+            + Registrar Mesero
+          </button>
+          <button type="button" class="boton-mesero" id="btnCargarMeseros">
+            + Cargar Meseros
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  modalCargarMeseros() {
+    const modalCargarMeseros = document.createElement("div");
+    modalCargarMeseros.classList.add("modal-configurar");
+    modalCargarMeseros.id = "modalCargarMeseros";
+
+    const modalCargarMeserosContenido = document.createElement("div");
+    modalCargarMeserosContenido.classList.add("modal-content-partial");
+
+    const htmlContent = `
+      <form id="formCargarMeseros">
+        <h2 id="titulo-modal">Cargar Meseros</h2>
+        <div class="form-group">
+          <label for="archivo">Seleccionar archivo Excel:</label>
+          <input type="file" id="archivo" name="archivo"
+            accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+            required>
+        </div>
+        <div >
+          <button type="submit" class="submit-button">Cargar</button>
+        </div>
+      </form>
+    `;
+
+    modalCargarMeserosContenido.innerHTML = htmlContent;
+    modalCargarMeseros.appendChild(modalCargarMeserosContenido);
+
+    return modalCargarMeseros;
+  }
+
+  modalRegistrarMesero() {
+    const modalRegistrarMesero = document.createElement("div");
+    modalRegistrarMesero.classList.add("modal-configurar");
+    modalRegistrarMesero.id = "modalRegistrarMesero";
+
+    const modalRegistrarMeseroContenido = document.createElement("div");
+    modalRegistrarMeseroContenido.classList.add("modal-content-partial");
+
+    const htmlContent = `
+      <form id="formRegistrarMesero">
+        <h2 id="titulo-modal">Registrar Mesero</h2>
+        <div class="form-group">
+          <label for="nombre" class="required">Nombre</label>
+          <input type="text" id="nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+          <label for="abreviaturaNombre">Abreviatura</label>
+          <input type="text" id="abreviaturaNombre" name="abreviaturaNombre" maxlength="10" required>
+        </div>
+        <div class="form-group">
+          <label for="contrasena">Contraseña</label>
+          <input type="password" id="contrasena" name="contrasena" maxlength="20">
+        </div>
+        <button type="submit" class="boton" id="btnGuardarMesero">
+          Guardar
+        </button>
+        
+      </form>
+    `;
+
+    modalRegistrarMeseroContenido.innerHTML = htmlContent;
+    modalRegistrarMesero.appendChild(modalRegistrarMeseroContenido);
+
+    return modalRegistrarMesero;
+  }
+
+  modalModificarMesero(mesero) {
+    const modalModificarMesero = document.createElement("div");
+    modalModificarMesero.classList.add("modal-configurar");
+    modalModificarMesero.id = "modalModificarMesero";
+
+    const modalModificarMeseroContenido = document.createElement("div");
+    modalModificarMeseroContenido.classList.add("modal-content-partial");
+
+    const htmlContent = `
+      <form id="formModificarMesero">
+        <h2 id="titulo-modal">Modificar Mesero</h2>
+        <div class="form-group">
+          <label for="nombre" class="required">Nombre</label>
+          <input type="text" id="nombre" name="nombre" value="${mesero.nombre}" required>
+        </div>
+        <div class="form-group">
+          <label for="abreviaturaNombre">Abreviatura</label>
+          <input type="text" id="abreviaturaNombre" name="abreviaturaNombre" value="${mesero.abreviaturaNombre}" maxlength="10" required>
+        </div>
+        <div class="form-group">
+          <label for="contrasena">Contraseña</label>
+          <input type="password" id="contrasena" name="contrasena" placeholder="Dejar en blanco para no cambiar" maxlength="20">
+        </div>
+        <button type="submit" class="boton" id="btnGuardarMesero">
+          Guardar
+        </button>
+      </form>
+    `;
+
+    modalModificarMeseroContenido.innerHTML = htmlContent;
+    modalModificarMesero.appendChild(modalModificarMeseroContenido);
+
+    return modalModificarMesero;
+  }
+
   modalModificar(moderador) {
     const modalNuevaEmpresa = document.createElement("div");
     modalNuevaEmpresa.classList.add("modal-backdrop");
@@ -436,7 +563,8 @@ class EmpresaVista {
       <form id="form-configurar-empresa">
         <h2 id = "nombre-empresa-modal">Configuración</h2>
         <button type = "button" class = "submit-button" id = "seccion-modificar" >Modificar datos</button>
-        <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
+        <button type = "button" class = "submit-button" id = "configurar-horarios" >Horarios</button>
+        <button type = "button" class = "submit-button" id = "meseros" >Meseros</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>

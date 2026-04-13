@@ -1,210 +1,306 @@
-/* Scripts/Administrador/Vista/Css/PanelAdministracion.css */
-
-
 body {
-    font-family: sans-serif;
-    background: linear-gradient(to right, #292638 0%, #100e16 100%);
-    max-width: 100%;
+  font-family: sans-serif;
+  background: linear-gradient(to right, #292638 0%, #100e16 100%);
+  max-width: 100%;
 }
 
 #header {
-    background: linear-gradient(to right, #292638 0%, #100e16 100%);
-    position: fixed; /* 🔥 Lo mantiene siempre visible */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 190px;
-    z-index: 1000;
-    transition: height 0.4s ease, transform 0.6s ease, opacity 0.8s ease;
-    will-change: transform, height, opacity; /* mejora rendimiento */
+  background: linear-gradient(to right, #292638 0%, #100e16 100%);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 190px;
+  z-index: 1000;
+  transition:
+    height 0.4s ease,
+    transform 0.6s ease,
+    opacity 0.8s ease;
+  will-change: transform, height, opacity;
 }
 
-/* --- Encabezado flotante --- */
+.lista-meseros {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.mesero-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background-color: #222;
+  color: #fff;
+
+  padding: 10px 16px;
+  border-radius: 999px; /* ← forma ovalada */
+
+  border: 1px solid #e89e13;
+}
+
+/* info izquierda */
+.mesero-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* código */
+.mesero-codigo {
+  font-weight: bold;
+  color: #e89e13;
+  min-width: 40px;
+}
+
+/* nombre */
+.mesero-nombre {
+  font-size: 14px;
+}
+
+/* abreviatura */
+.mesero-abreviatura {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* acciones derecha */
+.mesero-acciones {
+  display: flex;
+  gap: 8px;
+}
+
+/* botones */
+.btn-mesero {
+  background-color: transparent;
+  border: 1px solid #e89e13;
+  color: #e89e13;
+
+  padding: 4px 8px;
+  border-radius: 20px;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.btn-eliminar {
+  border-color: #e81313;
+  color: #e89e13;
+}
+
+.btn-editar:hover {
+  background-color: #e89e13;
+  color: #222;
+}
+
+.btn-mesero img {
+  width: 15px;
+  height: 15px;
+  pointer-events: none;
+  filter: invert(1);
+}
+
+.icono-excel svg {
+  width: 15px;
+  height: 15px;
+}
+
+.btn-mesero:hover img {
+  filter: invert(0);
+}
+
+.btn-eliminar:hover {
+  background-color: #e81313;
+  color: #fff;
+}
+
 #titulo-pagina {
-    text-align: center;
-    color:white;
-    padding: 26px 0px 0px; /* 👈 para darle espacio vertical */
-    margin: 0% auto 3.5%;
-    height: 100%;
-    transition: height 0.3s ease, transform 0.4s ease, opacity 0.8s ease;
-    transform-origin: top center;
-    font-size: 32px;
-    font-weight: 600;
+  text-align: center;
+  color: white;
+  padding: 26px 0px 0px;
+  margin: 0% auto 3.5%;
+  height: 100%;
+  transition:
+    height 0.3s ease,
+    transform 0.4s ease,
+    opacity 0.8s ease;
+  transform-origin: top center;
+  font-size: 32px;
+  font-weight: 600;
 }
 
-/* Oculto al hacer scroll hacia abajo */
 #header.oculto {
-    transform: translateY(-100%);
-    opacity: 0;
+  transform: translateY(-100%);
+  opacity: 0;
 }
 
 #header.minimizado {
-    height: 120px;
+  height: 120px;
 }
 
-/* Reducido cuando se scrollea hacia abajo */
 #titulo-pagina.minimizado {
-    transform: scale(0.6);
+  transform: scale(0.6);
 }
 
-#titulo-pagina div img{
-    width: 75%;
-    max-width: 13rem;
-    max-height: 7rem;
-    margin: auto;
-    width: auto;
-    height: auto;
-    object-fit: contain;
+#titulo-pagina div img {
+  width: 75%;
+  max-width: 13rem;
+  max-height: 7rem;
+  margin: auto;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
-#titulo-pagina div p{
-    margin: 0% auto;
-    font-size: clamp(0.9rem, 50%, 45px);
+#titulo-pagina div p {
+  margin: 0% auto;
+  font-size: clamp(0.9rem, 50%, 45px);
 }
 
 .telefono-copiable {
-    background-color: #e89e1347;
-    padding: 0px 2px;
-    border-radius: 8px;
-    cursor: pointer;
-    user-select: none;
-    color: white;
-    transition: transform 0.2s, color 0.2s, background-color 0.3s;
+  background-color: #e89e1347;
+  padding: 0px 2px;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  color: white;
+  transition:
+    transform 0.2s,
+    color 0.2s,
+    background-color 0.3s;
 }
 
 .telefono-copiable:hover {
-    background-color: transparent;
-    transform: scale(1.05);
-    color: #f9c846;
+  background-color: transparent;
+  transform: scale(1.05);
+  color: #f9c846;
 }
 
 .telefono-copiable.copiado {
-    background-color: transparent;
-    color: #00e676;
-    transform: scale(1.1);
+  background-color: transparent;
+  color: #00e676;
+  transform: scale(1.1);
 }
 
 .info-empresa {
-    display: flex;
-    flex-direction: column-reverse;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
-
-h2{
-    color: white;
-    align-items: center;
+h2 {
+  color: white;
+  align-items: center;
 }
 
 h3 {
-    text-align: center;
-    color: white;
-    margin: 0.3vh;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    font-weight: 600;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-    position: relative;
-    z-index: 2;
-    background-color: transparent;
+  text-align: center;
+  color: white;
+  margin: 0.3vh;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  position: relative;
+  z-index: 2;
+  background-color: transparent;
 }
 
 ::-webkit-scrollbar {
-    width: 1.3vh;
-    position: absolute;
-    background-color: #100e16;
+  width: 1.3vh;
+  position: absolute;
+  background-color: #100e16;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.25);
-    border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
 }
 
 .moderador-dashboard {
-    flex-grow: 1; /* Allow the dashboard to take up available space */
-    width: 100%;
-    margin: 0 auto; /* Center the dashboard horizontally */
-    padding: 20px; /* Add some padding around the main content area */
-    box-sizing: border-box; /* Include padding in the width calculation */
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center content horizontally within dashboard */
+  flex-grow: 1;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .modal {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px);
-    animation: fadeIn 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-in-out;
 }
 
 .modal-content-partial {
-    background-color: #16161f;
-    padding: 30px 40px;
-    border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-    width: 90%;
-    max-width: 500px;
-    position: relative;
-    animation: slideIn 0.3s ease-in-out;
+  background-color: #16161f;
+  padding: 30px 40px;
+  border-radius: 10px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  animation: slideIn 0.3s ease-in-out;
 }
 
 .submit-button {
-    /* AÑADIDO: Espacio de 1.0em arriba y abajo */
-    margin: 0.3em 0;
+  margin: 0.3em 0;
 }
 
 .page-title {
-    color: white;
-    font-size: 2.2em; /* Make the title large */
-    text-align: center;
-    margin-bottom: 20px; /* Add some space below the title */
+  color: white;
+  font-size: 2.2em;
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-.lista-central{
-    background-color: #242130;
-    position: relative;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Sombra */
-    z-index: 3;
-    padding: 1% 1% 4%;
-    margin: auto;
-    max-width: 100vh;
+.lista-central {
+  background-color: #242130;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  z-index: 3;
+  padding: 1% 1% 4%;
+  margin: auto;
+  max-width: 100vh;
 }
 
-#nombre-empresa-modal{
-    margin: 20px 0;       /* separa del resto */
-    align-self: center;   /* centra dentro del flex si el form usa flex */
-    text-align: center; 
+#nombre-empresa-modal {
+  margin: 20px 0;
+  align-self: center;
+  text-align: center;
 }
 
 #input-nombre,
 #input-codigo-carta,
 #input-descripcion,
 #input-precio {
-    width: 100%; /* Ocupa todo el espacio disponible */
+  width: 100%;
 }
 
-/* Clase que controla la visibilidad y la animación */
 .hidden {
-    display: none;
+  display: none;
 }
 
 @media screen and (max-width: 600px) {
-    .lista-central {
-        max-width: 90%;
-    }
-    
-    #titulo-pagina div img {
-        max-width: 13rem;
-        max-height: 7rem;
-    }
+  .lista-central {
+    max-width: 90%;
+  }
+
+  #titulo-pagina div img {
+    max-width: 13rem;
+    max-height: 7rem;
+  }
 }

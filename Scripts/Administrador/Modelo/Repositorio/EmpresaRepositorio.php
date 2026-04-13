@@ -114,7 +114,7 @@ class EmpresaRepositorio {
 
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
-      return null;
+      return false;
     }
   }
 
@@ -153,7 +153,7 @@ class EmpresaRepositorio {
 
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
-      return null;
+      return false;
     }
   }
   
@@ -220,7 +220,7 @@ class EmpresaRepositorio {
     } catch (PDOException $e) {
       error_log("Error al guardar nueva empresa: " . $e->getMessage());
     }
-    return null;
+    return [];
   }
   
   public function guardarHorarios(int $id_empresa, array $horarios): bool {
@@ -422,4 +422,28 @@ class EmpresaRepositorio {
     }
   }
 
+  public function eliminar(int $id): bool {
+    try {
+      // Una sola consulta multitabla
+      $sql = 
+        "DELETE e, a, r, m, me, h, d
+          FROM Empresa e
+          LEFT JOIN Articulo a ON e.id = a.empresaId
+          LEFT JOIN Rubro r ON e.id = r.empresaId
+          LEFT JOIN Moderador m ON e.id = m.empresaId
+          LEFT JOIN Mesero me ON e.id = me.empresaId
+          LEFT JOIN horarios_empresa h ON e.id = h.id_empresa
+          LEFT JOIN dias_no_laborales_empresa d ON e.id = d.id_empresa
+          WHERE e.id = :id";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+      
+      return $stmt->execute();
+
+    } catch (PDOException $e) {
+      error_log("Error al eliminar empresa y relacionados en una consulta ($id): " . $e->getMessage());
+      throw $e;
+    }
+  }
 }

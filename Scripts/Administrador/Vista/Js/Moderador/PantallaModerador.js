@@ -487,6 +487,7 @@ class PantallaModerador {
     const botonConfigurarHorarios = document.getElementById(
       "configurar-horarios",
     );
+    const botonMeseros = document.getElementById("meseros");
 
     const botonVisitarGestion = document.getElementById("visitar-gestion");
     botonVisitarGestion.classList.add("hidden");
@@ -513,6 +514,219 @@ class PantallaModerador {
       event.preventDefault();
       await this.abrirModalConfigurarHorarios(modal);
       document.body.removeChild(modal);
+    });
+
+    botonMeseros.addEventListener("click", async (event) => {
+      event.preventDefault();
+      await this.abrirModalMeseros(modal);
+      document.body.removeChild(modal);
+    });
+  }
+
+  async renderizarMeseros(modal) {
+    try {
+      const listaContainer = modal.querySelector(".lista-meseros");
+
+      const meseros = await this.gestor.mostrarListaMeseros(this.empresa.id);
+
+      listaContainer.innerHTML = ""; // limpiar
+
+      if (!meseros || meseros.length === 0) {
+        listaContainer.innerHTML = "<p>No hay meseros</p>";
+        return;
+      }
+
+      meseros.forEach((m) => {
+        const item = document.createElement("div");
+        item.classList.add("mesero-item");
+
+        item.innerHTML = `
+          <div class="mesero-info">
+            <span class="mesero-codigo">${m.codigo ?? "-"}</span>
+            <span class="mesero-nombre">${m.nombre}</span>
+            <span class="mesero-abreviatura">${m.abreviaturaNombre ?? "-"}</span>
+          </div>
+
+          <div class="mesero-acciones">
+            <button class="btn-mesero btn-editar" data-id="${m.id}">
+              <img src="../../../../Archivos/Iconos/lapiz.png" alt="Editar">
+            </button>
+            <button class="btn-mesero btn-eliminar" data-id="${m.id}">
+              <img src="../../../../Archivos/Iconos/trash.svg" alt="Eliminar">
+            </button>
+          </div>
+        `;
+
+        listaContainer.appendChild(item);
+      });
+
+      const botonesEditar = modal.querySelectorAll(".btn-editar");
+      botonesEditar.forEach((boton) => {
+        boton.addEventListener("click", async (e) => {
+          e.preventDefault();
+          const id = Number(boton.getAttribute("data-id"));
+          await this.abrirModalModificarMesero(
+            modal,
+            meseros.find((m) => m.id === id),
+          );
+        });
+      });
+
+      const botonesEliminar = modal.querySelectorAll(".btn-eliminar");
+      botonesEliminar.forEach((boton) => {
+        boton.addEventListener("click", async (e) => {
+          e.preventDefault();
+          const id = Number(boton.getAttribute("data-id"));
+          const mesero = meseros.find((m) => m.id === id);
+          await this.pedirConfirmacionEliminarMesero(modal, mesero);
+        });
+      });
+    } catch (error) {
+      console.error("Error cargando lista de meseros:", error);
+    }
+  }
+
+  async abrirModalModificarMesero(modalPadre, mesero) {
+    const modal = this.empresa.modalModificarMesero(mesero);
+    document.body.appendChild(modal);
+
+    //Se cierra el modal si se clickea afuera
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+
+    const form = document.getElementById("formModificarMesero");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const nombre = formData.get("nombre");
+      const abreviaturaNombre = formData.get("abreviaturaNombre");
+      const contrasena = formData.get("contrasena");
+
+      try {
+        // Llamamos al método del gestor con el nombre y el archivo.
+        const response = await this.gestor.modificarMesero(
+          mesero.id,
+          nombre,
+          abreviaturaNombre,
+          contrasena,
+        );
+
+        modal.classList.add("hidden");
+        document.body.removeChild(modal);
+        document.body.appendChild(modalPadre);
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    });
+  }
+
+  pedirConfirmacionEliminarMesero(modal, mesero) {
+    return new Promise((resolve) => {
+      const confirmacion = confirm(
+        `¿Estás seguro de eliminar al mesero ${mesero.nombre}?`,
+      );
+      if (confirmacion) {
+        this.gestor.eliminarMesero(mesero.id);
+        this.renderizarMeseros(modal);
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    });
+  }
+
+  abrirModalMeseros() {
+    const html = this.empresa.modalMeseros();
+
+    this.listaCentral.classList.add("hidden");
+    document.body.insertAdjacentHTML("beforeend", html);
+
+    const modal = document.getElementById("modalMeseros");
+
+    const botonCerrar = modal.querySelector("#cerrar-wrapper");
+    botonCerrar.addEventListener("click", () => {
+      modal.remove();
+      this.listaCentral.classList.remove("hidden");
+    });
+
+    const botonRegistrarMesero = modal.querySelector("#btnRegistrarMesero");
+    botonRegistrarMesero.addEventListener("click", async () => {
+      await this.abrirModalRegistrarMesero(modal);
+    });
+
+    const botonCargarMeseros = modal.querySelector("#btnCargarMeseros");
+    botonCargarMeseros.addEventListener("click", async () => {
+      await this.abrirModalCargarMeseros(modal);
+    });
+
+    this.renderizarMeseros(modal);
+  }
+
+  async abrirModalRegistrarMesero(modalPadre) {
+    const modal = this.empresa.modalRegistrarMesero();
+    document.body.appendChild(modal);
+
+    //Se cierra el modal si se clickea afuera
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+
+    const form = document.getElementById("formRegistrarMesero");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const nombre = formData.get("nombre");
+      const abreviaturaNombre = formData.get("abreviaturaNombre");
+      const contrasena = formData.get("contrasena");
+
+      try {
+        // Llamamos al método del gestor con el nombre y el archivo.
+        await this.gestor.registrarMesero(
+          nombre,
+          abreviaturaNombre,
+          contrasena,
+          this.empresa.id,
+        );
+        modal.classList.add("hidden");
+        document.body.removeChild(modal);
+        document.body.appendChild(modalPadre);
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+    });
+  }
+
+  async abrirModalCargarMeseros(modalPadre) {
+    const modal = this.empresa.modalCargarMeseros();
+    document.body.appendChild(modal);
+
+    //Se cierra el modal si se clickea afuera
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+
+    const form = document.getElementById("formCargarMeseros");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
+      const archivo = formData.get("archivo");
+
+      try {
+        // Llamamos al método del gestor con el nombre y el archivo.
+        await this.gestor.cargarMeseros(archivo, this.empresa.id);
+        modal.classList.add("hidden");
+        document.body.removeChild(modal);
+        document.body.appendChild(modalPadre);
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
     });
   }
 
