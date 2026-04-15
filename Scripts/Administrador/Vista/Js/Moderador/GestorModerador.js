@@ -793,6 +793,59 @@ class GestorModerador {
     }
   }
 
+  async registrarContrasenaCompartida(contrasena, id_empresa) {
+    try {
+      const bodyData = {
+        contrasena: contrasena,
+        id_empresa: id_empresa,
+      };
+
+      const response = await fetch(`/empresa/registrar-contrasena-compartida`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const err = await response
+          .json()
+          .catch(() => ({ error: "Error registrando contrasena compartida" }));
+        throw new Error(err.error || "Error registrando contrasena compartida");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error registrando contrasena compartida:", error);
+      throw error;
+    }
+  }
+
+  async eliminarContrasenaCompartida(id_empresa) {
+    try {
+      const bodyData = {
+        id_empresa: id_empresa,
+      };
+
+      const response = await fetch(`/empresa/eliminar-contrasena-compartida`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const err = await response
+          .json()
+          .catch(() => ({ error: "Error eliminando contrasena compartida" }));
+        throw new Error(err.error || "Error eliminando contrasena compartida");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error eliminando contrasena compartida:", error);
+      throw error;
+    }
+  }
+
   async loguearModerador(nombre, contrasena, id_empresa) {
     try {
       const bodyData = {

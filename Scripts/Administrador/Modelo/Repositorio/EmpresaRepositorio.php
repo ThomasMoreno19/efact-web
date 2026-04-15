@@ -422,6 +422,22 @@ class EmpresaRepositorio {
     }
   }
 
+  public function registrarContrasenaCompartida(int $id_empresa, string $contrasena): void {
+
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Empresa SET contrasenaMesero = :contrasena WHERE id = :id_empresa"
+      );
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->bindParam(':contrasena', $contrasena, PDO::PARAM_STR);
+      $stmt->execute();
+
+    } catch (PDOException $e) {
+      error_log("Error al registrar contraseña compartida (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
   public function eliminar(int $id): bool {
     try {
       // Una sola consulta multitabla

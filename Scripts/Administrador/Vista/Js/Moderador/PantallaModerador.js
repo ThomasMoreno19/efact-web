@@ -105,6 +105,22 @@ class PantallaModerador {
     this.listaArticulos.classList.remove("hidden");
   }
 
+  clickFuera(modal) {
+    let clickEmpezoAfuera = false;
+
+    modal.addEventListener("mousedown", (event) => {
+      clickEmpezoAfuera = event.target === modal;
+    });
+
+    modal.addEventListener("mouseup", (event) => {
+      const clickTerminoAfuera = event.target === modal;
+
+      if (clickEmpezoAfuera && clickTerminoAfuera) {
+        document.body.removeChild(modal);
+      }
+    });
+  }
+
   async mostrarLista(lista) {
     if (!lista) return;
 
@@ -220,13 +236,7 @@ class PantallaModerador {
     document.body.appendChild(modal);
     const botonModificarArticulo = document.getElementById("modificar");
 
-    //Se cierra el modal si se clickea afuera
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        document.body.removeChild(modal);
-        this.articuloSeleccionado = null;
-      }
-    });
+    this.clickFuera(modal);
 
     botonModificarArticulo.addEventListener("click", () => {
       this.abrirModalModificarArticulo(modal);
@@ -241,11 +251,7 @@ class PantallaModerador {
     // Agregamos un ID al modal para poder identificarlo
     document.body.appendChild(modal);
 
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        document.body.removeChild(modal);
-      }
-    });
+    this.clickFuera(modal);
 
     const form = document.getElementById("form-modificar-rubro");
     const botonEnviarDatos = document.getElementById("boton-modificar-rubro");
@@ -327,11 +333,7 @@ class PantallaModerador {
     const modal = this.modalCargarArticulos();
     document.body.appendChild(modal);
 
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        document.body.removeChild(modal);
-      }
-    });
+    this.clickFuera(modal);
 
     const form = document.getElementById("form-cargar");
     form.addEventListener("submit", async (event) => {
@@ -386,13 +388,7 @@ class PantallaModerador {
     this.listaCentral.classList.add("hidden");
 
     document.body.appendChild(modal);
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        modal.classList.add("hidden");
-        document.body.removeChild(modal);
-        document.body.appendChild(modalPadre);
-      }
-    });
+    this.clickFuera(modal);
 
     // Listener para los botones de metodos de pago
     document.querySelectorAll(".toggle-btn").forEach((btn) => {
@@ -492,12 +488,7 @@ class PantallaModerador {
     const botonVisitarGestion = document.getElementById("visitar-gestion");
     botonVisitarGestion.classList.add("hidden");
 
-    //Se cierra el modal si se clickea afuera
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        document.body.removeChild(modal);
-      }
-    });
+    this.clickFuera(modal);
 
     botonVisitarPagina.addEventListener("click", (event) => {
       event.preventDefault();
@@ -590,12 +581,7 @@ class PantallaModerador {
     const modal = this.empresa.modalModificarMesero(mesero);
     document.body.appendChild(modal);
 
-    //Se cierra el modal si se clickea afuera
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        document.body.removeChild(modal);
-      }
-    });
+    this.clickFuera(modal);
 
     const form = document.getElementById("formModificarMesero");
     form.addEventListener("submit", async (event) => {
@@ -652,7 +638,9 @@ class PantallaModerador {
       this.listaCentral.classList.remove("hidden");
     });
 
-    const botonRegistrarMesero = modal.querySelector("#btnRegistrarMesero");
+    const botonRegistrarMesero = modal.querySelector(
+      "#contenedorRegistrarMesero",
+    );
     botonRegistrarMesero.addEventListener("click", async () => {
       await this.abrirModalRegistrarMesero(modal);
     });
@@ -662,6 +650,20 @@ class PantallaModerador {
       await this.abrirModalCargarMeseros(modal);
     });
 
+    const form = document.getElementById("formRegistrarContrasenaCompartida");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await this.PedirConfirmacionRegistrarContrasenaCompartida(modal, form);
+    });
+
+    const botonEliminarContrasenaCompartida = modal.querySelector(
+      "#btnEliminarContrasenaCompartida",
+    );
+    botonEliminarContrasenaCompartida.addEventListener("click", async () => {
+      await this.PedirConfirmacionEliminarContrasenaCompartida(modal);
+    });
+
     this.renderizarMeseros(modal);
   }
 
@@ -669,12 +671,7 @@ class PantallaModerador {
     const modal = this.empresa.modalRegistrarMesero();
     document.body.appendChild(modal);
 
-    //Se cierra el modal si se clickea afuera
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        document.body.removeChild(modal);
-      }
-    });
+    this.clickFuera(modal);
 
     const form = document.getElementById("formRegistrarMesero");
     form.addEventListener("submit", async (event) => {
@@ -686,12 +683,14 @@ class PantallaModerador {
 
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
-        await this.gestor.registrarMesero(
+
+        this.gestor.registrarMesero(
           nombre,
           abreviaturaNombre,
           contrasena,
           this.empresa.id,
         );
+        this.renderizarMeseros(modalPadre);
         modal.classList.add("hidden");
         document.body.removeChild(modal);
         document.body.appendChild(modalPadre);
@@ -705,12 +704,7 @@ class PantallaModerador {
     const modal = this.empresa.modalCargarMeseros();
     document.body.appendChild(modal);
 
-    //Se cierra el modal si se clickea afuera
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        document.body.removeChild(modal);
-      }
-    });
+    this.clickFuera(modal);
 
     const form = document.getElementById("formCargarMeseros");
     form.addEventListener("submit", async (event) => {
@@ -728,6 +722,37 @@ class PantallaModerador {
         alert(`Error: ${error.message}`);
       }
     });
+  }
+
+  async PedirConfirmacionRegistrarContrasenaCompartida(modal, form) {
+    const formData = new FormData(form);
+    const contrasena = formData.get("contrasenaCompartida");
+
+    const seguro = confirm(
+      `¿Estas seguro de registrar la contraseña compartida? 
+        Los meseros registrados no se tomarán en cuenta mientras haya una contraseña compartida`,
+    );
+
+    if (seguro) {
+      await this.gestor.registrarContrasenaCompartida(
+        contrasena,
+        this.empresa.id,
+      );
+
+      modal.classList.add("hidden");
+      document.body.removeChild(modal);
+    }
+  }
+
+  async PedirConfirmacionEliminarContrasenaCompartida(modal) {
+    const seguro = confirm(
+      `¿Estas seguro de eliminar la contraseña compartida?`,
+    );
+    if (seguro) {
+      this.gestor.eliminarContrasenaCompartida(this.empresa.id);
+      modal.classList.add("hidden");
+      document.body.removeChild(modal);
+    }
   }
 
   async abrirModalConfigurarHorarios() {

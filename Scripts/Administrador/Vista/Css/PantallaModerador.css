@@ -24,6 +24,7 @@ body {
   flex-direction: column;
   gap: 10px;
   margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .mesero-item {
@@ -69,6 +70,22 @@ body {
 .mesero-acciones {
   display: flex;
   gap: 8px;
+}
+
+#btnGuardarContrasenaCompartida {
+  margin-top: 10px;
+  color: #e89e13;
+}
+
+#btnGuardarContrasenaCompartida:hover {
+  color: #fff;
+  background-color: #e89d136c;
+}
+
+#btnEliminarContrasenaCompartida img {
+  width: 20px;
+  height: 20px;
+  filter: invert(1);
 }
 
 /* botones */

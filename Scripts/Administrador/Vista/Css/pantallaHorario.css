@@ -167,6 +167,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
 }
 
+#lista-meseros-contenido {
+  padding-bottom: 20px;
+}
+
 .boton-final-container-meseros {
   position: fixed;
   bottom: 0;
@@ -183,6 +187,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .boton-mesero {
   background-color: transparent;
   border: none;
+  border-radius: 999px;
   color: #e89e13;
   padding: 10px 16px;
   cursor: pointer;
@@ -190,6 +195,31 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   font-size: 13px;
   font-weight: bold;
   margin: 0px 15px;
+  transition:
+    border 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#btnCargarMeseros:hover {
+  border: none;
+  background-color: #e89d133c;
+  color: #ffffff;
+}
+
+#contenedorRegistrarMesero {
+  cursor: pointer;
+  padding: 7px 16px;
+  transition:
+    border 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#contenedorRegistrarMesero:hover {
+  background-color: #e89d133c;
 }
 
 .boton-final-container-meseros {

@@ -328,7 +328,7 @@ class EmpresaVista {
   modalMeseros() {
     return `
       <div class="wrapper" id="modalMeseros">
-        <div class="wrapper-content">
+        <div class="wrapper-content" id="lista-meseros-contenido">
           <form id="formConfigurarHorariosEmpresa">
             <header id="header-wrapper">
               <h2 id="titulo-wrapper" class="titulo">Configuración de Meseros</h2>
@@ -336,14 +336,48 @@ class EmpresaVista {
             </header>
 
             <div class="modulos">
-              <div class="lista-meseros"></div>
+              <div class="lista-meseros">
+              </div>
+              <div class="mesero-item" id="contenedorRegistrarMesero">
+                <button type="button" class="boton-mesero" id="btnRegistrarMesero">
+                  + Registrar Mesero
+                </button>
+              </div>
             </div>
           </form>
+          
+
+          <div class="contrasena-compartida-meseros">
+            <form class="form-group" id="formRegistrarContrasenaCompartida">
+              <label for="contrasenaCompartida">Contraseña compartida:</label>
+              
+              <input 
+                type="password" 
+                id="contrasenaCompartida" 
+                name="contrasenaCompartida" 
+                maxlength="20"
+              >
+
+              <button 
+                type="button"
+                class="btn-mesero btn-eliminar" 
+                id="btnEliminarContrasenaCompartida"
+              >
+                <img src="../../../../Archivos/Iconos/trash.svg" alt="Eliminar">
+              </button>
+
+              <button 
+                type="submit" 
+                class="mesero-item" 
+                id="btnGuardarContrasenaCompartida"
+              >
+                Enviar
+              </button>
+            </form>
+          </div>
         </div>
+
         <div class="boton-final-container-meseros">
-          <button type="button" class="boton-mesero" id="btnRegistrarMesero">
-            + Registrar Mesero
-          </button>
           <button type="button" class="boton-mesero" id="btnCargarMeseros">
             + Cargar Meseros
           </button>
