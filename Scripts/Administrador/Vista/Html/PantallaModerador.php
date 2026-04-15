@@ -20,7 +20,10 @@
     </header>
     
     <div class="boton-carga csv">
-        <button class="boton-cargar" type="button" id="boton-cargar-articulos">+ Cargar Artículos</button>
+        <button class="boton-cargar" type="button" id="boton-cargar-articulos">
+            <img src="../../../../Archivos/Iconos/excel.svg" alt="Cargar" width="28" height="28">
+            Cargar Artículos
+          </button>
         <button class="boton-cargar" type="button" id="modificar-cafeteria">
           <img src="../../../../Archivos/Iconos/SVG-Settings.svg" alt="Configurar" width="35" height="35">
         </button>

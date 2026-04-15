@@ -1,41 +1,48 @@
 /* Estilos para el botón "Nueva Empresa" */
 
-
-.boton-carga{
-    display: flex;
-    gap: 10px;
-    justify-content: center; /* Centra horizontalmente */
-    align-items: center;
-    margin-bottom: 20px;
-    padding-top: 20px;
+.boton-carga {
+  display: flex;
+  gap: 10px;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center;
+  margin-bottom: 20px;
+  padding-top: 20px;
 }
 
 .boton-cargar {
-    background-color: #E89E13;
-    color: white;
-    padding: 12px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 15px;
-    transition: background-color 0.3s ease;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    justify-content: center;
-    align-items: center;
+  background-color: #e89e13;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  transition: background-color 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  align-items: center;
+}
+
+#boton-cargar-articulos {
+  padding: 8px 20px;
+  display: flex;
+  gap: 3px;
+  justify-content: center; /* Centra horizontalmente */
+  align-items: center;
 }
 
 .boton-cargar:hover {
-    background-color: #be7c00; /* Tono de morado más claro al pasar el ratón */
+  background-color: #be7c00; /* Tono de morado más claro al pasar el ratón */
 }
 
 .boton-cargar:active {
-    background-color: #ffb935; /* Tono de morado más oscuro al hacer clic */
-    transform: translateY(2px); /* Efecto de "presionado" */
+  background-color: #ffb935; /* Tono de morado más oscuro al hacer clic */
+  transform: translateY(2px); /* Efecto de "presionado" */
 }
 
-#modificar-cafeteria{
+#modificar-cafeteria {
   padding: 2px 6px;
 }
 

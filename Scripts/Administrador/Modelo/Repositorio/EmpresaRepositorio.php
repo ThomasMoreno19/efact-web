@@ -159,6 +159,36 @@ class EmpresaRepositorio {
       return false;
     }
   }
+
+  public function eliminar(int $id): bool {
+    try {
+      $this->pdo->beginTransaction();
+
+      $queries = [
+        "DELETE FROM articulo WHERE id_empresa = :id",
+        "DELETE FROM moderador WHERE id_empresa = :id",
+        "DELETE FROM mesero WHERE id_empresa = :id",
+        "DELETE FROM rubro WHERE id_empresa = :id",
+        "DELETE FROM dias_no_laborales_empresa WHERE id_empresa = :id",
+        "DELETE FROM horarios_empresa WHERE id_empresa = :id",
+        "DELETE FROM empresa WHERE id = :id"
+      ];
+
+      foreach ($queries as $sql) {
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+      }
+
+      $this->pdo->commit();
+      return true;
+
+    } catch (PDOException $e) {
+      $this->pdo->rollBack();
+      error_log("Error al eliminar empresa y dependencias: " . $e->getMessage());
+      return false;
+    }
+  }
   
   public function modificarLogo(int $id, string $logo_url): ?array {
     try {

@@ -57,6 +57,37 @@ class PantallaModerador {
     await this.asignarTituloPagina("Gestión de");
   }
 
+  insertarLoader(modalPadre) {
+    if (!modalPadre) return;
+
+    modalPadre.innerHTML = `
+      <div class="loader-container">
+        <div class="spinner"></div>
+        <p>Cargando...</p>
+      </div>
+    `;
+  }
+
+  mensajeError(modalPadre, mensaje) {
+    modalPadre.innerHTML = `
+      <div class="exito-error-container">
+        <img src="../../../../Archivos/Iconos/error.svg" alt="Error Icon" class="icon" id="error-icon" height="50" width="50"/>
+        <h2 id="error-title">¡Algo ha salido mal!</h2>
+        <p>${mensaje}</p>
+      </div>
+    `;
+  }
+
+  mensajeExitoso(modalPadre, mensaje) {
+    modalPadre.innerHTML = `
+      <div class="exito-error-container">
+        <img src="../../../../Archivos/Iconos/check.svg" alt="Exitoso Icon" class="icon" id="exitoso-icon" height="50" width="50"/>
+        <h2 id="exitoso-title">¡Operación exitosa!</h2>
+        <p>${mensaje}</p>
+      </div>
+    `;
+  }
+
   agregarEventListeners() {
     if (this.botonListaArticulos && this.botonListaRubros) {
       this.botonListaArticulos.addEventListener("click", () => {
@@ -338,6 +369,8 @@ class PantallaModerador {
       }
     });
 
+    const modalContent = modal.querySelector(".modal-content-partial");
+
     const form = document.getElementById("form-cargar");
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -346,8 +379,13 @@ class PantallaModerador {
 
       try {
         // Envía la lista procesada al controlador
-        await this.gestor.cargarArticulosYRubros(archivo, this.empresa.id);
-        document.body.removeChild(modal);
+        this.insertarLoader(modalContent);
+        const respuesta = await this.gestor.cargarArticulosYRubros(
+          archivo,
+          this.empresa.id,
+        );
+
+        this.mensajeExitoso(modalContent, "Artículos cargados exitosamente.");
         // Actualiza la lista de artículos
         this.loader.classList.remove("hidden");
         this.listaRubros.classList.add("hidden");
@@ -357,7 +395,8 @@ class PantallaModerador {
         this.loader.classList.add("hidden");
         this.listaArticulos.classList.remove("hidden");
       } catch (error) {
-        console.error(`Error al cargar el archivo: ${error.message}`);
+        if(error.value == 'Error al procesar el archivo:')
+        this.mensajeError(modalContent, error);
       }
     });
   }
@@ -369,19 +408,106 @@ class PantallaModerador {
     modal.innerHTML = `
       <div class="modal-content-partial">
         <h2>Excel</h2>
+        
         <form id="form-cargar">
-          <div class="form-group">
-            <label for="archivo">Seleccionar archivo Excel:</label>
+
+          <div id="dropzone" class="dropzone">
+            <div class="drop-content">
+              <img src="../../../../Archivos/Iconos/excel.svg" alt="Upload Icon" class="icon" height="50" width="50"/>
+              <p>Arrastrá tu archivo aquí o hacé click</p>
+            </div>
+
             <input type="file" id="archivo" name="archivo"
-              accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-              required>
+              accept=".csv,.xlsx,.xls" hidden required>
           </div>
-          <div >
-            <button type="submit" class="submit-button">Cargar</button>
-          </div>
+
+          <div id="file-preview" class="file-preview hidden"></div>
+
+          <button type="submit" class="submit-button disabled" id="boton-cargar">Enviar</button>
+
         </form>
       </div>
     `;
+    const dropzone = modal.querySelector("#dropzone");
+    const input = modal.querySelector("#archivo");
+    const preview = modal.querySelector("#file-preview");
+
+    function accionBotonCargar(estado) {
+      const boton = document.querySelector("#boton-cargar");
+
+      if (!boton) return;
+
+      boton.disabled = !estado;
+
+      if (estado) {
+        boton.classList.remove("disabled");
+      } else {
+        boton.classList.add("disabled");
+      }
+    }
+
+    // Click abre selector
+    dropzone.addEventListener("click", () => input.click());
+
+    // Drag events
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("dragover");
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+
+      const file = e.dataTransfer.files[0];
+      input.files = e.dataTransfer.files;
+
+      mostrarArchivo(file);
+    });
+
+    // Cambio manual
+    input.addEventListener("change", () => {
+      const file = input.files[0];
+      mostrarArchivo(file);
+    });
+
+    // Mostrar info
+    function mostrarArchivo(file) {
+      if (!file) return;
+
+      const validTypes = [
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      ];
+
+      const validExtensions = /\.(xls|xlsx)$/i;
+
+      if (!validTypes.includes(file.type) && !validExtensions.test(file.name)) {
+        preview.classList.remove("hidden");
+        preview.innerHTML =
+          "<strong>❌ Archivo inválido. Solo se permiten .xls o .xlsx</strong>";
+
+        input.value = "";
+        accionBotonCargar(false);
+        return;
+      }
+
+      preview.classList.remove("hidden");
+      preview.innerHTML = `
+      <div class="file-info">
+        <strong>${file.name}</strong>
+        <strong>
+          ${(file.size / 1024).toFixed(2)} KB
+        </strong>
+      </div>
+      `;
+      accionBotonCargar(true);
+    }
+
     return modal;
   }
 
@@ -502,6 +628,10 @@ class PantallaModerador {
 
     // Agregamos un ID al modal para poder identificarlo
     document.body.appendChild(modal);
+    const botonEliminar = document.getElementById("btn-eliminar-empresa");
+    botonEliminar.classList.add("hidden");
+    const idEmpresa = document.getElementById("id-empresa");
+    idEmpresa.classList.add("hidden");
     const botonSecccionModificar = document.getElementById("seccion-modificar");
     const botonVisitarPagina = document.getElementById("visitar-pagina");
     const botonConfigurarHorarios = document.getElementById(
@@ -1041,11 +1171,11 @@ class PantallaModerador {
         Todavía no cargaste días no laborales.
       </p>`;
 
-      if (btnGuardar) btnGuardar.disabled = true;
+      if (btnGuardar) btnGuardar.classList.add("disabled");
       return;
     }
 
-    if (btnGuardar) btnGuardar.disabled = false;
+    if (btnGuardar) btnGuardar.classList.remove("disabled");
 
     const ordenados = [...this.diasNoLaboralesGuardados].sort((a, b) => {
       const fechaA = this.parsearFechaNoLaboral(a);
@@ -1185,11 +1315,11 @@ class PantallaModerador {
         Todavía no cargaste horarios.
       </p>`;
 
-      if (btnGuardar) btnGuardar.disabled = true;
+      if (btnGuardar) btnGuardar.classList.add("disabled");
       return;
     }
 
-    if (btnGuardar) btnGuardar.disabled = false;
+    if (btnGuardar) btnGuardar.classList.remove("disabled");
 
     // Ordenar por día
     const ordenados = [...this.horariosGuardados].sort(

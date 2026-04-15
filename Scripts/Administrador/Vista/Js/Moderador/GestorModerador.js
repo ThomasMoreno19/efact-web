@@ -136,21 +136,16 @@ class GestorModerador {
       reader.onload = async (event) => {
         try {
           const listaObjetos = [];
+
           if (archivo.type === "text/csv") {
             const contenido = event.target.result;
-
             const lineas = contenido.split("\n");
-
-            // Elimina la primera línea (cabecera)
             const lineasSinCabecera = lineas.slice(2);
-
-            // Process all lines to create both lists
-            const rubrosUnicos = new Set(); // Use a Set to store unique rubro names
 
             lineasSinCabecera.forEach((linea) => {
               const columnas = linea.split(";");
               if (columnas.length >= 4) {
-                const articulo = {
+                listaObjetos.push({
                   id_articulo: columnas[0],
                   nombre_articulo: columnas[1].trim(),
                   descripcion: this.limpiarDescripcion(
@@ -163,33 +158,21 @@ class GestorModerador {
                   nombre_rubro: columnas[5].trim(),
                   publica_art: columnas[7].trim(),
                   publica_rub: columnas[8].trim(),
-                };
-                listaObjetos.push(articulo);
+                });
               }
             });
-          } else if (
-            [
-              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              "application/vnd.ms-excel",
-            ].includes(archivo.type)
-          ) {
-            // 2. Leer como ArrayBuffer
+          } else {
             const data = new Uint8Array(event.target.result);
-
-            // 3. Usar XLSX para parsear
             const workbook = XLSX.read(data, { type: "array" });
-            const sheetName = workbook.SheetNames[0];
-            const sheet = workbook.Sheets[sheetName];
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
             const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-            // 4. Eliminar cabecera
             const lineasSinCabecera = jsonData.slice(2);
 
             lineasSinCabecera.forEach((columnas) => {
-              // Saltar filas vacías
               if (!columnas || columnas.length === 0) return;
 
-              const articulo = {
+              listaObjetos.push({
                 id_articulo: columnas[0],
                 nombre_articulo: columnas[1].trim(),
                 descripcion: this.limpiarDescripcion(
@@ -202,47 +185,42 @@ class GestorModerador {
                 nombre_rubro: columnas[5].trim(),
                 publica_art: columnas[7],
                 publica_rub: columnas[8],
-              };
-
-              listaObjetos.push(articulo);
+              });
             });
           }
 
           await this.setearEn0(id_empresa);
-          // Now, send both lists to the respective methods
+
           const listaRubros = await this.cargarRubros(listaObjetos, id_empresa);
           const booleanoArticulos = await this.cargarArticulos(
             listaRubros,
             id_empresa,
           );
 
-          // Resolve the promise based on the results of both calls
-          if (booleanoArticulos) {
-            const resultado =
-              await this.borrarRubrosYArtNoUtilizados(id_empresa);
-            resolve(resultado);
-          } else {
-            reject(
-              new Error("Algunos datos no se pudieron cargar correctamente."),
-            );
+          if (!booleanoArticulos) {
+            return reject(new Error("Error al cargar los artículos"));
           }
+
+          const resultado = await this.borrarRubrosYArtNoUtilizados(id_empresa);
+
+          // ✅ ESTE es el retorno correcto
+          resolve({
+            rubros: listaRubros,
+            articulos: booleanoArticulos,
+            resultado: resultado,
+          });
         } catch (error) {
-          reject(error);
+          reject(new Error(`Error al procesar el archivo: ${error.message}`));
         }
       };
 
-      reader.onerror = (error) => {
+      reader.onerror = () => {
         reject(new Error("Error al leer el archivo."));
       };
 
       if (archivo.type === "text/csv") {
         reader.readAsText(archivo);
-      } else if (
-        [
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "application/vnd.ms-excel",
-        ].includes(archivo.type)
-      ) {
+      } else {
         reader.readAsArrayBuffer(archivo);
       }
     });

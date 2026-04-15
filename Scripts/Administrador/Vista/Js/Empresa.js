@@ -445,9 +445,24 @@ class EmpresaVista {
     modalConfigurarEmpresaContenido.classList.add("modal-content-configurar");
     const htmlContent = `
       <form id="form-configurar-empresa">
-        <h2 id = "nombre-empresa-modal">Configuración</h2>
-        <button type = "button" class = "submit-button" id = "seccion-modificar" >Modificar datos</button>
-        <button type = "button" class = "submit-button" id = "configurar-horarios" >Configurar Horarios</button>
+        <div class="header-configurar">
+          <h2 id = "nombre-empresa-modal">${this.nombre}</h2>
+          <div id = "botones-empresa" >
+            <button id = "seccion-modificar" class="botones-empresa" type="button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-2">
+                <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+            </button>
+            <button type="button" id="btn-eliminar-empresa" class="botones-empresa">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <h3 id = "id-empresa"> ID ${this.id} </h3>
+        <button type = "button" class = "submit-button" id = "configurar-horarios" >Horarios</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>
