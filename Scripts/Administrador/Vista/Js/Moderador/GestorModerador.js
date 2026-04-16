@@ -489,7 +489,9 @@ class GestorModerador {
     tarjeta,
     transferencia,
     contrasenaMesero,
-    precio_activo,
+    precio1,
+    precio2,
+    precio3,
   ) {
     const bodyData = {
       id: id,
@@ -500,7 +502,9 @@ class GestorModerador {
       tarjeta: tarjeta,
       transferencia: transferencia,
       contrasenaMesero: contrasenaMesero,
-      precio_activo: precio_activo,
+      precio1: precio1,
+      precio2: precio2,
+      precio3: precio3,
     };
 
     try {

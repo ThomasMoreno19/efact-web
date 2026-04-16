@@ -10,7 +10,9 @@ class EmpresaVista {
     this.efectivo = empresa.efectivo ?? false;
     this.tarjeta = empresa.tarjeta ?? false;
     this.transferencia = empresa.transferencia ?? false;
-    this.precio_activo = empresa.precio_activo || 1;
+    this.precio1 = empresa.precio1 ?? "";
+    this.precio2 = empresa.precio2 ?? "";
+    this.precio3 = empresa.precio3 ?? "";
     this.logo_url = empresa.logo_url;
   }
 
@@ -21,7 +23,9 @@ class EmpresaVista {
     efectivo,
     tarjeta,
     transferencia,
-    precio_activo,
+    precio1,
+    precio2,
+    precio3,
   ) {
     this.nombre = nombre;
     this.telefono = telefono;
@@ -29,7 +33,9 @@ class EmpresaVista {
     this.efectivo = efectivo;
     this.tarjeta = tarjeta;
     this.transferencia = transferencia;
-    this.precio_activo = precio_activo;
+    this.precio1 = precio1;
+    this.precio2 = precio2;
+    this.precio3 = precio3;
   }
 
   mostrarUna() {
@@ -55,7 +61,9 @@ class EmpresaVista {
           empresaEfectivo: this.efectivo,
           empresaTarjeta: this.tarjeta,
           empresaTransferencia: this.transferencia,
-          empresaPrecioActivo: this.precio_activo,
+          empresaPrecio1: this.precio1,
+          empresaPrecio2: this.precio2,
+          empresaPrecio3: this.precio3,
           empresaLogoUrl: this.logo_url,
         },
       });
@@ -525,18 +533,12 @@ class EmpresaVista {
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
 
         <text id="titulo-modulos"> Precios </text>
-        <div class="lista-botones">
-          <button class="toggle-btn-precios ${this.precio_activo === 1 ? "active" : ""}" type="button" data-precio="1">
-            Precio 1
-          </button>
+        <div class="lista-botones form-group precios">
+          <input type="text" id="precio-1" name="precio-1" value="${this.precio1}" placeholder="Precio 1">
 
-          <button class="toggle-btn-precios ${this.precio_activo === 2 ? "active" : ""}" type="button" data-precio="2">
-            Precio 2
-          </button>
+          <input type="text" id="precio-2" name="precio-2" value="${this.precio2}" placeholder="Precio 2">
 
-          <button class="toggle-btn-precios ${this.precio_activo === 3 ? "active" : ""}" type="button" data-precio="3">
-            Precio 3
-          </button>
+          <input type="text" id="precio-3" name="precio-3" value="${this.precio3}" placeholder="Precio 3">
         </div>
         
         <div class="form-group">

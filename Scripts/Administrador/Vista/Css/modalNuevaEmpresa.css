@@ -163,6 +163,10 @@ h3 {
     color 0.2s;
 }
 
+.precios {
+  flex-direction: column;
+}
+
 .toggle-btn.active {
   background-color: #e69f1a;
   color: black;

@@ -7,3 +7,5 @@ index.php
 Scripts/cuenta.php
 Scripts/Cache/*
 !Scripts/Cache/
+
+.env*

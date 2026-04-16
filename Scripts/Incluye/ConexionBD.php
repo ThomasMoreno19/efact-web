@@ -1,32 +1,29 @@
 <?php
-// public_html/Scripts/Incluye/localBD.php
 
 function conectarBD() {
-    static $pdo = null; // Se reutiliza la conexión dentro del mismo request
+  static $pdo = null;
 
-    if ($pdo === null) {
-        $host = 'srv720.hstgr.io';
-        $dbname = 'u919042836_Cafe_Bar';
-        $user = 'u919042836_iteracion5900T';
-        $password = 'Garibaldi264-';
+  if ($pdo === null) {
+    $host = getenv('DB_HOST');
+    $dbname = getenv('DB_NAME');
+    $user = getenv('DB_USER');
+    $password = getenv('DB_PASSWORD');
 
-        try {
-            $pdo = new PDO(
-                "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
-                $user,
-                $password,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                    PDO::ATTR_PERSISTENT => true, // 👈 habilita conexión persistente
-                ]
-            );
-        } catch (PDOException $e) {
-            error_log("Error de conexión a la base de datos: " . $e->getMessage());
-            die("Se superó el exceso de consultas a la base de datos.");
-        }
+    try {
+      $pdo = new PDO(
+        "mysql:host=$host;dbname=$dbname;charset=utf8mb4",
+        $user,
+        $password,
+        [
+          PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+          PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+          PDO::ATTR_EMULATE_PREPARES => false,
+        ]
+      );
+    } catch (PDOException $e) {
+      die($e->getMessage());
+    }
     }
 
-    return $pdo;
+  return $pdo;
 }

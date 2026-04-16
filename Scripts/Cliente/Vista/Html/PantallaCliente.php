@@ -3,6 +3,7 @@
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="icon" href="data:,">
       <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/pantalla.css?v=<?php echo APP_VERSION; ?>">
       <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/ListaArticulos.css?v=<?php echo APP_VERSION; ?>">
       <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesAlta.css?v=<?php echo APP_VERSION; ?>">

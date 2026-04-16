@@ -1,14 +1,8 @@
 <?php
 // Inicia la sesión globalmente, ya que todas las solicitudes pasan por aquí.
 session_start();
-// Detectar si está en local o en Hostinger
-if ($_SERVER['HTTP_HOST'] === 'localhost' || $_SERVER['SERVER_NAME'] === 'localhost') {
-    // 🖥️ Entorno local
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/localBD.php';
-} else {
-    // ☁️ Entorno Hostinger
-    require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
-}
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/env.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorEmpresa.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorAdministrador.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorModerador.php';
@@ -17,6 +11,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/Ges
 
 $url = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'); // Tomar la url (Elimina barras iniciales/finales).
 
+cargarEnv($_SERVER['DOCUMENT_ROOT'] . '/.env');
 // Dividir la url en un array
 $url_segmentada = explode('/', $url);
 $url_principal = $url_segmentada[0]; //lo que va antes de la primer barra en el slug, si el slug es Empresa/mostrar/123, entonces url_principal es Empresa

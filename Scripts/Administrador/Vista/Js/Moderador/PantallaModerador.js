@@ -41,7 +41,6 @@ class PantallaModerador {
     if (this.empresa.deshabilitarExcel) {
       this.botonCargarArticulos.classList.add("hidden");
     }
-    this.precio_activo = this.empresa.precio_activo || 1;
 
     try {
       this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
@@ -194,7 +193,9 @@ class PantallaModerador {
               const articuloRecibido = new ArticuloVista(articulo);
               // ✅ Corregido: Crear el elemento solo una vez
               const elementoArticulo = articuloRecibido.mostrarUna(
-                this.precio_activo,
+                this.precio1,
+                this.precio2,
+                this.precio3,
               );
               // ✅ Agregarlo al DOM
               listaArticulosDiv.appendChild(elementoArticulo);
@@ -395,8 +396,8 @@ class PantallaModerador {
         this.loader.classList.add("hidden");
         this.listaArticulos.classList.remove("hidden");
       } catch (error) {
-        if(error.value == 'Error al procesar el archivo:')
-        this.mensajeError(modalContent, error);
+        if (error.value == "Error al procesar el archivo:")
+          this.mensajeError(modalContent, error);
       }
     });
   }
