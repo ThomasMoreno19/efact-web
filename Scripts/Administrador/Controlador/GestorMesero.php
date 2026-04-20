@@ -54,6 +54,10 @@ class GestorMesero {
       case 'mostrar':
         $this->mostrar();
         break;
+
+      case 'hay-meseros-registrados':
+        $this->hayMeserosRegistrados();
+        break;
       
       default:
         http_response_code(404);
@@ -157,7 +161,6 @@ class GestorMesero {
         ]);
         return;
       }
-
       $ok = $this->meseroRepositorio->cargar($procesados, $id_empresa);
 
       echo json_encode([
@@ -277,6 +280,25 @@ class GestorMesero {
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al cambiar la contraseña del mesero: ' . $e->getMessage()]);
+    }
+  }
+
+  private function hayMeserosRegistrados(): void {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)$datos['id_empresa'];
+
+    if (is_null($id_empresa)){
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos válidos para validar meseros registrados']);
+    }
+
+    try {
+      $response = $this->meseroRepositorio->hayMeserosRegistrados($id_empresa);
+      echo json_encode($response);
+    } catch (Exception $e){
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al validar registros de meseros: ' . $e->getMessage()]);
     }
   }
 }

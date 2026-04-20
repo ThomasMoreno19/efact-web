@@ -12,12 +12,20 @@ class EmpresaRepositorio {
   }
   
   public function obtenerPorId(int $id): ?array {
-    $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id;");
+    $stmt = $this->pdo->prepare("
+      SELECT 
+        *,
+        (contrasenaMesero IS NOT NULL AND contrasenaMesero <> '') AS tieneContrasenaMesero
+      FROM Empresa 
+      WHERE id = :id
+    ");
+    
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
-    if($data){
-      return $empresa= [
+
+    if ($data) {
+      return [
         'id' => $data['id'],
         'nombre' => $data['nombre'],
         'logo_url' => $data['logo_url'],
@@ -30,8 +38,10 @@ class EmpresaRepositorio {
         'tarjeta' => $data['tarjeta'],
         'transferencia' => $data['transferencia'],
         'fecha_creacion' => $data['fecha_creacion'],
+        'tieneContrasenaMesero' => (bool)$data['tieneContrasenaMesero'],
       ];
     }
+
     return null;
   }
   

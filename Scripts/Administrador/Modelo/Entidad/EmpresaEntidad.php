@@ -11,10 +11,11 @@ class Empresa {
   private bool $moduloMesero;
   private bool $gestionMesero;
   private array $rubros;
+  private bool $tieneContrasenaMesero;
 
 
   //Constructor
-  public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $gestionMesero, ?array $rubros = []) {
+  public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $gestionMesero, bool $tieneContrasenaMesero, ?array $rubros = []) {
     $this->id = $id;
     $this->nombre = $nombre;
     $this->fecha_creacion = $fecha_creacion;
@@ -24,6 +25,7 @@ class Empresa {
     $this->tieneCarrito = $tieneCarrito;
     $this->moduloMesero = $moduloMesero;
     $this->gestionMesero = $gestionMesero;
+    $this->tieneContrasenaMesero = $tieneContrasenaMesero;
     $this->rubros = $rubros;
   }
   
@@ -63,6 +65,10 @@ class Empresa {
   
   public function getRubros(): array {
     return $this->rubros;
+  }
+
+  public function tieneContrasenaMesero(): bool {
+    return $this->tieneContrasenaMesero;
   }
   
   
@@ -105,5 +111,9 @@ class Empresa {
   
   public function agregarRubro(Rubro $rubro): void {
     $this->rubros[] = $rubro;
+  }
+
+  public function setTieneContrasenaMesero(bool $tieneContrasenaMesero): void {
+    $this->tieneContrasenaMesero = $tieneContrasenaMesero;
   }
 }

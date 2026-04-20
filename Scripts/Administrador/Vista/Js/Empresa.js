@@ -10,6 +10,7 @@ class EmpresaVista {
     this.efectivo = empresa.efectivo ?? false;
     this.tarjeta = empresa.tarjeta ?? false;
     this.transferencia = empresa.transferencia ?? false;
+    this.tieneContrasenaMesero = empresa.tieneContrasenaMesero;
     this.logo_url = empresa.logo_url;
   }
 
@@ -45,6 +46,7 @@ class EmpresaVista {
           empresaEfectivo: this.efectivo,
           empresaTarjeta: this.tarjeta,
           empresaTransferencia: this.transferencia,
+          empresaTieneContrasenaMesero: this.tieneContrasenaMesero,
           empresaLogoUrl: this.logo_url,
         },
       });
@@ -160,10 +162,6 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena" class="required">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" required>
-        </div>
-        <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero">
         </div>
         <div class="footer-wrapper">
           <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
@@ -570,10 +568,6 @@ class EmpresaVista {
           <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
         </div>
-        <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña">
-        </div>
         <div class="footer-wrapper">
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
         </div>
@@ -671,10 +665,6 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
-        </div>
-        <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña">
         </div>
         <div class="footer-wrapper">
           <button type="submit" id="boton-guardar-empresa">Enviar</button>

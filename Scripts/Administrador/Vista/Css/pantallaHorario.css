@@ -167,10 +167,6 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
 }
 
-#lista-meseros-contenido {
-  padding-bottom: 20px;
-}
-
 .boton-final-container-meseros {
   position: fixed;
   bottom: 0;

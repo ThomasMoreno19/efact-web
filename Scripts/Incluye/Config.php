@@ -1,6 +1,10 @@
 <?php
-// Scripts/Config/config.php
+$version = getenv('APP_ENV');
 
-define('CACHE_TIME', 2400); // Cache de 40 minutos
-define('APP_VERSION', '1.0.1'); // Versión de la aplicación
+if ($version === 'local') {
+  $version = time(); // timestamp dinámico
+}
+
+define('CACHE_TIME', 86400); // Cache de 1 día
+define('APP_VERSION', $version); // Versión de la aplicación
 define('ROLES', ['MODERADOR', 'ADMIN', 'MESERO']);

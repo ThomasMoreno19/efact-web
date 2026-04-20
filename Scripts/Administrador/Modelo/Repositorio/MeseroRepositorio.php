@@ -61,7 +61,6 @@ class MeseroRepositorio {
 
     foreach ($meseros as $i => $m) {
 
-      // Validación defensiva
       if (!isset($m['codigo'], $m['nombre'])) {
         error_log("Mesero inválido en índice $i: " . json_encode($m));
         continue;
@@ -81,31 +80,38 @@ class MeseroRepositorio {
       return false;
     }
 
-    $sql = "INSERT INTO Mesero (codigo, nombre, abreviaturaNombre, contrasena, id_empresa)
-            VALUES " . implode(', ', $values) . "
-            ON DUPLICATE KEY UPDATE
-              nombre = VALUES(nombre),
-              abreviaturaNombre = VALUES(abreviaturaNombre),
-              contrasena = VALUES(contrasena);";
+    $sqlInsert = "INSERT INTO Mesero (codigo, nombre, abreviaturaNombre, contrasena, id_empresa)
+                  VALUES " . implode(', ', $values);
 
     try {
-      $stmt = $this->pdo->prepare($sql);
+      $this->pdo->beginTransaction();
+
+      // 1. DELETE
+      $stmtDelete = $this->pdo->prepare("DELETE FROM Mesero WHERE id_empresa = :id_empresa");
+      $stmtDelete->bindValue(":id_empresa", $id_empresa);
+      $stmtDelete->execute();
+
+      // 2. INSERT
+      $stmtInsert = $this->pdo->prepare($sqlInsert);
 
       foreach ($params as $k => $v) {
-        $stmt->bindValue($k, $v);
+        $stmtInsert->bindValue($k, $v);
       }
 
-      $stmt->execute();
+      $stmtInsert->execute();
 
-      // 🔍 Debug útil
-      error_log("Meseros insertados/actualizados: " . count($meseros));
+      $this->pdo->commit();
+
+      error_log("Meseros reemplazados: " . count($meseros));
 
       return true;
 
     } catch (PDOException $e) {
 
+      $this->pdo->rollBack();
+
       error_log("SQL ERROR: " . $e->getMessage());
-      error_log("SQL: " . $sql);
+      error_log("SQL INSERT: " . $sqlInsert);
       error_log("PARAMS: " . json_encode($params));
 
       return false;
@@ -268,5 +274,22 @@ class MeseroRepositorio {
     };
 
     return false;
+  }
+
+  public function hayMeserosRegistrados(int $id_empresa): bool {
+    $sql = $this->pdo->prepare(
+      "SELECT EXISTS (
+        SELECT 1 
+        FROM Mesero 
+        WHERE id_empresa = :id_empresa
+      ) AS existe"
+    );
+
+    $sql->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+    $sql->execute();
+
+    $resultado = $sql->fetch(PDO::FETCH_ASSOC);
+
+    return (bool) $resultado['existe'];
   }
 }

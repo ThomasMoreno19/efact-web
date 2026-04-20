@@ -82,4 +82,23 @@ class GestorCliente {
 
     return await response.json();
   }
+
+  async hayMeserosRegistrados(id_empresa) {
+    const bodyData = { id_empresa: parseInt(id_empresa) };
+
+    const response = await fetch(`/mesero/hay-meseros-registrados`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      const err = await response
+      .json()
+      .catch(() => ({ error: "Error al verificar meseros registrados" }));
+      throw new Error(err.error || "Error al verificar meseros registrados");
+    }
+
+    return await response.json();
+  }
 }

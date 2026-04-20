@@ -57,7 +57,15 @@ class PantallaCliente {
         }
       }
       if (this.conocerEsMesero()) {
-        await this.solicitarContrasenaMesero();
+        if (this.empresa.tieneContrasenaMesero) {
+          this.solicitarContrasenaMesero();
+        }else {
+          console.log(this.empresa);
+          const tieneMeseros = await this.gestor.hayMeserosRegistrados(this.empresa.id);
+          if (tieneMeseros) {
+            this.modalIniciarSesionMesero();
+          }
+        }
       }
 
       try {

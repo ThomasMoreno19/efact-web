@@ -715,6 +715,7 @@ class PantallaModerador {
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
         await this.gestor.cargarMeseros(archivo, this.empresa.id);
+        await this.renderizarMeseros(modalPadre);
         modal.classList.add("hidden");
         document.body.removeChild(modal);
         document.body.appendChild(modalPadre);
@@ -730,7 +731,7 @@ class PantallaModerador {
 
     const seguro = confirm(
       `¿Estas seguro de registrar la contraseña compartida? 
-        Los meseros registrados no se tomarán en cuenta mientras haya una contraseña compartida`,
+Los meseros registrados no se tomarán en cuenta mientras haya una contraseña compartida`,
     );
 
     if (seguro) {
@@ -738,9 +739,6 @@ class PantallaModerador {
         contrasena,
         this.empresa.id,
       );
-
-      modal.classList.add("hidden");
-      document.body.removeChild(modal);
     }
   }
 
