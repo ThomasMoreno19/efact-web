@@ -488,10 +488,9 @@ class GestorModerador {
     efectivo,
     tarjeta,
     transferencia,
+    precio_delivery,
+    precio_espectaculo,
     contrasenaMesero,
-    precio1,
-    precio2,
-    precio3,
   ) {
     const bodyData = {
       id: id,
@@ -501,10 +500,9 @@ class GestorModerador {
       efectivo: efectivo,
       tarjeta: tarjeta,
       transferencia: transferencia,
+      precio_delivery: precio_delivery,
+      precio_espectaculo: precio_espectaculo,
       contrasenaMesero: contrasenaMesero,
-      precio1: precio1,
-      precio2: precio2,
-      precio3: precio3,
     };
 
     try {
@@ -623,6 +621,50 @@ class GestorModerador {
     return await response.json();
   }
 
+  async guardarEspectaculos(espectaculos, id_empresa) {
+    const bodyData = {
+      id_empresa,
+      espectaculos,
+    };
+
+    const response = await fetch(`/empresa/guardar-espectaculos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error guardando espectáculos" }));
+      throw new Error(err.error || "Error guardando espectáculos");
+    }
+
+    return await response.json();
+  }
+
+  async guardarExcepcion(excepciones, id_empresa) {
+    const bodyData = {
+      id_empresa,
+      excepciones: excepciones,
+    };
+
+    const response = await fetch(`/empresa/guardar-excepciones-espectaculos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error guardando excepciones" }));
+      throw new Error(err.error || "Error guardando excepciones");
+    }
+
+    return await response.json();
+  }
+
   async obtenerHorarios(id_empresa) {
     const bodyData = { id_empresa };
 
@@ -637,6 +679,25 @@ class GestorModerador {
         .json()
         .catch(() => ({ error: "Error obteniendo horarios" }));
       throw new Error(err.error || "Error obteniendo horarios");
+    }
+
+    return await response.json();
+  }
+
+  async obtenerEspectaculos(id_empresa) {
+    const bodyData = { id_empresa };
+
+    const response = await fetch(`/empresa/mostrar-espectaculos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error obteniendo espectáculos" }));
+      throw new Error(err.error || "Error obteniendo espectáculos");
     }
 
     return await response.json();

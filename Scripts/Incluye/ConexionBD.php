@@ -1,6 +1,7 @@
 <?php
 
-function conectarBD() {
+function conectarBD()
+{
   static $pdo = null;
 
   if ($pdo === null) {
@@ -23,7 +24,7 @@ function conectarBD() {
     } catch (PDOException $e) {
       die($e->getMessage());
     }
-    }
+  }
 
   return $pdo;
 }

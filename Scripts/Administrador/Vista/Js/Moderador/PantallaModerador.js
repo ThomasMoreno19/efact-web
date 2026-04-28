@@ -8,8 +8,10 @@ class PantallaModerador {
     this.listaCentral = document.getElementById("lista-central");
     this.articuloSeleccionado = null;
     this.horariosGuardados = [];
+    this.espectaculosGuardados = [];
     this.diasNoLaboralesGuardados = [];
     this.horarios = [];
+    this.espectaculos = [];
     this.MINUTOS_DIA = 1440;
 
     this.botonListaArticulos = document.getElementById(
@@ -44,9 +46,14 @@ class PantallaModerador {
 
     try {
       this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
+      this.espectaculos = await this.gestor.obtenerEspectaculos(
+        this.empresa.id,
+      );
     } catch (error) {
       this.horariosGuardados = [];
       this.diasNoLaboralesGuardados = [];
+      this.espectaculosGuardados = [];
+      this.excepcionesGuardadas = [];
       console.warn(
         "No se pudieron cargar los horarios o días no laborales previos.",
         error,
@@ -127,6 +134,7 @@ class PantallaModerador {
 
   async habilitarVentanaPrincipal() {
     // El método se encarga de mostrar los datos en la pantalla
+    this.precioActual = await this.calcularPrecioActual();
     this.loader.classList.remove("hidden");
     await this.mostrarLista(this.listaRubros);
     this.listaRubros.classList.add("hidden");
@@ -189,13 +197,11 @@ class PantallaModerador {
 
           // Iterar sobre los artículos y crear sus vistas
           if (listaArticulosRecibidos.length > 0) {
-            listaArticulosRecibidos.forEach((articulo) => {
+            for (const articulo of listaArticulosRecibidos) {
               const articuloRecibido = new ArticuloVista(articulo);
               // ✅ Corregido: Crear el elemento solo una vez
               const elementoArticulo = articuloRecibido.mostrarUna(
-                this.precio1,
-                this.precio2,
-                this.precio3,
+                this.precioActual,
               );
               // ✅ Agregarlo al DOM
               listaArticulosDiv.appendChild(elementoArticulo);
@@ -203,7 +209,7 @@ class PantallaModerador {
               // ✅ Y luego, guardar la misma referencia en el array
               this.todosLosArticulos.push(elementoArticulo);
               this.arrayContainerRubro.push(containerRubro);
-            });
+            }
           } else {
             const noArticulosMsg = document.createElement("p");
             noArticulosMsg.textContent = "No hay artículos en este rubro.";
@@ -553,8 +559,6 @@ class PantallaModerador {
         });
 
         btn.classList.add("active");
-
-        this.precio_activo = Number(btn.dataset.precio);
       });
     });
 
@@ -576,6 +580,8 @@ class PantallaModerador {
       const efectivo = formData.get("efectivo") === "true";
       const tarjeta = formData.get("tarjeta") === "true";
       const transferencia = formData.get("transferencia") === "true";
+      const precio_delivery = formData.get("precio-delivery");
+      const precio_espectaculo = formData.get("precio-espectaculo");
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
       const contrasenaMesero = formData.get("contrasenaMesero");
@@ -592,8 +598,9 @@ class PantallaModerador {
           efectivo,
           tarjeta,
           transferencia,
+          precio_delivery,
+          precio_espectaculo,
           contrasenaMesero,
-          this.precio_activo,
         );
         if (imagen && imagen.size > 0) {
           const empresaConNuevoLogo = await this.gestor.cambiarLogoEmpresa(
@@ -612,7 +619,8 @@ class PantallaModerador {
           efectivo,
           tarjeta,
           transferencia,
-          this.precio_activo,
+          parseInt(precio_delivery),
+          parseInt(precio_espectaculo),
         );
         this.mostrarLista(this.listaArticulos);
         modal.classList.add("hidden");
@@ -637,6 +645,9 @@ class PantallaModerador {
     const botonVisitarPagina = document.getElementById("visitar-pagina");
     const botonConfigurarHorarios = document.getElementById(
       "configurar-horarios",
+    );
+    const botonConfigurarEspectaculos = document.getElementById(
+      "configurar-espectaculos",
     );
 
     const botonVisitarGestion = document.getElementById("visitar-gestion");
@@ -664,6 +675,220 @@ class PantallaModerador {
       event.preventDefault();
       await this.abrirModalConfigurarHorarios(modal);
       document.body.removeChild(modal);
+    });
+
+    botonConfigurarEspectaculos.addEventListener("click", async (event) => {
+      event.preventDefault();
+      await this.abrirModalConfigurarEspectaculos(modal);
+      document.body.removeChild(modal);
+    });
+  }
+
+  async abrirModalConfigurarEspectaculos() {
+    const modal = this.empresa.modalConfigurarEspectaculos();
+    this.listaCentral.classList.add("hidden");
+
+    document.body.appendChild(modal);
+
+    this.espectaculosGuardados = Array.isArray(this.espectaculos.espectaculo)
+      ? this.espectaculos.espectaculo.map((h) => {
+          const diaIndex = Number(h.diaIndex);
+          return {
+            ...h,
+            dia: DIAS_SEMANA[diaIndex] || "",
+            nombre: NOMBRE_DIAS[diaIndex] || "",
+            rangos: Array.isArray(h.rangos) ? h.rangos : [],
+          };
+        })
+      : [];
+
+    this.renderEspectaculosEnModal(modal);
+
+    const botonFormEspectaculoDiaFijo = document.getElementById(
+      "btnFormEspectaculoDiaFijo",
+    );
+    botonFormEspectaculoDiaFijo.addEventListener("click", async (event) => {
+      event.preventDefault();
+      const hayHorarios =
+        this.espectaculos.espectaculo.length !==
+        this.espectaculosGuardados.length;
+
+      if (hayHorarios) {
+        const seguro = confirm(
+          "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
+        );
+
+        if (!seguro) return;
+      }
+
+      this.listaCentral.classList.remove("hidden");
+      modal.classList.add("hidden");
+      await this.abrirModalConfigurarEspectaculoHabilitarExcepcion(modal);
+      document.body.removeChild(modal);
+    });
+
+    const botonCerrar = document.getElementById("cerrar-wrapper");
+
+    if (botonCerrar) {
+      botonCerrar.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const hayEspectaculos =
+          this.espectaculos.espectaculo.length !==
+          this.espectaculosGuardados.length;
+
+        if (hayEspectaculos) {
+          const seguro = confirm(
+            "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
+          );
+
+          if (!seguro) return;
+        }
+
+        this.listaCentral.classList.remove("hidden");
+        modal.classList.add("hidden");
+        document.body.removeChild(modal);
+      });
+    }
+
+    const botonesDias = modal.querySelectorAll(".toggle-btn");
+    // Listener para los botones de dias de la semana
+    botonesDias.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("active");
+      });
+    });
+
+    const form = document.getElementById("formConfigurarEspectaculosEmpresa");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const horaInicio = document.getElementById("horaInicio").value;
+      const horaFin = document.getElementById("horaFin").value;
+
+      if (!horaInicio || !horaFin) {
+        alert("Tenés que elegir hora de inicio y finalización");
+        return;
+      }
+
+      const botonesActivos = modal.querySelectorAll(".toggle-btn.active");
+
+      if (botonesActivos.length === 0) {
+        alert("Tenés que seleccionar al menos un día");
+        return;
+      }
+
+      // Armamos nuevos espectaculos
+      const nuevosEspectaculos = Array.from(botonesActivos).map((btn) => {
+        const diaNombre = btn.textContent.trim();
+
+        const diaIndex = DIAS_SEMANA.indexOf(diaNombre);
+        const nombreDia = NOMBRE_DIAS[diaIndex];
+
+        return {
+          dia: diaNombre,
+          nombre: nombreDia,
+          diaIndex,
+          inicio: horaInicio,
+          fin: horaFin,
+        };
+      });
+
+      // Validar choque
+      const espectaculosExistentesPlano = this.aplanarEspectaculosGuardados();
+      const error = this.validarNoSuperposicionEspectaculos(
+        nuevosEspectaculos,
+        espectaculosExistentesPlano,
+      );
+
+      if (error) {
+        alert("No se puede guardar: ese horario pisa otro.");
+        return;
+      }
+
+      // Guardar (agrupando por día)
+      nuevosEspectaculos.forEach((nuevo) => {
+        const existente = this.espectaculosGuardados.find(
+          (h) => h.diaIndex === nuevo.diaIndex,
+        );
+
+        if (existente) {
+          // Si ya existe el día, agregamos un rango nuevo
+          existente.rangos.push({
+            horaInicio: nuevo.inicio,
+            horaFin: nuevo.fin,
+          });
+        } else {
+          // Si no existe, creamos el día con su primer rango
+          this.espectaculosGuardados.push({
+            dia: nuevo.dia,
+            nombre: nuevo.nombre,
+            diaIndex: nuevo.diaIndex,
+            rangos: [
+              {
+                horaInicio: nuevo.inicio,
+                horaFin: nuevo.fin,
+              },
+            ],
+          });
+        }
+      });
+
+      // Reset del formulario (para seguir cargando más)
+      botonesActivos.forEach((btn) => btn.classList.remove("active"));
+      document.getElementById("horaInicio").value = "";
+      document.getElementById("horaFin").value = "";
+
+      // Render
+      this.renderEspectaculosEnModal(modal);
+    });
+
+    const btnGuardar = modal.querySelector("#btnGuardarEspectaculos");
+    btnGuardar.addEventListener("click", async () => {
+      if (
+        !this.espectaculosGuardados ||
+        this.espectaculosGuardados.length === 0
+      ) {
+        alert("No hay espectáculos cargados para guardar.");
+        return;
+      }
+
+      // 🔥 Payload recomendado
+      const espectaculos = this.espectaculosGuardados.map((d) => ({
+        diaIndex: d.diaIndex,
+        dia: d.dia,
+        rangos: d.rangos.map((r) => ({
+          inicio: r.horaInicio || r.inicio,
+          fin: r.horaFin || r.fin,
+        })),
+      }));
+
+      try {
+        await this.gestor.guardarEspectaculos(espectaculos, this.empresa.id);
+        alert("Horarios de espectáculos guardados correctamente ✔️");
+        this.espectaculos = await this.gestor.obtenerEspectaculos(
+          this.empresa.id,
+        ); // Actualizamos los espectaculos con lo que se guardó
+        this.espectaculosGuardados = Array.isArray(
+          this.espectaculos.espectaculo,
+        )
+          ? this.espectaculos.espectaculo.map((e) => {
+              const diaIndex = Number(e.diaIndex);
+
+              return {
+                ...e,
+                dia: DIAS_SEMANA[diaIndex] || "",
+                nombre: NOMBRE_DIAS[diaIndex] || "",
+                rangos: Array.isArray(e.rangos) ? e.rangos : [],
+              };
+            })
+          : [];
+        // limpiar progreso
+        this.renderEspectaculosEnModal(modal);
+      } catch (error) {
+        alert(`Error guardando espectaculos: ${error.message}`);
+      }
     });
   }
 
@@ -867,6 +1092,241 @@ class PantallaModerador {
         alert(`Error guardando horarios: ${error.message}`);
       }
     });
+  }
+
+  async abrirModalConfigurarEspectaculoHabilitarExcepcion() {
+    const modal = this.empresa.modalConfigurarEspectaculoHabilitarExcepcion();
+    this.listaCentral.classList.add("hidden");
+
+    document.body.appendChild(modal);
+
+    this.excepcionesGuardadas = Array.isArray(this.espectaculos.excepciones)
+      ? this.espectaculos.excepciones.map((h) => {
+          const diaIndex = Number(h.diaIndex);
+
+          return {
+            ...h,
+            rangos: Array.isArray(h.rangos) ? h.rangos : [],
+          };
+        })
+      : [];
+
+    this.renderExcepcionesHabilitadasEnModal(modal);
+
+    const botonFormEspectaculos = document.getElementById(
+      "btnFormConfigurarEspectaculo",
+    );
+    botonFormEspectaculos.addEventListener("click", async (event) => {
+      event.preventDefault();
+      const hayExcepciones =
+        this.espectaculos.excepciones.length !==
+        this.excepcionesGuardadas.length;
+
+      if (hayExcepciones) {
+        const seguro = confirm(
+          "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
+        );
+
+        if (!seguro) return;
+      }
+
+      modal.classList.add("hidden");
+      await this.abrirModalConfigurarEspectaculos(modal);
+      document.body.removeChild(modal);
+    });
+
+    const botonCerrar = document.getElementById(
+      "cerrar-wrapper-espectaculo-excepcion-habilitada",
+    );
+
+    if (botonCerrar) {
+      botonCerrar.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        const hayExcepciones =
+          this.espectaculos.excepciones.length !==
+          this.excepcionesGuardadas.length;
+
+        if (hayExcepciones) {
+          const seguro = confirm(
+            "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
+          );
+
+          if (!seguro) return;
+        }
+
+        this.listaCentral.classList.remove("hidden");
+        modal.classList.add("hidden");
+        document.body.removeChild(modal);
+      });
+    }
+
+    const form = document.getElementById(
+      "formConfigurarEspectaculoHabilitarExcepcion",
+    );
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fecha = document.getElementById("fechaExcepcionHabilitada").value;
+      const horaInicio = document.getElementById("horaInicio").value;
+      const horaFin = document.getElementById("horaFin").value;
+      const cancelada = document.getElementById("tipo-excepcion").value;
+
+      const fechaFormateada = this.formatearFechaCompleta(fecha);
+
+      const nuevaExcepcion = {
+        fecha: fechaFormateada,
+        rangos: [{ horaInicio: horaInicio, horaFin: horaFin }],
+        cancelada: cancelada === "1",
+      };
+
+      const haySuperposicion = this.validarNoSuperposicionExcepciones(
+        nuevaExcepcion,
+        this.excepcionesGuardadas,
+      );
+
+      if (haySuperposicion) {
+        alert("Ese horario se superpone con otro existente");
+        return;
+      }
+
+      const canceladaBooleano = cancelada === "1";
+
+      const existente = this.excepcionesGuardadas.find(
+        (h) =>
+          h.fecha === nuevaExcepcion.fecha && h.cancelada === canceladaBooleano,
+      );
+
+      if (existente) {
+        // Si ya existe el día, agregamos un rango nuevo
+        existente.rangos.push({
+          horaInicio: nuevaExcepcion.rangos[0].horaInicio,
+          horaFin: nuevaExcepcion.rangos[0].horaFin,
+        });
+      } else {
+        // Si no existe, creamos el día con su primer rango
+        this.excepcionesGuardadas.push({
+          fecha: nuevaExcepcion.fecha,
+          rangos: [
+            {
+              horaInicio: nuevaExcepcion.rangos[0].horaInicio,
+              horaFin: nuevaExcepcion.rangos[0].horaFin,
+            },
+          ],
+          cancelada: cancelada === "1",
+        });
+      }
+
+      // reset visual
+      document.getElementById("fechaExcepcionHabilitada").value = "";
+      document.getElementById("horaInicio").value = "";
+      document.getElementById("horaFin").value = "";
+
+      this.renderExcepcionesHabilitadasEnModal(modal);
+    });
+
+    const btnGuardar = modal.querySelector("#btnGuardarDiasFijos");
+    btnGuardar.addEventListener("click", async () => {
+      const horariosExcepciones = this.excepcionesGuardadas.map((d) => ({
+        fecha: d.fecha,
+        rangos: d.rangos.map((r) => ({
+          horaInicio: r.horaInicio,
+          horaFin: r.horaFin,
+        })),
+        cancelada: d.cancelada,
+      }));
+
+      try {
+        await this.gestor.guardarExcepcion(
+          horariosExcepciones,
+          this.empresa.id,
+        );
+        alert("Horarios guardados correctamente ✔️");
+        this.espectaculos = await this.gestor.obtenerEspectaculos(
+          this.empresa.id,
+        ); // Actualizamos las excepciones habilitadas con lo que se guardó
+        // limpiar progreso
+        this.renderHorariosEnModal(modal);
+      } catch (error) {
+        alert(`Error guardando horarios: ${error.message}`);
+      }
+    });
+  }
+
+  validarNoSuperposicionExcepciones(nuevaExcepcion, excepcionesExistentes) {
+    const nuevosSeg = [];
+    const existentesSeg = [];
+
+    // =========================
+    // NUEVO (siempre uno, pero puede generar 1 o 2 segmentos)
+    // =========================
+    const r = nuevaExcepcion.rangos[0];
+    const baseNueva = this.dateToIndex(nuevaExcepcion.fecha);
+
+    const segsNuevo = this.toSegments(0, r.horaInicio, r.horaFin);
+
+    for (const s of segsNuevo) {
+      nuevosSeg.push({
+        start: baseNueva + s.start,
+        end: baseNueva + s.end,
+      });
+    }
+
+    // =========================
+    // EXISTENTES
+    // =========================
+    for (const e of excepcionesExistentes) {
+      const base = this.dateToIndex(e.fecha);
+
+      for (const r of e.rangos) {
+        const segs = this.toSegments(0, r.horaInicio, r.horaFin);
+
+        for (const s of segs) {
+          existentesSeg.push({
+            start: base + s.start,
+            end: base + s.end,
+          });
+        }
+      }
+    }
+
+    // =========================
+    // COMPARACIÓN
+    // =========================
+    for (const nuevo of nuevosSeg) {
+      for (const existente of existentesSeg) {
+        if (this.overlap(nuevo, existente)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  dateToIndex(fecha) {
+    if (typeof fecha !== "string") {
+      throw new Error(`Fecha inválida: ${fecha}`);
+    }
+
+    const [d, m, y] = fecha.split("/").map(Number);
+
+    if (
+      Number.isNaN(d) ||
+      Number.isNaN(m) ||
+      Number.isNaN(y) ||
+      m < 1 ||
+      m > 12 ||
+      d < 1 ||
+      d > 31
+    ) {
+      throw new Error(`Formato de fecha inválido: ${fecha}`);
+    }
+
+    // UTC para evitar problemas de zona horaria
+    const timestamp = Date.UTC(y, m - 1, d);
+
+    return Math.floor(timestamp / 60000);
   }
 
   async abrirModalConfigurarDiasNoLaborales() {
@@ -1209,6 +1669,89 @@ class PantallaModerador {
     });
   }
 
+  renderExcepcionesHabilitadasEnModal(modal) {
+    const contenedor = modal.querySelector("#listaExcepcionesHabilitadas");
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    const btnGuardar = modal.querySelector("#btnGuardarDiasFijos");
+
+    if (
+      !Array.isArray(this.excepcionesGuardadas) ||
+      this.excepcionesGuardadas.length === 0
+    ) {
+      contenedor.innerHTML = `<p style="opacity:0.6; text-align:center;">
+        Todavía no cargaste excepciones habilitadas.
+      </p>`;
+      return;
+    }
+
+    if (btnGuardar) btnGuardar.classList.remove("disabled");
+
+    const ordenados = [...this.excepcionesGuardadas].sort((a, b) => {
+      const fechaCmp = (a.fecha || "").localeCompare(b.fecha || "");
+      if (fechaCmp !== 0) return fechaCmp;
+      // cancelados al final dentro del mismo día
+      return Number(a.cancelada) - Number(b.cancelada);
+    });
+
+    for (const dia of ordenados) {
+      const card = document.createElement("div");
+      card.classList.add("horario-card");
+      if (dia.cancelada) card.classList.add("cancelado");
+      else card.classList.add("habilitado");
+
+      const rangos = Array.isArray(dia.rangos) ? dia.rangos : [];
+
+      const rangosOrdenados = [...rangos].sort((a, b) =>
+        (a.inicio || "").localeCompare(b.inicio || ""),
+      );
+
+      const rangosHTML = rangosOrdenados
+        .map(
+          (r) => `
+            <div class="horario-linea">Inicio: ${r.horaInicio}</div>
+            <div class="horario-linea cierre">Fin: ${r.horaFin}</div>
+          `,
+        )
+        .join("");
+
+      // Clave compuesta fecha+cancelado para identificar unívocamente el elemento
+      const claveUnica = `${dia.fecha}__${dia.cancelada ? "1" : "0"}`;
+
+      card.innerHTML = `
+        <button type="button" class="btn-eliminar-espectaculo" data-clave="${claveUnica}">
+          ✖
+        </button>
+
+        <div class="horario-dia">
+          <div class="texto-cancelada">
+            ${dia.cancelada ? "Cancelado" : "Habilitado"}
+          </div>
+          ${dia.fecha}
+
+        </div>
+        ${rangosHTML}
+      `;
+
+      contenedor.appendChild(card);
+    }
+
+    contenedor.querySelectorAll(".btn-eliminar-espectaculo").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const [fecha, canceladaFlag] = btn.dataset.clave.split("__");
+        const cancelada = canceladaFlag === "1";
+
+        this.excepcionesGuardadas = this.excepcionesGuardadas.filter(
+          (h) => !(h.fecha === fecha && Boolean(h.cancelada) === cancelada),
+        );
+
+        this.renderExcepcionesHabilitadasEnModal(modal);
+      });
+    });
+  }
+
   filtrarArticulos() {
     const textoBusqueda = this.normalizarTexto(this.barraBusqueda.value);
 
@@ -1373,6 +1916,80 @@ class PantallaModerador {
     });
   }
 
+  renderEspectaculosEnModal(modal) {
+    const contenedor = modal.querySelector("#listaEspectaculosRegistrados");
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    const btnGuardar = modal.querySelector("#btnGuardarEspectaculos");
+
+    // Si no hay horarios
+    if (
+      !Array.isArray(this.espectaculosGuardados) ||
+      this.espectaculosGuardados.length === 0
+    ) {
+      contenedor.innerHTML = `<p style="opacity:0.6; text-align:center;">
+        Todavía no cargaste horarios.
+      </p>`;
+
+      if (btnGuardar) btnGuardar.classList.add("disabled");
+      return;
+    }
+
+    if (btnGuardar) btnGuardar.classList.remove("disabled");
+
+    // Ordenar por día
+    const ordenados = [...this.espectaculosGuardados].sort(
+      (a, b) => Number(a.diaIndex) - Number(b.diaIndex),
+    );
+
+    for (const dia of ordenados) {
+      const card = document.createElement("div");
+      card.classList.add("horario-card");
+
+      // 👇 por si rangos viene null o undefined
+      const rangos = Array.isArray(dia.rangos) ? dia.rangos : [];
+
+      const rangosOrdenados = [...rangos].sort((a, b) =>
+        (a.inicio || "").localeCompare(b.inicio || ""),
+      );
+
+      const rangosHTML = rangosOrdenados
+        .map(
+          (r) => `
+            <div class="horario-linea">Inicio: ${r.horaInicio}</div>
+            <div class="horario-linea cierre">Fin: ${r.horaFin}</div>
+          `,
+        )
+        .join("");
+
+      card.innerHTML = `
+        <button type="button" class="btn-eliminar-espectaculo" data-diaindex="${dia.diaIndex}">
+          ✖
+        </button>
+
+        <div class="horario-dia">${dia.nombre || dia.dia || `Día ${dia.diaIndex}`}</div>
+        ${rangosHTML}
+      `;
+
+      contenedor.appendChild(card);
+    }
+
+    // Listener eliminar
+    contenedor.querySelectorAll(".btn-eliminar-espectaculo").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const diaIndex = Number(btn.dataset.diaindex);
+
+        this.espectaculosGuardados = this.espectaculosGuardados.filter(
+          (h) => Number(h.diaIndex) !== diaIndex,
+        );
+
+        this.renderEspectaculosEnModal(modal);
+      });
+    });
+  }
+
   timeToMinutes(hhmm) {
     const [h, m] = hhmm.split(":").map(Number);
     return h * 60 + m;
@@ -1464,6 +2081,73 @@ class PantallaModerador {
     return null;
   }
 
+  validarNoSuperposicionEspectaculos(nuevosHorarios, horariosExistentes) {
+    const existentesSeg = [];
+    const nuevosSeg = [];
+
+    // EXISTENTES -> segmentos
+    for (const h of horariosExistentes) {
+      const segs = this.toSegments(h.diaIndex, h.inicio, h.fin);
+
+      for (const s of segs) {
+        existentesSeg.push({
+          dia: h.dia,
+          start: s.start,
+          end: s.end,
+        });
+      }
+    }
+
+    // NUEVOS -> segmentos
+    for (const h of nuevosHorarios) {
+      const segs = this.toSegments(h.diaIndex, h.inicio, h.fin);
+
+      for (const s of segs) {
+        nuevosSeg.push({
+          dia: h.dia,
+          start: s.start,
+          end: s.end,
+        });
+      }
+    }
+
+    // Comparar nuevos contra existentes
+    for (const nuevo of nuevosSeg) {
+      for (const existente of existentesSeg) {
+        if (this.overlap(nuevo, existente)) {
+          return `El horario de ${nuevo.dia} pisa otro horario existente.`;
+        }
+
+        const semana = 7 * this.MINUTOS_DIA;
+
+        const nuevoPlus = {
+          start: nuevo.start + semana,
+          end: nuevo.end + semana,
+        };
+        const existentePlus = {
+          start: existente.start + semana,
+          end: existente.end + semana,
+        };
+
+        if (this.overlap(nuevoPlus, existente))
+          return `Hay choque de horarios (por cruce semanal).`;
+        if (this.overlap(nuevo, existentePlus))
+          return `Hay choque de horarios (por cruce semanal).`;
+      }
+    }
+
+    // Comparar nuevos entre sí
+    for (let i = 0; i < nuevosSeg.length; i++) {
+      for (let j = i + 1; j < nuevosSeg.length; j++) {
+        if (this.overlap(nuevosSeg[i], nuevosSeg[j])) {
+          return `Los nuevos horarios se pisan entre sí (${nuevosSeg[i].dia} con ${nuevosSeg[j].dia}).`;
+        }
+      }
+    }
+
+    return null;
+  }
+
   aplanarHorariosGuardados() {
     return this.horariosGuardados.flatMap((dia) =>
       dia.rangos.map((r) => ({
@@ -1474,6 +2158,129 @@ class PantallaModerador {
         cierre: r.cierre,
       })),
     );
+  }
+
+  aplanarEspectaculosGuardados() {
+    return this.espectaculosGuardados.flatMap((dia) =>
+      dia.rangos.map((r) => ({
+        dia: dia.dia,
+        diaIndex: dia.diaIndex,
+        inicio: r.horaInicio,
+        fin: r.horaFin,
+      })),
+    );
+  }
+
+  async calcularPrecioActual() {
+    if (this.empresa.precio_espectaculo === 1) {
+      return 1;
+    }
+    const now = new Date();
+    // Día de la semana (0-6)
+    const diaIndex = now.getDay();
+
+    // Fecha en formato dd/mm/yyyy
+    const fechaActual = this.formatearFechaCompleta(
+      now.toISOString().slice(0, 10),
+    );
+
+    // Hora en HH:mm
+    const horaActual = now.toTimeString().slice(0, 5);
+
+    const ahoraMin =
+      diaIndex * this.MINUTOS_DIA + this.timeToMinutes(horaActual);
+
+    const semana = 7 * this.MINUTOS_DIA;
+    const ahoraSeg = { start: ahoraMin, end: ahoraMin + 1 };
+
+    // =========================
+    // 1. CANCELADAS
+    // =========================
+    for (const e of this.espectaculos.excepciones) {
+      if (e.fecha === fechaActual && e.cancelada) {
+        console.log("❌ Día cancelado");
+        return 1;
+      }
+    }
+
+    // =========================
+    // 2. HABILITADAS
+    // =========================
+    for (const e of this.espectaculos.excepciones) {
+      if (e.cancelada) continue;
+      const fechaAyer = this.obtenerFechaAnterior(fechaActual);
+
+      if (e.fecha === fechaActual || e.fecha === fechaAyer) {
+        const diaIndexExcepcion = this.dateToDayIndex(e.fecha);
+
+        for (const r of e.rangos) {
+          const segs = this.toSegments(
+            diaIndexExcepcion,
+            r.horaInicio,
+            r.horaFin,
+          );
+
+          for (const seg of segs) {
+            if (this.overlap(ahoraSeg, seg)) {
+              return this.empresa.precio_espectaculo;
+            }
+
+            const segPlus = {
+              start: seg.start + semana,
+              end: seg.end + semana,
+            };
+
+            if (this.overlap(ahoraSeg, segPlus)) {
+              return this.empresa.precio_espectaculo;
+            }
+          }
+        }
+      }
+    }
+
+    // =========================
+    // 3. HORARIO BASE
+    // =========================
+    for (const h of this.espectaculos.espectaculo) {
+      for (const r of h.rangos) {
+        const segs = this.toSegments(h.diaIndex, r.horaInicio, r.horaFin);
+
+        for (const seg of segs) {
+          if (this.overlap(ahoraSeg, seg)) {
+            return this.empresa.precio_espectaculo;
+          }
+
+          const segPlus = {
+            start: seg.start + semana,
+            end: seg.end + semana,
+          };
+
+          if (this.overlap(ahoraSeg, segPlus)) {
+            return this.empresa.precio_espectaculo;
+          }
+        }
+      }
+    }
+    return 1;
+  }
+
+  dateToDayIndex(fecha) {
+    const [d, m, y] = fecha.split("/").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    return date.getUTCDay(); // 0 domingo - 6 sábado
+  }
+
+  obtenerFechaAnterior(fecha) {
+    const [d, m, y] = fecha.split("/").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+
+    date.setUTCDate(date.getUTCDate() - 1);
+
+    const dia = String(date.getUTCDate()).padStart(2, "0");
+    const mes = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const anio = date.getUTCFullYear();
+
+    return `${dia}/${mes}/${anio}`;
   }
 }
 

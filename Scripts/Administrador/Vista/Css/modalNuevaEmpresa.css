@@ -187,7 +187,8 @@ h3 {
 .form-group input[type="text"],
 .form-group input[type="file"],
 .form-group input[type="number"],
-.form-group input[type="password"] {
+.form-group input[type="password"],
+select {
   width: 40%;
   padding: 10px;
   border: transparent;
@@ -195,6 +196,11 @@ h3 {
   box-sizing: border-box;
   background: rgba(255, 255, 255, 0.03);
   color: white;
+}
+
+option {
+  background-color: #222;
+  color: #fff;
 }
 
 .required::after {
@@ -207,7 +213,8 @@ h3 {
   .form-group input[type="text"],
   .form-group input[type="file"],
   .form-group input[type="numeric"],
-  .form-group input[type="password"] {
+  .form-group input[type="password"],
+  select {
     width: 70%;
   }
 }

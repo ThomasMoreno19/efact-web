@@ -7,12 +7,14 @@ class ModalCarrito {
     esMesero,
     horarios,
     moduloCarrito,
+    esDelivery,
   ) {
     this.carrito = carrito;
     this.empresa = empresa;
     this.onEliminarArticulo = onEliminarArticulo;
     this.onFinalizarCompra = onFinalizarCompra;
     this.esMesero = esMesero;
+    this.esDelivery = esDelivery;
     this.moduloCarrito = moduloCarrito;
     this.horarios = horarios || { horarios: [], noLab: [] };
     this.listaCentral = document.getElementById("lista-central");
@@ -234,8 +236,13 @@ class ModalCarrito {
       this.botonEnviar.desactivado = !abierto;
       this.botonEnviar.classList.toggle("desactivado", !abierto);
     } else {
-      this.botonSigPaso.desactivado = !abierto;
-      this.botonSigPaso.classList.toggle("desactivado", !abierto);
+      if (!this.esDelivery) {
+        this.botonEnviar.desactivado = !abierto;
+        this.botonEnviar.classList.toggle("desactivado", !abierto);
+      } else {
+        this.botonSigPaso.desactivado = !abierto;
+        this.botonSigPaso.classList.toggle("desactivado", !abierto);
+      }
     }
 
     if (abierto) {
@@ -411,7 +418,7 @@ class ModalCarrito {
     } else {
       this.botonSigPaso?.classList.remove("desactivado");
     }
-    if (this.esMesero) {
+    if (this.esMesero || !this.esDelivery) {
       this.botonEnviar.classList.remove("hidden");
       this.botonSigPaso.classList.add("hidden");
     } else {
@@ -732,6 +739,15 @@ class ModalCarrito {
       if (this.botonEnviar.desactivado) return;
 
       // Si el botón enviar SOLO existe para mesero:
+      if (!this.esDelivery) {
+        if (this.esNumeroMesa()) {
+          this.datosPersonales.numeroMesa = this.conocerNumeroMesa();
+          this.enviarPedidoWhatsApp();
+          return;
+        }
+        this.pedirMesa();
+      }
+
       if (this.esMesero) {
         this.pedirMesa();
       }
@@ -1041,5 +1057,25 @@ class ModalCarrito {
     } else {
       this.botonEnviar.classList.add("desactivado");
     }
+  }
+
+  conocerSlug(texto) {
+    const url_segmentada = window.location.pathname.split("/");
+    const slug = url_segmentada[texto];
+    return slug;
+  }
+
+  conocerNumeroMesa() {
+    const slug = this.conocerSlug(4);
+    try {
+      if (parseInt(slug) < 500) return slug;
+    } catch {
+      return false;
+    }
+  }
+
+  esNumeroMesa() {
+    const slug = this.conocerSlug(4);
+    return slug && !isNaN(parseInt(slug));
   }
 }

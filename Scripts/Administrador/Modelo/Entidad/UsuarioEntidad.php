@@ -1,37 +1,44 @@
 <?php
 // Scripts/Modelo/Entidades/Empresa.php
 
-class Usuario {
-    public $id;
-    public $nombre;
-    public $contrasena;
+class Usuario
+{
+  public $id;
+  public $nombre;
+  public $contrasena;
 
-    // Puedes añadir un constructor si quieres inicializar propiedades
-    public function __construct($id, $nombre, $contrasena) {
-        $this->id = $id;
-        $this->nombre = $nombre;
-        $this->contrasena = $contrasena;
-    }
-    
-        // Getters
-    public function getId() {
-        return $this->id;
-    }
+  // Puedes añadir un constructor si quieres inicializar propiedades
+  public function __construct($id, $nombre, $contrasena)
+  {
+    $this->id = $id;
+    $this->nombre = $nombre;
+    $this->contrasena = $contrasena;
+  }
 
-    public function getNombre() {
-        return $this->nombre;
-    }
+  // Getters
+  public function getId()
+  {
+    return $this->id;
+  }
 
-    public function getContrasena() {
-        return $this->contrasena;
-    }
+  public function getNombre()
+  {
+    return $this->nombre;
+  }
 
-    // Setters
-    public function setNombre($nombre) {
-        $this->nombre = $nombre;
-    }
+  public function getContrasena()
+  {
+    return $this->contrasena;
+  }
 
-    public function setContrasenaHash($contrasenaHash) {
-        $this->contrasena = $contrasenaHash;
-    }
+  // Setters
+  public function setNombre($nombre)
+  {
+    $this->nombre = $nombre;
+  }
+
+  public function setContrasenaHash($contrasenaHash)
+  {
+    $this->contrasena = $contrasenaHash;
+  }
 }

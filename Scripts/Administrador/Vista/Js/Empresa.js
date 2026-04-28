@@ -10,9 +10,8 @@ class EmpresaVista {
     this.efectivo = empresa.efectivo ?? false;
     this.tarjeta = empresa.tarjeta ?? false;
     this.transferencia = empresa.transferencia ?? false;
-    this.precio1 = empresa.precio1 ?? "";
-    this.precio2 = empresa.precio2 ?? "";
-    this.precio3 = empresa.precio3 ?? "";
+    this.precio_delivery = empresa.precio_delivery ?? 1;
+    this.precio_espectaculo = empresa.precio_espectaculo ?? 1;
     this.logo_url = empresa.logo_url;
   }
 
@@ -23,9 +22,8 @@ class EmpresaVista {
     efectivo,
     tarjeta,
     transferencia,
-    precio1,
-    precio2,
-    precio3,
+    precio_delivery,
+    precio_espectaculo,
   ) {
     this.nombre = nombre;
     this.telefono = telefono;
@@ -33,9 +31,8 @@ class EmpresaVista {
     this.efectivo = efectivo;
     this.tarjeta = tarjeta;
     this.transferencia = transferencia;
-    this.precio1 = precio1;
-    this.precio2 = precio2;
-    this.precio3 = precio3;
+    this.precio_delivery = precio_delivery;
+    this.precio_espectaculo = precio_espectaculo;
   }
 
   mostrarUna() {
@@ -61,9 +58,8 @@ class EmpresaVista {
           empresaEfectivo: this.efectivo,
           empresaTarjeta: this.tarjeta,
           empresaTransferencia: this.transferencia,
-          empresaPrecio1: this.precio1,
-          empresaPrecio2: this.precio2,
-          empresaPrecio3: this.precio3,
+          empresaPrecio_delivery: this.precio_delivery,
+          empresaPrecio_espectaculo: this.precio_espectaculo,
           empresaLogoUrl: this.logo_url,
         },
       });
@@ -196,6 +192,158 @@ class EmpresaVista {
     return modalNuevaEmpresa;
   }
 
+  modalConfigurarEspectaculos() {
+    const modalEspectaculos = document.createElement("div");
+    modalEspectaculos.classList.add("wrapper");
+    modalEspectaculos.id = "modalConfigurarEspectaculos";
+
+    const modalEspectaculosContenido = document.createElement("div");
+    modalEspectaculosContenido.classList.add("wrapper-content");
+
+    const dias = DIAS_SEMANA.map((nombre) => ({
+      nombre,
+      abierto: false,
+      horaApertura: "",
+      horaCierre: "",
+    }));
+
+    const botonesDiasHTML = dias
+      .map(
+        (dia, index) => `
+      <button type="button"
+          id="btnDia${index}"
+          class="toggle-btn ${dia.abierto ? "active" : ""}">
+        ${dia.nombre}
+      </button>
+    `,
+      )
+      .join("");
+
+    const htmlContent = `
+      <form id="formConfigurarEspectaculosEmpresa">
+        <header id="header-wrapper">
+          <h2 id="titulo-wrapper" class="titulo">Configuración de Espectáculos</h2>
+          <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+        </header>
+
+        <div class="modulos">
+          <text id="titulo-modulos" class="required"> Seleccione los días de espectáculos </text>
+
+          <div class="lista-botones">
+            ${botonesDiasHTML}
+          </div>
+
+          <div class="form-group">
+            <label for="horaInicio" class="required">Hora de Inicio</label>
+            <input type="time" id="horaInicio" name="horaInicio" required>
+          </div>
+
+          <div class="form-group">
+            <label for="horaFin" class="required">Hora de Fin</label>
+            <input type="time" id="horaFin" name="horaFin" required>
+          </div>
+
+          <!-- ESTE submit es para REGISTRAR en el array -->
+          <button type="submit" class="boton" id="boton-registrar-espectaculos">
+            + Registrar
+          </button>
+          
+        </div>
+
+        <div class="lista-espectaculos"></div>
+          <h3 class="subtitulo-espectaculos">Vista previa de Horarios de Espectáculos</h3>
+          <div id="listaEspectaculosRegistrados" class="espectaculos-grid"></div>
+        </div>
+
+
+        <!-- BOTÓN FINAL -->
+        <div class="boton-final-container">
+
+          <button type="button" class="botonCambiarForm" id="btnFormEspectaculoDiaFijo">
+            Configurar Excepciones
+          </button>
+
+          <button type="button" class="boton boton-final disabled" id="btnGuardarEspectaculos">
+            Guardar
+          </button>
+        </div>
+      </form>
+
+    `;
+
+    modalEspectaculosContenido.innerHTML = htmlContent;
+    modalEspectaculos.appendChild(modalEspectaculosContenido);
+
+    return modalEspectaculos;
+  }
+
+  modalConfigurarEspectaculoHabilitarExcepcion() {
+    const modalDiasFijos = document.createElement("div");
+    modalDiasFijos.classList.add("wrapper");
+    modalDiasFijos.id = "modalConfigurarEspectaculoHabilitarExcepcion";
+
+    const modalContenido = document.createElement("div");
+    modalContenido.classList.add("wrapper-content");
+
+    const htmlContent = `
+      <form id="formConfigurarEspectaculoHabilitarExcepcion">
+        <header id="header-wrapper">
+          <h2 id="titulo-wrapper" class="titulo">Excepciones Habilitadas</h2>
+          <button type="button" id="cerrar-wrapper-espectaculo-excepcion-habilitada" class="boton-cerrar">&times;</button>
+        </header>
+
+        <div class="modulos">
+
+          <div class="form-group">
+            <label for="fechaExcepcionHabilitada" class="required">Fecha:</label>
+            <input type="date" class="fecha-input" id="fechaExcepcionHabilitada" name="fechaExcepcionHabilitada" title="Seleccioná una fecha" required>
+
+            <div class="form-group">
+              <label for="horaInicio" class="required">Hora de Inicio</label>
+              <input type="time" id="horaInicio" name="horaInicio" required>
+            </div>
+
+            <div class="form-group">
+              <label for="horaFin" class="required">Hora de Fin</label>
+              <input type="time" id="horaFin" name="horaFin" required>
+            </div>
+
+            <div class="lista-botones form-group precios">
+              <label for="tipo-excepcion" class="required">Tipo de excepción</label>
+              <select id="tipo-excepcion" name="tipo-excepcion" required>
+                <option value="" selected disabled>Seleccionar</option>
+                <option value="0" > Habilitar </option>
+                <option value="1" > Cancelar </option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="boton" id="habilitarExcepcion">
+            + Agregar fecha
+          </button>
+
+        </div>
+
+        <h3 class="subtitulo-horarios">Vista previa de Excepciones</h3>
+        <div id="listaExcepcionesHabilitadas" class="horarios-grid"></div>
+
+        <div class="boton-final-container">
+          <button type="button" class="botonCambiarForm" id="btnFormConfigurarEspectaculo">
+            Configurar espectáculos
+          </button>
+          <button type="button" class="boton boton-final disabled" id="btnGuardarDiasFijos">
+            Guardar
+          </button>
+        </div>
+      </form>
+    `;
+
+    modalContenido.innerHTML = htmlContent;
+    modalDiasFijos.appendChild(modalContenido);
+
+    return modalDiasFijos;
+  }
+
   modalConfigurarHorarios() {
     const modalHorarios = document.createElement("div");
     modalHorarios.classList.add("wrapper");
@@ -256,7 +404,7 @@ class EmpresaVista {
 
         <div class="lista-horarios"></div>
           <!-- LISTA DE HORARIOS -->
-          <h3 class="subtitulo-horarios">Horarios registrados</h3>
+          <h3 class="subtitulo-horarios">Vista previa de Horarios</h3>
           <div id="listaHorariosRegistrados" class="horarios-grid"></div>
         </div>
 
@@ -324,7 +472,7 @@ class EmpresaVista {
           </button>
         </div>
 
-        <h3 class="subtitulo-horarios">Días no laborales registrados</h3>
+        <h3 class="subtitulo-horarios">Vista previa de Días no laborales </h3>
         <div id="listaDiasNoLaborales" class="horarios-grid"></div>
 
         <div class="boton-final-container">
@@ -471,6 +619,7 @@ class EmpresaVista {
         </div>
         <h3 id = "id-empresa"> ID ${this.id} </h3>
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Horarios</button>
+        <button type = "button" class = "submit-button" id = "configurar-espectaculos" >Espectáculos</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
       </form>
@@ -489,7 +638,6 @@ class EmpresaVista {
 
     const modalNuevaEmpresaContenido = document.createElement("div");
     modalNuevaEmpresaContenido.classList.add("modal-content");
-
     const htmlContent = `
       <form id="formModificarEmpresa">
         <div id="header-wrapper">
@@ -532,13 +680,20 @@ class EmpresaVista {
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
 
-        <text id="titulo-modulos"> Precios </text>
         <div class="lista-botones form-group precios">
-          <input type="text" id="precio-1" name="precio-1" value="${this.precio1}" placeholder="Precio 1">
+          <label for="precio-delivery">Precio de delivery</label>
+          <select id="precio-delivery" name="precio-delivery">
+            <option value="1" ${this.precio_delivery === 1 ? "selected" : ""}>Sin seleccionar</option>
+            <option value="2" ${this.precio_delivery === 2 ? "selected" : ""}>Precio 2</option>
+            <option value="3" ${this.precio_delivery === 3 ? "selected" : ""}>Precio 3</option>
+          </select>
 
-          <input type="text" id="precio-2" name="precio-2" value="${this.precio2}" placeholder="Precio 2">
-
-          <input type="text" id="precio-3" name="precio-3" value="${this.precio3}" placeholder="Precio 3">
+          <label for="precio-espectaculo">Precio de espectáculo</label>
+          <select id="precio-espectaculo" name="precio-espectaculo">
+            <option value="1" ${this.precio_espectaculo === 1 ? "selected" : ""}>Sin seleccionar</option>
+            <option value="2" ${this.precio_espectaculo === 2 ? "selected" : ""}>Precio 2</option>
+            <option value="3" ${this.precio_espectaculo === 3 ? "selected" : ""}>Precio 3</option>
+          </select>
         </div>
         
         <div class="form-group">

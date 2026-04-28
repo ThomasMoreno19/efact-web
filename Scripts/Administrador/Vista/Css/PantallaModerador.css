@@ -348,4 +348,9 @@ br {
     max-width: 13rem;
     max-height: 7rem;
   }
+
+  ::-webkit-scrollbar {
+    width: 0px;
+    display: none;
+  }
 }

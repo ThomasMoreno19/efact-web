@@ -1,6 +1,7 @@
 <?php
 
-function cargarEnv($ruta) {
+function cargarEnv($ruta)
+{
   if (!file_exists($ruta)) {
     die("No se encontró el archivo .env");
   }

@@ -58,6 +58,11 @@ class PantallaAdministrador {
     const BOTON_ELIMINAR_EMPRESA = document.getElementById(
       "btn-eliminar-empresa",
     );
+    const BOTON_CONFIGURAR_ESPECTACULOS = document.getElementById(
+      "configurar-espectaculos",
+    );
+
+    BOTON_CONFIGURAR_ESPECTACULOS.classList.add("hidden");
     const BOTON_GESTION_ARTICULOS = document.getElementById("visitar-gestion");
 
     const BOTON_VISITAR_PAGINA = document.getElementById("visitar-pagina");

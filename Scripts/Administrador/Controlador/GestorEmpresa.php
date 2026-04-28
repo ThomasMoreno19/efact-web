@@ -3,33 +3,36 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/EmpresaRepositorio.php';
 
-class GestorEmpresa {
+class GestorEmpresa
+{
   private PDO $pdo;
   private empresaRepositorio $empresaRepositorio;
 
-  public function __construct(PDO $pdo) {
+  public function __construct(PDO $pdo)
+  {
     $this->pdo = $pdo;
     $this->empresaRepositorio = new EmpresaRepositorio($pdo);
   }
-  
-  public function derivarURL(string $porcionURL): void {
+
+  public function derivarURL(string $porcionURL): void
+  {
     header('Content-Type: application/json');
     $url_segmentada = explode('/', $porcionURL);
     $primer_segmento = $url_segmentada[0]; //mostrar || modificar || crear
-    
+
     switch (strtolower($primer_segmento)) {
       case 'mostrar':
         switch (strtolower($url_segmentada[1] ?? '')) {
           case '':
             echo json_encode($this->empresaRepositorio->obtenerTodas());
             break;
-          
+
           case 'id':
             $this->mostrarPorId();
             break;
         }
         break;
-      
+
       case 'modificar':
         $this->modificar();
         break;
@@ -45,11 +48,11 @@ class GestorEmpresa {
       case 'crear':
         $this->crear();
         break;
-      
+
       case 'modificar-logo':
         $this->modificarLogo();
         break;
-      
+
       case 'guardar-horarios':
         $this->guardarHorarios();
         break;
@@ -58,22 +61,35 @@ class GestorEmpresa {
         $this->guardarDiasNoLaborales();
         break;
 
+      case 'guardar-espectaculos':
+        $this->guardarEspectaculos();
+        break;
+
       case 'mostrar-horarios':
         $this->mostrarHorarios();
         break;
 
+      case 'mostrar-espectaculos':
+        $this->mostrarEspectaculos();
+        break;
+
       case 'verificar-contrasena-mesero':
-      $this->verificarContrasenaMesero();
-      break;
-      
+        $this->verificarContrasenaMesero();
+        break;
+
+      case 'guardar-excepciones-espectaculos':
+        $this->guardarExcepcionesEspectaculos();
+        break;
+
       default:
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Empresa.']);
         break;
     }
   }
-  
-  private function mostrarPorId(): void {
+
+  private function mostrarPorId(): void
+  {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)$datos['id_empresa'];
@@ -103,15 +119,15 @@ class GestorEmpresa {
 
       http_response_code(200);
       echo $json;
-
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al mostrar la empresa: ' . $e->getMessage()]);
     }
   }
 
-  
-  private function crear(): void {
+
+  private function crear(): void
+  {
     // 1️⃣ Verificar y decodificar JSON o multipart
     // Si el frontend manda FormData (con archivo), usamos $_POST y $_FILES
     $nombre = $_POST['nombre'];
@@ -164,16 +180,16 @@ class GestorEmpresa {
         'logo_url' => $empresa['logo_url'],
         'contrasenaMesero' => $empresa['contrasenaMesero']
       ]);
-
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al crear la empresa: ' . $e->getMessage()]);
     }
   }
 
-  
-  
-  private function modificar(): void {
+
+
+  private function modificar(): void
+  {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)($_POST['id'] ?? 0);
@@ -201,14 +217,14 @@ class GestorEmpresa {
       return;
     }
 
-    
+
     try {
       // 3️⃣ Si hay imagen, la subimos y obtenemos la URL
       $logo_url = '';
       if ($imagen) {
         $logo_url = $this->subirLogo($nombre, $imagen);
       }
-      
+
       $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia, $contrasenaMesero, $logo_url);
 
       // 🔥 Borrar caché para esta empresa
@@ -222,7 +238,8 @@ class GestorEmpresa {
     }
   }
 
-  private function modificarParaModerador(): void {
+  private function modificarParaModerador(): void
+  {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)$datos['id'];
@@ -232,8 +249,9 @@ class GestorEmpresa {
     $efectivo = $datos['efectivo'];
     $tarjeta = $datos['tarjeta'];
     $transferencia = $datos['transferencia'];
+    $precio_delivery = $datos['precio_delivery'];
+    $precio_espectaculo = $datos['precio_espectaculo'];
     $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
-    $precio_activo = (int)($datos['precio_activo']);
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -241,9 +259,9 @@ class GestorEmpresa {
       return;
     }
 
-    
+
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $precio_activo, $contrasenaMesero);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $precio_delivery, $precio_espectaculo, $contrasenaMesero);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
@@ -255,8 +273,9 @@ class GestorEmpresa {
       echo json_encode(['error' => 'Error al modificar la empresa: ' . $e->getMessage()]);
     }
   }
-  
-  private function eliminar(): void {
+
+  private function eliminar(): void
+  {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)$datos['id_empresa'];
@@ -278,12 +297,13 @@ class GestorEmpresa {
     }
   }
 
-  private function modificarLogo(): void {
-      
+  private function modificarLogo(): void
+  {
+
     $id = $_POST['id_empresa'];
     $nombre = $_POST['nombre'];
     $imagen = $_FILES['imagen'];
-    
+
     $logo_url = $this->subirLogo($nombre, $imagen);
 
     if (is_null($logo_url)) {
@@ -302,39 +322,41 @@ class GestorEmpresa {
     }
   }
 
-  private function subirLogo(string $nombre, array $archivoImagen): string {
+  private function subirLogo(string $nombre, array $archivoImagen): string
+  {
     // 1️⃣ Definir el directorio donde se guardarán los logos
     $directorioDestino = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/Empresa/';
-    
+
     // 2️⃣ Extensión del archivo original
     $extension = strtolower(pathinfo($archivoImagen['name'], PATHINFO_EXTENSION));
-    
+
     // 3️⃣ Definir el nombre final del archivo
     // Reemplazamos espacios por guiones bajos para evitar problemas
     $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
     $nombreArchivo = $nombreLimpio . '.' . $extension;
-    
+
     $rutaDestino = $directorioDestino . $nombreArchivo;
-    
+
     // 4️⃣ Si ya existe un archivo con ese nombre, lo eliminamos
     if (file_exists($rutaDestino)) {
       unlink($rutaDestino);
     }
-    
+
     // 5️⃣ Mover el archivo subido desde el temporal a la carpeta final
     if (!move_uploaded_file($archivoImagen['tmp_name'], $rutaDestino)) {
       throw new Exception('No se pudo mover el archivo subido.');
     }
-    
+
     // 6️⃣ Construir la URL pública que se devolverá
     $logo_url = '/Archivos/Logos/Empresa/' . $nombreArchivo;
-    
+
     return $logo_url;
   }
 
 
-  
-  private function borrarCacheEmpresa(int $id_empresa): void {
+
+  private function borrarCacheEmpresa(int $id_empresa): void
+  {
     $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/empresa_{$id_empresa}.json";
 
     if (file_exists($cacheFile)) {
@@ -342,7 +364,8 @@ class GestorEmpresa {
     }
   }
 
-  private function guardarHorarios(): void {
+  private function guardarHorarios(): void
+  {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)$datos['id_empresa'];
@@ -365,9 +388,10 @@ class GestorEmpresa {
     }
   }
 
-  
 
-  private function guardarDiasNoLaborales(): void {
+
+  private function guardarDiasNoLaborales(): void
+  {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)($datos['id_empresa'] ?? 0);
@@ -393,7 +417,63 @@ class GestorEmpresa {
     }
   }
 
-  private function mostrarHorarios(): void {
+
+  private function guardarEspectaculos(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+    $espectaculos = $datos['espectaculos'] ?? null;
+
+    if (empty($id_empresa) || !is_array($espectaculos)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos para guardar los espectáculos.']);
+      return;
+    }
+
+    try {
+      $espectaculosGuardados = $this->empresaRepositorio->guardarEspectaculos($id_empresa, $espectaculos);
+      $this->borrarCacheEmpresa($id_empresa);
+      http_response_code(200);
+      echo json_encode([
+        'message' => 'Espectaculos guardados correctamente.',
+        'espectaculos' => $espectaculosGuardados
+      ]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al guardar los espectaculos: ' . $e->getMessage()]);
+    }
+  }
+
+  private function guardarExcepcionesEspectaculos(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+    $excepciones = $datos['excepciones'] ?? [];
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos para guardar las excepciones habilitadas de espectáculos.']);
+      return;
+    }
+
+    try {
+      $excepcionesGuardadas = $this->empresaRepositorio->guardarExcepcionesEspectaculos($id_empresa, $excepciones);
+      $this->borrarCacheEmpresa($id_empresa);
+      http_response_code(200);
+      echo json_encode([
+        'message' => 'Excepciones habilitadas de espectáculos guardadas correctamente.',
+        'excepciones_habilitadas' => $excepcionesGuardadas
+      ]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al guardar las excepciones habilitadas de espectáculos: ' . $e->getMessage()]);
+    }
+  }
+
+  private function mostrarHorarios(): void
+  {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)($datos['id_empresa'] ?? 0);
@@ -414,7 +494,30 @@ class GestorEmpresa {
     }
   }
 
-  private function verificarContrasenaMesero(): void {
+  private function mostrarEspectaculos(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta id_empresa para mostrar los espectaculos de la empresa.']);
+      return;
+    }
+
+    try {
+      $espectaculos = $this->empresaRepositorio->obtenerEspectaculosYExcepciones($id_empresa);
+      http_response_code(200);
+      echo json_encode($espectaculos);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al mostrar los espectaculos: ' . $e->getMessage()]);
+    }
+  }
+
+  private function verificarContrasenaMesero(): void
+  {
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)($datos['id_empresa'] ?? 0);
@@ -435,5 +538,4 @@ class GestorEmpresa {
       echo json_encode(['error' => 'Error al verificar contraseña de mesero: ' . $e->getMessage()]);
     }
   }
-
 }

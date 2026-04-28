@@ -64,6 +64,25 @@ class GestorCliente {
     return await response.json();
   }
 
+  async obtenerEspectaculos(id_empresa) {
+    const bodyData = { id_empresa };
+
+    const response = await fetch(`/empresa/mostrar-espectaculos`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error obteniendo espectáculos" }));
+      throw new Error(err.error || "Error obteniendo espectáculos");
+    }
+
+    return await response.json();
+  }
+
   async verificarContrasenaMesero(id_empresa, contrasena) {
     const bodyData = { id_empresa: parseInt(id_empresa), contrasena };
 

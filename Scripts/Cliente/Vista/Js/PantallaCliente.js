@@ -37,6 +37,8 @@ class PantallaCliente {
     this.todosLosRubros = [];
     this.enVistaRubro = false;
 
+    this.MINUTOS_DIA = 1440;
+
     this.agregarEventListeners();
   }
 
@@ -61,6 +63,9 @@ class PantallaCliente {
 
     try {
       this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
+      this.espectaculos = await this.gestor.obtenerEspectaculos(
+        this.empresa.id,
+      );
     } catch (error) {
       console.warn("No se pudieron cargar horarios/no laborables:", error);
       this.horarios = { horarios: [], noLab: [] };
@@ -92,6 +97,11 @@ class PantallaCliente {
     this.barraBusqueda.classList.add("hidden");
     this.listaArticulos.classList.add("hidden");
     this.listaRubros.classList.add("hidden");
+
+    this.esDelivery = this.conocerEsDelivery();
+    if (!this.esDelivery) this.precioActual = await this.calcularPrecioActual();
+    else this.precioActual = this.empresa.precio_delivery;
+
     await this.mostrarTodo();
     this.aplicarColoresAlternados(this.listaArticulos);
     this.loader.classList.add("hidden");
@@ -171,7 +181,7 @@ class PantallaCliente {
           listaArticulosRecibidos.forEach((articulo) => {
             const articuloRecibido = new ArticuloVista(articulo);
             const elementoArticulo = articuloRecibido.mostrarUna(
-              this.empresa.precio_activo,
+              this.precioActual,
             );
 
             listaArticulosDiv.appendChild(elementoArticulo);
@@ -296,7 +306,7 @@ class PantallaCliente {
         if (!this.listaArticulosSeleccionados.includes(id)) {
           clon.classList.add("seleccionado");
           this.listaArticulosSeleccionados.push(id);
-          this.carrito.agregarArticulo(clon, this.empresa.precio_activo);
+          this.carrito.agregarArticulo(clon, this.precioActual);
           this.seleccionarArticulo(id);
         } else {
           this.clonesSeleccionados = this.clonesSeleccionados.filter(
@@ -404,7 +414,7 @@ class PantallaCliente {
           this.listaArticulosSeleccionados.push(
             Number(clon.dataset.articuloId),
           );
-          this.carrito.agregarArticulo(clon, this.empresa.precio_activo);
+          this.carrito.agregarArticulo(clon, this.precioActual);
           this.seleccionarArticulo(id);
         } else {
           this.clonesSeleccionados = this.clonesSeleccionados.filter(
@@ -498,6 +508,11 @@ class PantallaCliente {
   conocerEsMesero() {
     const slug = this.conocerSlug(3);
     return slug === "mesero" && this.empresa.moduloMesero;
+  }
+
+  conocerEsDelivery() {
+    const slug = this.conocerSlug(3);
+    return slug !== "local";
   }
 
   async solicitarContrasenaMesero() {
@@ -709,7 +724,7 @@ class PantallaCliente {
 
   articuloSeleccionado(articulo) {
     const articuloId = articulo.id;
-    const precioSeleccionado = articulo[`precio${this.empresa.precio_activo}`];
+    const precioSeleccionado = articulo[`precio${this.precioActual}`];
     articulo.precio = this.carrito.eliminarPuntoPrecio(precioSeleccionado);
 
     // Buscar si ya está seleccionado
@@ -750,11 +765,9 @@ class PantallaCliente {
     const articulo = this.todosLosArticulos.find(
       (a) => a.dataset.articuloId == idArticulo,
     );
-    console.log(articulo[`precio${this.empresa.precio_activo}`]);
-    articulo[`precio${this.empresa.precio_activo}`] =
-      this.carrito.eliminarPuntoPrecio(
-        articulo[`precio${this.empresa.precio_activo}`],
-      );
+    articulo[`precio${this.precioActual}`] = this.carrito.eliminarPuntoPrecio(
+      articulo[`precio${this.precioActual}`],
+    );
     const index = this.listaArticulosSeleccionados.findIndex((id) => {
       id === articulo.dataset.id;
     });
@@ -795,6 +808,7 @@ class PantallaCliente {
       this.conocerEsMesero(),
       this.horarios,
       this.empresa.tieneCarrito,
+      this.esDelivery,
     );
     this.listaCentral.classList.add("hidden");
     modalCarrito.abrirModalCarrito();
@@ -912,6 +926,263 @@ class PantallaCliente {
         : `https://web.whatsapp.com/send?phone=${numero}`;
       window.open(url, "_blank");
     });
+  }
+
+  timeToMinutes(hhmm) {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h * 60 + m;
+  }
+
+  // Devuelve segmentos en "timeline semanal"
+  // Ej: Lunes 19:00-02:00 => [{start:1140, end:1560}]
+  toSegments(diaIndex, apertura, cierre) {
+    const startMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(apertura);
+    let endMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(cierre);
+
+    // Si cierre <= apertura => cruza medianoche
+    if (this.timeToMinutes(cierre) <= this.timeToMinutes(apertura)) {
+      endMin += this.MINUTOS_DIA;
+    }
+
+    return [{ start: startMin, end: endMin }];
+  }
+
+  // Detecta si dos rangos se pisan
+  overlap(a, b) {
+    return a.start < b.end && b.start < a.end;
+  }
+
+  formatearFechaCompleta(fechaISO) {
+    if (!fechaISO) return null;
+    const fecha = String(fechaISO).trim();
+    const partesNumericas = fecha.match(/\d+/g) || [];
+
+    // Soporta DD/MM/YYYY, DD-MM-YYYY, DDMMYYYY, y YYYY-MM-DD.
+    if (partesNumericas.length === 3) {
+      const [a, b, c] = partesNumericas;
+      let dd = "";
+      let mm = "";
+      let yyyy = "";
+
+      if (a.length === 4) {
+        yyyy = a;
+        mm = b;
+        dd = c;
+      } else {
+        dd = a;
+        mm = b;
+        yyyy = c;
+      }
+
+      const ddNorm = String(parseInt(dd, 10)).padStart(2, "0");
+      const mmNorm = String(parseInt(mm, 10)).padStart(2, "0");
+      const yyyyNorm = String(parseInt(yyyy, 10)).padStart(4, "0");
+      if (!this.esFechaCompletaValida(ddNorm, mmNorm, yyyyNorm)) return null;
+      return `${ddNorm}/${mmNorm}/${yyyyNorm}`;
+    }
+
+    if (/^\d{8}$/.test(fecha)) {
+      const dd = fecha.slice(0, 2);
+      const mm = fecha.slice(2, 4);
+      const yyyy = fecha.slice(4, 8);
+      if (!this.esFechaCompletaValida(dd, mm, yyyy)) return null;
+      return `${dd}/${mm}/${yyyy}`;
+    }
+
+    return null;
+  }
+
+  esFechaCompletaValida(dia, mes, anio) {
+    const dd = Number(dia);
+    const mm = Number(mes);
+    const yyyy = Number(anio);
+    if (
+      !Number.isInteger(dd) ||
+      !Number.isInteger(mm) ||
+      !Number.isInteger(yyyy)
+    )
+      return false;
+    if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return false;
+    if (yyyy < 1000 || yyyy > 9999) return false;
+
+    const fecha = new Date(yyyy, mm - 1, dd);
+    return (
+      fecha.getFullYear() === yyyy &&
+      fecha.getMonth() + 1 === mm &&
+      fecha.getDate() === dd
+    );
+  }
+
+  isAhoraEnEspectaculo() {
+    const now = new Date();
+    const diaIndex = now.getDay();
+    const horaActual = now.toTimeString().slice(0, 5);
+
+    const ahoraMin =
+      diaIndex * this.MINUTOS_DIA + this.timeToMinutes(horaActual);
+
+    const ahoraSeg = { start: ahoraMin, end: ahoraMin + 1 };
+    const semana = 7 * this.MINUTOS_DIA;
+
+    for (const h of this.horariosEspectaculoCache) {
+      for (const r of h.rangos) {
+        const segs = this.toSegments(h.diaIndex, r.horaInicio, r.horaFin);
+
+        for (const seg of segs) {
+          if (this.overlap(ahoraSeg, seg)) {
+            return true;
+          }
+
+          const segPlus = {
+            start: seg.start + semana,
+            end: seg.end + semana,
+          };
+          if (this.overlap(ahoraSeg, segPlus)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  async calcularPrecioActual() {
+    if (
+      this.empresa.precio_espectaculo === 1 &&
+      this.empresa.precio_delivery === 1
+    ) {
+      return 1;
+    }
+
+    const now = new Date();
+    // Día de la semana (0-6)
+    const diaIndex = now.getDay();
+
+    // Fecha en formato dd/mm/yyyy
+    const fechaActual = this.formatearFechaCompleta(
+      now.toISOString().slice(0, 10),
+    );
+
+    // Hora en HH:mm
+    const horaActual = now.toTimeString().slice(0, 5);
+
+    const ahoraMin =
+      diaIndex * this.MINUTOS_DIA + this.timeToMinutes(horaActual);
+
+    const semana = 7 * this.MINUTOS_DIA;
+    const ahoraSeg = { start: ahoraMin, end: ahoraMin + 1 };
+
+    // =========================
+    // 1. CANCELADAS
+    // =========================
+    for (const e of this.espectaculos.excepciones) {
+      if (e.fecha === fechaActual && e.cancelada) {
+        return 1;
+      }
+    }
+
+    // =========================
+    // 2. HABILITADAS
+    // =========================
+    for (const e of this.espectaculos.excepciones) {
+      if (e.cancelada) continue;
+      const fechaAyer = this.obtenerFechaAnterior(fechaActual);
+
+      if (e.fecha === fechaActual || e.fecha === fechaAyer) {
+        const diaIndexExcepcion = this.dateToDayIndex(e.fecha);
+
+        for (const r of e.rangos) {
+          const segs = this.toSegments(
+            diaIndexExcepcion,
+            r.horaInicio,
+            r.horaFin,
+          );
+
+          for (const seg of segs) {
+            if (this.overlap(ahoraSeg, seg)) {
+              return this.empresa.precio_espectaculo;
+            }
+
+            const segPlus = {
+              start: seg.start + semana,
+              end: seg.end + semana,
+            };
+
+            if (this.overlap(ahoraSeg, segPlus)) {
+              return this.empresa.precio_espectaculo;
+            }
+          }
+        }
+      }
+    }
+
+    // =========================
+    // 3. HORARIO BASE
+    // =========================
+    for (const h of this.espectaculos.espectaculo) {
+      for (const r of h.rangos) {
+        const segs = this.toSegments(h.diaIndex, r.horaInicio, r.horaFin);
+
+        for (const seg of segs) {
+          if (this.overlap(ahoraSeg, seg)) {
+            return this.empresa.precio_espectaculo;
+          }
+
+          const segPlus = {
+            start: seg.start + semana,
+            end: seg.end + semana,
+          };
+
+          if (this.overlap(ahoraSeg, segPlus)) {
+            return this.empresa.precio_espectaculo;
+          }
+        }
+      }
+    }
+    return 1;
+  }
+
+  dateToDayIndex(fecha) {
+    const [d, m, y] = fecha.split("/").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    return date.getUTCDay(); // 0 domingo - 6 sábado
+  }
+
+  obtenerFechaAnterior(fecha) {
+    const [d, m, y] = fecha.split("/").map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+
+    date.setUTCDate(date.getUTCDate() - 1);
+
+    const dia = String(date.getUTCDate()).padStart(2, "0");
+    const mes = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const anio = date.getUTCFullYear();
+
+    return `${dia}/${mes}/${anio}`;
+  }
+
+  timeToMinutes(hhmm) {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h * 60 + m;
+  }
+
+  // Devuelve segmentos en "timeline semanal"
+  // Ej: Lunes 19:00-02:00 => [{start:1140, end:1560}]
+  toSegments(diaIndex, apertura, cierre) {
+    const startMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(apertura);
+    let endMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(cierre);
+
+    // Si cierre <= apertura => cruza medianoche
+    if (this.timeToMinutes(cierre) <= this.timeToMinutes(apertura)) {
+      endMin += this.MINUTOS_DIA;
+    }
+
+    return [{ start: startMin, end: endMin }];
+  }
+
+  // Detecta si dos rangos se pisan
+  overlap(a, b) {
+    return a.start < b.end && b.start < a.end;
   }
 }
 

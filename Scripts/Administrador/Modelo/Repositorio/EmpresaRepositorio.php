@@ -3,21 +3,24 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Entidad/EmpresaEntidad.php';
 
-class EmpresaRepositorio {
+class EmpresaRepositorio
+{
   private $pdo;
 
 
-  public function __construct(PDO $pdo) {
+  public function __construct(PDO $pdo)
+  {
     $this->pdo = $pdo;
   }
-  
-  public function obtenerPorId(int $id): ?array {
+
+  public function obtenerPorId(int $id): ?array
+  {
     $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id;");
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
-    if($data){
-      return $empresa= [
+    if ($data) {
+      return $empresa = [
         'id' => $data['id'],
         'nombre' => $data['nombre'],
         'logo_url' => $data['logo_url'],
@@ -29,34 +32,36 @@ class EmpresaRepositorio {
         'efectivo' => $data['efectivo'],
         'tarjeta' => $data['tarjeta'],
         'transferencia' => $data['transferencia'],
-        'precio_activo' => $data['precio_activo'],
+        'precio_delivery' => $data['precio_delivery'],
+        'precio_espectaculo' => $data['precio_espectaculo'],
         'fecha_creacion' => $data['fecha_creacion'],
       ];
     }
     return null;
   }
-  
-  
-  public function obtenerTodas(): array {
+
+
+  public function obtenerTodas(): array
+  {
     $empresas = [];
     try {
       $stmt = $this->pdo->query(
         "SELECT * FROM Empresa ORDER BY nombre ASC;"
-        );
+      );
       while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $empresas[] = [
-        'id' => $data['id'],
-        'nombre' => $data['nombre'],
-        'telefono' => $data['telefono'],
-        'ubicacion' => $data['ubicacion'],
-        'tieneCarrito' => $data['tieneCarrito'],
-        'moduloMesero' => $data['moduloMesero'],
-        'deshabilitarExcel' => $data['deshabilitar_excel'],
-        'efectivo' => $data['efectivo'],
-        'tarjeta' => $data['tarjeta'],
-        'transferencia' => $data['transferencia'],
-        'logo_url' => $data['logo_url'],
-        'fecha_creacion' => $data['fecha_creacion'],
+          'id' => $data['id'],
+          'nombre' => $data['nombre'],
+          'telefono' => $data['telefono'],
+          'ubicacion' => $data['ubicacion'],
+          'tieneCarrito' => $data['tieneCarrito'],
+          'moduloMesero' => $data['moduloMesero'],
+          'deshabilitarExcel' => $data['deshabilitar_excel'],
+          'efectivo' => $data['efectivo'],
+          'tarjeta' => $data['tarjeta'],
+          'transferencia' => $data['transferencia'],
+          'logo_url' => $data['logo_url'],
+          'fecha_creacion' => $data['fecha_creacion'],
         ];
       }
     } catch (PDOException $e) {
@@ -64,9 +69,10 @@ class EmpresaRepositorio {
     }
     return $empresas;
   }
-  
-  
-  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null, ?string $logo_url = null): bool {
+
+
+  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null, ?string $logo_url = null): bool
+  {
     try {
       $sql = "UPDATE Empresa
           SET nombre = :nombre,
@@ -112,14 +118,14 @@ class EmpresaRepositorio {
       }
 
       return $stmt->execute();
-
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
       return false;
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, int $precio_activo, ?string $contrasenaMesero = null): bool {
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, int $precio_delivery, int $precio_espectaculo, ?string $contrasenaMesero = null): bool
+  {
     try {
       $sql = "UPDATE Empresa
           SET nombre = :nombre,
@@ -128,7 +134,8 @@ class EmpresaRepositorio {
           efectivo = :efectivo,
           tarjeta = :tarjeta,
           transferencia = :transferencia,
-          precio_activo = :precio_activo";
+          precio_delivery = :precio_delivery,
+          precio_espectaculo = :precio_espectaculo";
 
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $sql .= ", contrasenaMesero = :contrasenaMesero";
@@ -145,7 +152,8 @@ class EmpresaRepositorio {
       $stmt->bindParam(':efectivo', $efectivo, PDO::PARAM_BOOL);
       $stmt->bindParam(':tarjeta', $tarjeta, PDO::PARAM_BOOL);
       $stmt->bindParam(':transferencia', $transferencia, PDO::PARAM_BOOL);
-      $stmt->bindParam(':precio_activo', $precio_activo, PDO::PARAM_INT);
+      $stmt->bindParam(':precio_delivery', $precio_delivery, PDO::PARAM_INT);
+      $stmt->bindParam(':precio_espectaculo', $precio_espectaculo, PDO::PARAM_INT);
 
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $contrasenaMeseroHash = password_hash($contrasenaMesero, PASSWORD_DEFAULT);
@@ -153,14 +161,14 @@ class EmpresaRepositorio {
       }
 
       return $stmt->execute();
-
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
       return false;
     }
   }
 
-  public function eliminar(int $id): bool {
+  public function eliminar(int $id): bool
+  {
     try {
       $this->pdo->beginTransaction();
 
@@ -182,22 +190,22 @@ class EmpresaRepositorio {
 
       $this->pdo->commit();
       return true;
-
     } catch (PDOException $e) {
       $this->pdo->rollBack();
       error_log("Error al eliminar empresa y dependencias: " . $e->getMessage());
       return false;
     }
   }
-  
-  public function modificarLogo(int $id, string $logo_url): ?array {
+
+  public function modificarLogo(int $id, string $logo_url): ?array
+  {
     try {
       $stmt = $this->pdo->prepare(
         "UPDATE Empresa
           SET logo_url = :logo_url
           WHERE id = :id;"
       );
-      
+
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
 
@@ -209,20 +217,20 @@ class EmpresaRepositorio {
       } else {
         error_log("Falló la ejecución del UPDATE en modificarLogo().");
       }
-
     } catch (PDOException $e) {
       error_log("Error al modificar el logo de la empresa: " . $e->getMessage());
     }
     return null;
   }
 
-  
-  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array {
+
+  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array
+  {
     try {
-      $fecha_actual= date('Y-m-d');
+      $fecha_actual = date('Y-m-d');
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, contrasenaMesero, precio_activo) 
-        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia, :contrasenaMesero, 1)"
+        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, precio_delivery, precio_espectaculo, contrasenaMesero) 
+        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia, 1, 1, :contrasenaMesero)"
       );
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
@@ -238,15 +246,15 @@ class EmpresaRepositorio {
       $stmt->bindParam(':contrasenaMesero', $contrasenaMeseroHash, PDO::PARAM_STR);
       $stmt->bindParam(':fecha_actual', $fecha_actual, PDO::PARAM_STR);
       $stmt->execute();
-      
+
       $id = $this->pdo->lastInsertId();
       $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id");
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->execute();
-      
+
       $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-      
+
       if ($data) {
         return [
           'id' => $data['id'],
@@ -261,8 +269,9 @@ class EmpresaRepositorio {
           'efectivo' => $data['efectivo'],
           'tarjeta' => $data['tarjeta'],
           'transferencia' => $data['transferencia'],
+          'precio_deliveryt' => $data['precio_delivery'],
+          'precio_espectaculo' => $data['precio_espectaculo'],
           'contrasenaMesero' => $data['contrasenaMesero'],
-          'precio_activo' => $data['precio_activo'],
         ];
       }
     } catch (PDOException $e) {
@@ -270,8 +279,9 @@ class EmpresaRepositorio {
     }
     return [];
   }
-  
-  public function guardarHorarios(int $id_empresa, array $horarios): bool {
+
+  public function guardarHorarios(int $id_empresa, array $horarios): bool
+  {
     try {
       $this->pdo->beginTransaction();
 
@@ -321,15 +331,15 @@ class EmpresaRepositorio {
 
       $this->pdo->commit();
       return true;
-
     } catch (Exception $e) {
       $this->pdo->rollBack();
       error_log("Error al guardar horarios (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
-  
-  public function guardarDiasNoLaborales(int $id_empresa, array $dias_no_laborales): array {
+
+  public function guardarDiasNoLaborales(int $id_empresa, array $dias_no_laborales): array
+  {
     try {
       $this->pdo->beginTransaction();
 
@@ -357,7 +367,7 @@ class EmpresaRepositorio {
       }
 
       $diasOrdenados = array_keys($diasLimpios);
-      usort($diasOrdenados, function($a, $b) {
+      usort($diasOrdenados, function ($a, $b) {
         [$da, $ma, $ya] = explode('/', $a);
         [$db, $mb, $yb] = explode('/', $b);
 
@@ -374,7 +384,6 @@ class EmpresaRepositorio {
 
       $this->pdo->commit();
       return $diasOrdenados;
-
     } catch (Exception $e) {
       if ($this->pdo->inTransaction()) {
         $this->pdo->rollBack();
@@ -384,7 +393,116 @@ class EmpresaRepositorio {
     }
   }
 
-  public function obtenerDiasNoLaborales(int $id_empresa): array {
+  public function guardarEspectaculos(int $id_empresa, array $espectaculos): bool
+  {
+    try {
+      $this->pdo->beginTransaction();
+
+      // 1) Borrar espectaculos anteriores
+      $stmtDelete = $this->pdo->prepare(
+        "DELETE FROM espectaculo_empresa WHERE id_empresa = :id_empresa"
+      );
+      $stmtDelete->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmtDelete->execute();
+
+      // 2) Preparar insert
+      $stmtInsert = $this->pdo->prepare(
+        "INSERT INTO espectaculo_empresa (id_empresa, dia_semana, hora_inicio, hora_fin)
+        VALUES (:id_empresa, :dia_semana, :hora_inicio, :hora_fin)"
+      );
+
+      // 3) Recorrer tu payload agrupado
+      foreach ($espectaculos as $diaObj) {
+
+        if (!isset($diaObj['diaIndex'], $diaObj['rangos']) || !is_array($diaObj['rangos'])) {
+          throw new Exception("Formato de horario inválido (día sin rangos).");
+        }
+
+        $dia_semana = (int)$diaObj['diaIndex'];
+
+        if ($dia_semana < 0 || $dia_semana > 6) {
+          throw new Exception("Día inválido: $dia_semana");
+        }
+
+        foreach ($diaObj['rangos'] as $rango) {
+
+          if (!isset($rango['inicio'], $rango['fin'])) {
+            throw new Exception("Formato de rango inválido.");
+          }
+
+          $apertura = $rango['inicio'];
+          $cierre = $rango['fin'];
+
+          $stmtInsert->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+          $stmtInsert->bindParam(':dia_semana', $dia_semana, PDO::PARAM_INT);
+          $stmtInsert->bindParam(':hora_inicio', $apertura, PDO::PARAM_STR);
+          $stmtInsert->bindParam(':hora_fin', $cierre, PDO::PARAM_STR);
+
+          $stmtInsert->execute();
+        }
+      }
+
+      $this->pdo->commit();
+      return true;
+    } catch (Exception $e) {
+      $this->pdo->rollBack();
+      error_log("Error al guardar horarios (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function guardarExcepcionesEspectaculos($id_empresa, $excepciones)
+  {
+    try {
+      $this->pdo->beginTransaction();
+
+      // 1) Borrar espectaculos anteriores
+      $stmtDelete = $this->pdo->prepare(
+        "DELETE FROM espectaculo_excepcion WHERE id_empresa = :id_empresa"
+      );
+      $stmtDelete->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmtDelete->execute();
+
+      // 2) Preparar insert (reutilizable para cada excepción habilitada que venga en el array
+
+      $stmtInsert = $this->pdo->prepare(
+        "INSERT INTO espectaculo_excepcion (id_empresa, fecha, hora_inicio, hora_fin, cancelada)
+        VALUES (:id_empresa, :fecha, :hora_inicio, :hora_fin, :cancelada)"
+      );
+
+      foreach ($excepciones as $excepcion) {
+
+        if (
+          !is_string($excepcion['fecha']) ||
+          !preg_match('/^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/\d{4}$/', $excepcion['fecha'])
+        ) {
+          throw new Exception("Formato inválido de día de excepción habilitada: " . $excepcion['fecha']);
+        }
+
+        foreach ($excepcion['rangos'] as $rango) {
+
+          $stmtInsert->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+          $stmtInsert->bindParam(':fecha', $excepcion['fecha'], PDO::PARAM_STR);
+          $stmtInsert->bindParam(':hora_inicio', $rango['horaInicio'], PDO::PARAM_STR);
+          $stmtInsert->bindParam(':hora_fin', $rango['horaFin'], PDO::PARAM_STR);
+          $stmtInsert->bindParam(':cancelada', $excepcion['cancelada'], PDO::PARAM_BOOL);
+
+          $stmtInsert->execute();
+        }
+      }
+
+      $this->pdo->commit();
+    } catch (Exception $e) {
+      if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+      }
+      error_log("Error al guardar excepciones habilitadas de espectáculos (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function obtenerDiasNoLaborales(int $id_empresa): array
+  {
     try {
       $stmt = $this->pdo->prepare(
         "SELECT
@@ -397,14 +515,14 @@ class EmpresaRepositorio {
       $stmt->execute();
 
       return $stmt->fetchAll(PDO::FETCH_COLUMN);
-
     } catch (PDOException $e) {
       error_log("Error al obtener días no laborales (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
 
-  public function obtenerHorariosYDiasNoLaborales(int $id_empresa): array {
+  public function obtenerHorariosYDiasNoLaborales(int $id_empresa): array
+  {
     try {
       $stmt = $this->pdo->prepare(
         "SELECT dia_semana, hora_apertura, hora_cierre
@@ -439,15 +557,127 @@ class EmpresaRepositorio {
         'horarios' => array_values($porDia),
         'noLab' => $this->obtenerDiasNoLaborales($id_empresa),
       ];
-
     } catch (PDOException $e) {
       error_log("Error al obtener horarios y no laborales (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
 
-  public function verificarContrasenaMesero(int $id_empresa, string $contrasena): bool {
-    
+  public function obtenerEspectaculosYExcepciones(int $id_empresa): array
+  {
+    try {
+      // 1. Horarios base del espectáculo
+      $stmt = $this->pdo->prepare(
+        "SELECT dia_semana, hora_inicio, hora_fin
+       FROM espectaculo_empresa
+       WHERE id_empresa = :id_empresa
+       ORDER BY dia_semana ASC, hora_inicio ASC"
+      );
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->execute();
+
+      $espectaculo = [];
+
+      while ($fila = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $diaIndex = (int)$fila['dia_semana'];
+
+        if (!isset($espectaculo[$diaIndex])) {
+          $espectaculo[$diaIndex] = [
+            'diaIndex' => $diaIndex,
+            'rangos' => []
+          ];
+        }
+
+        $espectaculo[$diaIndex]['rangos'][] = [
+          'horaInicio' => substr($fila['hora_inicio'], 0, 5),
+          'horaFin'    => substr($fila['hora_fin'], 0, 5),
+        ];
+      }
+
+      ksort($espectaculo);
+
+      // 2. Excepciones
+      $stmtExc = $this->pdo->prepare(
+        "SELECT fecha, hora_inicio, hora_fin, cancelada
+       FROM espectaculo_excepcion
+       WHERE id_empresa = :id_empresa
+       ORDER BY fecha ASC, hora_inicio ASC"
+      );
+      $stmtExc->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmtExc->execute();
+
+      $excepciones = [];
+
+      while ($fila = $stmtExc->fetch(PDO::FETCH_ASSOC)) {
+
+        $fecha = $fila['fecha'];
+
+        if (!isset($excepciones[$fecha])) {
+          $excepciones[$fecha] = [
+            'fecha' => $fecha,
+            'rangos' => [],
+            'cancelada' => (bool)$fila['cancelada']
+          ];
+        }
+
+        $excepciones[$fecha]['rangos'][] = [
+          'horaInicio' => substr($fila['hora_inicio'], 0, 5),
+          'horaFin'    => substr($fila['hora_fin'], 0, 5),
+        ];
+      }
+
+
+      // Reindexar habilitadas (porque usaste clave por fecha)
+      $excepciones = array_values($excepciones);
+
+      return [
+        'espectaculo' => array_values($espectaculo),
+        'excepciones' => $excepciones
+      ];
+    } catch (PDOException $e) {
+      error_log("Error al obtener espectáculos y excepciones (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function obtenerEspectaculos(int $id_empresa): array
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "SELECT dia_semana, hora_inicio, hora_fin
+             FROM espectaculo_empresa
+             WHERE id_empresa = :id_empresa
+             ORDER BY dia_semana ASC, hora_inicio ASC"
+      );
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->execute();
+
+      $porDia = [];
+      while ($fila = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $diaIndex = (int)$fila['dia_semana'];
+        if (!isset($porDia[$diaIndex])) {
+          $porDia[$diaIndex] = [
+            'diaIndex' => $diaIndex,
+            'rangos'   => []
+          ];
+        }
+        $porDia[$diaIndex]['rangos'][] = [
+          'horaInicio' => substr($fila['hora_inicio'], 0, 5),
+          'horaFin'    => substr($fila['hora_fin'], 0, 5),
+        ];
+      }
+      ksort($porDia);
+
+      return array_values($porDia);
+    } catch (PDOException $e) {
+      error_log("Error al obtener espectaculos (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function verificarContrasenaMesero(int $id_empresa, string $contrasena): bool
+  {
+
     try {
       $stmt = $this->pdo->prepare(
         "SELECT contrasenaMesero FROM Empresa WHERE id = :id_empresa LIMIT 1"
@@ -463,11 +693,9 @@ class EmpresaRepositorio {
       if (!$hash) return false;
 
       return password_verify($contrasena, $hash);
-
     } catch (PDOException $e) {
       error_log("Error al verificar contraseña mesero (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
-
 }

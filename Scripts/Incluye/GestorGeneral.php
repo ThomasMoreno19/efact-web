@@ -21,45 +21,45 @@ $pdo = conectarBD();
 
 // Distribuir, dependiendo del primer segmento
 try {
-    switch (strtolower($url_principal)) {
-        case 'admin':
-            $controlador = new GestorAdministrador($pdo);
-            $controlador->derivarURL($porcionURL);
-            break;
+  switch (strtolower($url_principal)) {
+    case 'admin':
+      $controlador = new GestorAdministrador($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
 
-        case 'moderador':
-            $controlador = new GestorModerador($pdo);
-            $controlador->derivarURL($porcionURL);
-            break;
-        
-        case 'empresa':
-            $controlador = new GestorEmpresa($pdo);
-            $controlador->derivarURL($porcionURL);
-            break;
-            
-        case 'articulo':
-            $controlador = new GestorArticulo($pdo);
-            $controlador->derivarURL($porcionURL);
-            break;
-            
-        case 'rubro':
-            $controlador = new GestorRubro($pdo);
-            $controlador->derivarURL($porcionURL);
-            break;
-            
-        case 'carta':
-            require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/PantallaCliente.php';
-            exit;
-            
-        default:
-            http_response_code(404);
-            echo "<h1>404 - Página no encontrada</h1>";
-            break;
-    }
+    case 'moderador':
+      $controlador = new GestorModerador($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'empresa':
+      $controlador = new GestorEmpresa($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'articulo':
+      $controlador = new GestorArticulo($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'rubro':
+      $controlador = new GestorRubro($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'carta':
+      require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/PantallaCliente.php';
+      exit;
+
+    default:
+      http_response_code(404);
+      echo "<h1>404 - Página no encontrada</h1>";
+      break;
+  }
 } catch (Exception $e) {
-    http_response_code(500); // Internal Server Error
-    error_log("Error en el enrutador central para URI: " . $requestUri . " - " . $e->getMessage());
-    echo "<h1>500 - Error Interno del Servidor</h1>";
+  http_response_code(500); // Internal Server Error
+  error_log("Error en el enrutador central para URI: " . $requestUri . " - " . $e->getMessage());
+  echo "<h1>500 - Error Interno del Servidor</h1>";
 }
 
 exit;
