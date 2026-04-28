@@ -99,7 +99,8 @@ class PantallaCliente {
     this.listaRubros.classList.add("hidden");
 
     this.esDelivery = this.conocerEsDelivery();
-    if (!this.esDelivery) this.precioActual = await this.calcularPrecioActual();
+    if (!this.esDelivery || this.conocerEsMesero())
+      this.precioActual = await this.calcularPrecioActual();
     else this.precioActual = this.empresa.precio_delivery;
 
     await this.mostrarTodo();
