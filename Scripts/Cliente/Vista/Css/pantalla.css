@@ -188,7 +188,7 @@ input:autofill:focus {
 
 #header {
   background: linear-gradient(to right, #292638 0%, #100e16 100%);
-  position: fixed; /* 🔥 Lo mantiene siempre visible */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -198,17 +198,8 @@ input:autofill:focus {
     height 0.4s ease,
     transform 0.5s ease,
     opacity 0.8s ease;
-  will-change: transform, height, opacity; /* mejora rendimiento */
+  will-change: transform, height, opacity;
   text-align: center;
-}
-
-.oculto {
-  transform: translateY(-100%);
-  opacity: 0;
-}
-
-#header.minimizado {
-  height: 120px;
 }
 
 #imagen-header {
@@ -223,13 +214,7 @@ input:autofill:focus {
   border-radius: 8px;
 }
 
-#imagen-header.minimizado {
-  height: 80px;
-}
-
-/* --- Encabezado flotante --- */
 #titulo-pagina {
-  transform-origin: top center;
   margin: 0px;
   font-size: 23px;
   text-align: center;
@@ -238,6 +223,7 @@ input:autofill:focus {
     height 0.3s ease,
     transform 0.3s ease,
     opacity 0.8s ease;
+  transform-origin: top center;
 }
 
 #info-extra {
@@ -250,6 +236,19 @@ input:autofill:focus {
     transform 0.3s ease,
     opacity 0.8s ease;
   transform-origin: top center;
+}
+
+.oculto {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+#header.minimizado {
+  height: 120px;
+}
+
+#imagen-header.minimizado {
+  height: 80px;
 }
 
 #titulo-pagina.minimizado {
