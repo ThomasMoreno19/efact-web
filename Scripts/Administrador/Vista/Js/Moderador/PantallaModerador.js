@@ -674,6 +674,11 @@ class PantallaModerador {
       await this.abrirModalConfigurarEspectaculos(modal);
       document.body.removeChild(modal);
     });
+
+    botonMeseros.addEventListener("click", (event) => {
+      event.preventDefault();
+      await this.abrirModalConfigurarMeseros(modal);
+    });
   }
 
   async abrirModalConfigurarEspectaculos() {
