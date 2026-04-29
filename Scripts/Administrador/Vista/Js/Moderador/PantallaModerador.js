@@ -677,7 +677,7 @@ class PantallaModerador {
 
     botonMeseros.addEventListener("click", (event) => {
       event.preventDefault();
-      await this.abrirModalConfigurarMeseros(modal);
+      this.abrirModalMeseros(modal);
     });
   }
 
@@ -890,7 +890,7 @@ class PantallaModerador {
 
     botonMeseros.addEventListener("click", async (event) => {
       event.preventDefault();
-      await this.abrirModalMeseros(modal);
+      this.abrirModalMeseros(modal);
       document.body.removeChild(modal);
     });
   }

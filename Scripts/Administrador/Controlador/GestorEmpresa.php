@@ -38,10 +38,6 @@ class GestorEmpresa
         $this->modificar();
         break;
 
-      case 'eliminar':
-        $this->eliminar();
-        break;
-
       case 'modificar-para-moderador':
         $this->modificarParaModerador();
         break;
@@ -287,28 +283,6 @@ class GestorEmpresa
     }
   }
 
-  private function eliminar(): void
-  {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)$datos['id_empresa'];
-
-    if (empty($id_empresa)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para eliminar la empresa.']);
-      return;
-    }
-
-    try {
-      $this->empresaRepositorio->eliminar($id_empresa);
-      $this->borrarCacheEmpresa($id_empresa);
-      http_response_code(200);
-      echo json_encode(['message' => 'Empresa eliminada correctamente.']);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al eliminar la empresa: ' . $e->getMessage()]);
-    }
-  }
 
   private function modificarLogo(): void
   {

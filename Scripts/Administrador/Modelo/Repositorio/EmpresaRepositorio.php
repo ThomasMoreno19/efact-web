@@ -728,10 +728,10 @@ class EmpresaRepositorio
       $sql =
         "DELETE e, a, r, m, me, h, d
           FROM Empresa e
-          LEFT JOIN Articulo a ON e.id = a.empresaId
-          LEFT JOIN Rubro r ON e.id = r.empresaId
-          LEFT JOIN Moderador m ON e.id = m.empresaId
-          LEFT JOIN Mesero me ON e.id = me.empresaId
+          LEFT JOIN Articulo a ON e.id = a.id_empresa
+          LEFT JOIN Rubro r ON e.id = r.id_empresa
+          LEFT JOIN Moderador m ON e.id = m.id_empresa
+          LEFT JOIN Mesero me ON e.id = me.id_empresa
           LEFT JOIN horarios_empresa h ON e.id = h.id_empresa
           LEFT JOIN dias_no_laborales_empresa d ON e.id = d.id_empresa
           WHERE e.id = :id";
