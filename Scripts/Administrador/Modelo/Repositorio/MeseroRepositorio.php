@@ -1,16 +1,20 @@
 <?php
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Entidad/MeseroEntidad.php';
 
-class MeseroRepositorio {
+class MeseroRepositorio
+{
   private $pdo;
 
-  public function __construct(PDO $pdo) {
+  public function __construct(PDO $pdo)
+  {
     $this->pdo = $pdo;
   }
 
-  public function obtenerPorNombre(string $nombre): ?array {
-    $stmt = $this->pdo->prepare("SELECT id, id_empresa, nombre, contrasena FROM Mesero WHERE nombre = :nombre");
+  public function obtenerPorNombre(int $id_empresa, string $nombre): ?array
+  {
+    $stmt = $this->pdo->prepare("SELECT id, id_empresa, nombre, abreviaturaNombre, contrasena FROM Mesero WHERE nombre = :nombre AND id_empresa = :id_empresa");
     $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+    $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
     $stmt->execute();
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -21,27 +25,26 @@ class MeseroRepositorio {
         $data['id'],
         $data['id_empresa'],
         $data['nombre'],
-        $data['abreviatura_nombre'],
-        $data['usuario'],
-        $data['contrasena']
+        $data['abreviaturaNombre'] ?? '',
+        $data['contrasena'] ?? ''
       );
     }
     return $meseros;
   }
-  
-  public function crear(int $id_empresa, string $nombre, string $abreviaturaNombre, string $contrasena = ''): bool{
+
+  public function crear(int $id_empresa, string $nombre, string $abreviaturaNombre, string $contrasena = ''): bool
+  {
     try {
-      if(!empty($contrasena)) {
-        $contrasenaHasheada = password_hash($contrasena, PASSWORD_DEFAULT);
-      }
-      
+      $contrasena = password_hash($contrasena, PASSWORD_DEFAULT);
+
       $stmt = $this->pdo->prepare(
         "INSERT INTO Mesero (id_empresa, nombre, abreviaturaNombre, contrasena)
-          VALUES (:id_empresa, :nombre, :abreviaturaNombre, :contrasena)");
+          VALUES (:id_empresa, :nombre, :abreviaturaNombre, :contrasena)"
+      );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':abreviaturaNombre', $abreviaturaNombre, PDO::PARAM_STR);
-      $stmt->bindParam(':contrasena', $contrasenaHasheada, PDO::PARAM_STR);
+      $stmt->bindParam(':contrasena', $contrasena, PDO::PARAM_STR);
 
       if ($stmt->execute()) {
         return true;
@@ -53,7 +56,8 @@ class MeseroRepositorio {
     return false;
   }
 
-  public function cargar(array $meseros, int $id_empresa): bool {
+  public function cargar(array $meseros, int $id_empresa): bool
+  {
     if (empty($meseros)) return false;
 
     $values = [];
@@ -105,7 +109,6 @@ class MeseroRepositorio {
       error_log("Meseros reemplazados: " . count($meseros));
 
       return true;
-
     } catch (PDOException $e) {
 
       $this->pdo->rollBack();
@@ -117,8 +120,9 @@ class MeseroRepositorio {
       return false;
     }
   }
-  
-  public function modificar($id, $nombre, $abreviaturaNombre, $contrasena): array {
+
+  public function modificar(int $id, string $nombre, string $abreviaturaNombre, string $contrasena): array
+  {
     try {
       $contrasenaHasheada = password_hash($contrasena, PASSWORD_DEFAULT);
       $stmt = $this->pdo->prepare(
@@ -126,110 +130,116 @@ class MeseroRepositorio {
           SET nombre = :nombre,
           abreviaturaNombre = :abreviaturaNombre,
           contrasena = :contrasena
-          WHERE id = :id;");
+          WHERE id = :id;"
+      );
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
-      $stmt->bindParam(':abreviaturaNombre', $abreviaturaNombre, PDO::PARAM_STR); 
+      $stmt->bindParam(':abreviaturaNombre', $abreviaturaNombre, PDO::PARAM_STR);
       $stmt->bindParam(':contrasena', $contrasenaHasheada, PDO::PARAM_STR);
 
       if ($stmt->execute()) {
-        return $mesero =[$id, $nombre, $abreviaturaNombre, $contrasena];
+        return $mesero = [$id, $nombre, $abreviaturaNombre, $contrasena];
       }
-        
     } catch (PDOException $e) {
       error_log("Error al modificar Mesero: " . $e->getMessage());
     }
     return [];
   }
-  
-  public function modificarSinContrasena($id, $nombre, $abreviaturaNombre): array {
+
+  public function modificarSinContrasena(int $id, string $nombre, string $abreviaturaNombre): array
+  {
     try {
       $stmt = $this->pdo->prepare(
         "UPDATE Mesero
           SET nombre = :nombre, abreviaturaNombre = :abreviaturaNombre
-          WHERE id = :id;");
+          WHERE id = :id;"
+      );
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':abreviaturaNombre', $abreviaturaNombre, PDO::PARAM_STR);
 
       if ($stmt->execute()) {
-        return $mesero =[$id, $nombre, $abreviaturaNombre];
+        return $mesero = [$id, $nombre, $abreviaturaNombre];
       }
-        
     } catch (PDOException $e) {
       error_log("Error al modificar Mesero: " . $e->getMessage());
     }
     return [];
   }
-  
-  public function cambiarContrasena(int $id, string $contrasena): bool {
+
+  public function cambiarContrasena(int $id, string $contrasena): bool
+  {
     try {
       $contrasenaHasheada = password_hash($contrasena, PASSWORD_DEFAULT);
       $sql = $this->pdo->prepare(
         "UPDATE Mesero
           SET contrasena = :contrasena
-          WHERE id = :id;");
+          WHERE id = :id;"
+      );
       $sql->bindParam(':id', $id, PDO::PARAM_INT);
       $sql->bindParam(':contrasena', $contrasenaHasheada, PDO::PARAM_STR);
 
       if ($sql->execute()) {
-        return true ;
+        return true;
       }
-        
     } catch (PDOException $error) {
       error_log("Error al cambiar contrasena de Mesero: " . $error->getMessage());
     }
     return false;
   }
-  
-  public function eliminar(int $id):bool {
+
+  public function eliminar(int $id): bool
+  {
     try {
       $sql = $this->pdo->prepare(
-        "DELETE FROM Mesero WHERE id = :id;");   
+        "DELETE FROM Mesero WHERE id = :id;"
+      );
       $sql->bindParam(':id', $id, PDO::PARAM_INT);
 
       if ($sql->execute()) {
         return true;
       }
-      
     } catch (PDOException $error) {
       error_log("Error al borrar mesero: " . $error->getMessage());
     }
 
     return false;
   }
-  
-  public function verificarContrasena(int $id, string $contrasenaString) {
-    try{
+
+  public function verificarContrasena(int $id, string $contrasenaString)
+  {
+    try {
       $sql = $this->pdo->prepare(
-        "SELECT contrasena FROM Mesero WHERE id = :id;");
-    
+        "SELECT contrasena FROM Mesero WHERE id = :id;"
+      );
+
       $sql->bindParam(':id', $id, PDO::PARAM_INT);
-      
-      if($sql->execute()) {
+
+      if ($sql->execute()) {
         $mesero = $sql->fetch(PDO::FETCH_ASSOC);
         $contrasenaHasheada = $mesero['contrasena'];
         return password_verify($contrasenaString, $contrasenaHasheada);
       }
 
       return false;
-
-    }catch (PDOException $error) {
+    } catch (PDOException $error) {
       error_log("Error al verificar la contrasena del mesero: " . $error->getMessage());
     }
 
     return false;
   }
-  
-  public function mostrar(int $id_empresa) {
-    try{
+
+  public function mostrar(int $id_empresa)
+  {
+    try {
       $sql = $this->pdo->prepare(
-        "SELECT * FROM Mesero WHERE id_empresa = :id_empresa;");
+        "SELECT * FROM Mesero WHERE id_empresa = :id_empresa;"
+      );
       $sql->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $sql->execute();
       $data = $sql->fetchAll(PDO::FETCH_ASSOC);
       if ($data) {
-        return array_map(function($row) {
+        return array_map(function ($row) {
           return [
             'id' => $row['id'],
             'nombre' => $row['nombre'],
@@ -239,33 +249,34 @@ class MeseroRepositorio {
         }, $data);
       }
       return null;
-
-    }catch (PDOException $error) {
+    } catch (PDOException $error) {
       error_log("Error al obtener el mesero: " . $error->getMessage());
     }
 
     return null;
   }
-  
-  public function obtenerLogoEmpresa(int $id_empresa){
-    try{
+
+  public function obtenerLogoEmpresa(int $id_empresa)
+  {
+    try {
       $sql = $this->pdo->prepare(
-        "SELECT logo_url FROM Empresa WHERE id = :id_empresa;");
+        "SELECT logo_url FROM Empresa WHERE id = :id_empresa;"
+      );
       $sql->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $sql->execute();
       $empresa = $sql->fetch(PDO::FETCH_ASSOC);
 
       return $empresa = [$empresa['logo_url']];
-
-    }catch (PDOException $error) {
+    } catch (PDOException $error) {
       error_log("Error al verificar la empresa del mesero: " . $error->getMessage());
     }
 
     return null;
   }
-  
-  public function IniciarSesion(string $nombre, string $contrasenaTextoPlano, int $id_empresa) {
-    $meseros = $this->obtenerPorNombre($nombre);
+
+  public function IniciarSesion(string $nombre, string $contrasenaTextoPlano, int $id_empresa)
+  {
+    $meseros = $this->obtenerPorNombre($id_empresa, $nombre);
 
     foreach ($meseros as $mesero) {
       if ($mesero->getIdEmpresa() == $id_empresa && password_verify($contrasenaTextoPlano, $mesero->getContrasena())) {
@@ -276,7 +287,8 @@ class MeseroRepositorio {
     return false;
   }
 
-  public function hayMeserosRegistrados(int $id_empresa): bool {
+  public function hayMeserosRegistrados(int $id_empresa): bool
+  {
     $sql = $this->pdo->prepare(
       "SELECT EXISTS (
         SELECT 1 

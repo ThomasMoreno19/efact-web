@@ -430,7 +430,7 @@ class EmpresaVista {
         </div>
         <div class="form-group">
           <label for="abreviaturaNombre">Abreviatura</label>
-          <input type="text" id="abreviaturaNombre" name="abreviaturaNombre" maxlength="10" required>
+          <input type="text" id="abreviaturaNombre" name="abreviaturaNombre" maxlength="10">
         </div>
         <div class="form-group">
           <label for="contrasena">Contraseña</label>

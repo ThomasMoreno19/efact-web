@@ -3,15 +3,18 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Entidad/EmpresaEntidad.php';
 
-class EmpresaRepositorio {
+class EmpresaRepositorio
+{
   private $pdo;
 
 
-  public function __construct(PDO $pdo) {
+  public function __construct(PDO $pdo)
+  {
     $this->pdo = $pdo;
   }
-  
-  public function obtenerPorId(int $id): ?array {
+
+  public function obtenerPorId(int $id): ?array
+  {
     $stmt = $this->pdo->prepare("
       SELECT 
         *,
@@ -19,7 +22,7 @@ class EmpresaRepositorio {
       FROM Empresa 
       WHERE id = :id
     ");
-    
+
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -44,28 +47,29 @@ class EmpresaRepositorio {
 
     return null;
   }
-  
-  
-  public function obtenerTodas(): array {
+
+
+  public function obtenerTodas(): array
+  {
     $empresas = [];
     try {
       $stmt = $this->pdo->query(
         "SELECT * FROM Empresa ORDER BY nombre ASC;"
-        );
+      );
       while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $empresas[] = [
-        'id' => $data['id'],
-        'nombre' => $data['nombre'],
-        'telefono' => $data['telefono'],
-        'ubicacion' => $data['ubicacion'],
-        'tieneCarrito' => $data['tieneCarrito'],
-        'moduloMesero' => $data['moduloMesero'],
-        'deshabilitarExcel' => $data['deshabilitar_excel'],
-        'efectivo' => $data['efectivo'],
-        'tarjeta' => $data['tarjeta'],
-        'transferencia' => $data['transferencia'],
-        'logo_url' => $data['logo_url'],
-        'fecha_creacion' => $data['fecha_creacion'],
+          'id' => $data['id'],
+          'nombre' => $data['nombre'],
+          'telefono' => $data['telefono'],
+          'ubicacion' => $data['ubicacion'],
+          'tieneCarrito' => $data['tieneCarrito'],
+          'moduloMesero' => $data['moduloMesero'],
+          'deshabilitarExcel' => $data['deshabilitar_excel'],
+          'efectivo' => $data['efectivo'],
+          'tarjeta' => $data['tarjeta'],
+          'transferencia' => $data['transferencia'],
+          'logo_url' => $data['logo_url'],
+          'fecha_creacion' => $data['fecha_creacion'],
         ];
       }
     } catch (PDOException $e) {
@@ -73,9 +77,10 @@ class EmpresaRepositorio {
     }
     return $empresas;
   }
-  
-  
-  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null, ?string $logo_url = null): bool {
+
+
+  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null, ?string $logo_url = null): bool
+  {
     try {
       $sql = "UPDATE Empresa
           SET nombre = :nombre,
@@ -121,14 +126,14 @@ class EmpresaRepositorio {
       }
 
       return $stmt->execute();
-
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
       return false;
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null): bool {
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null): bool
+  {
     try {
       $sql = "UPDATE Empresa
           SET nombre = :nombre,
@@ -160,21 +165,21 @@ class EmpresaRepositorio {
       }
 
       return $stmt->execute();
-
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
       return false;
     }
   }
-  
-  public function modificarLogo(int $id, string $logo_url): ?array {
+
+  public function modificarLogo(int $id, string $logo_url): ?array
+  {
     try {
       $stmt = $this->pdo->prepare(
         "UPDATE Empresa
           SET logo_url = :logo_url
           WHERE id = :id;"
       );
-      
+
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
 
@@ -186,17 +191,17 @@ class EmpresaRepositorio {
       } else {
         error_log("Falló la ejecución del UPDATE en modificarLogo().");
       }
-
     } catch (PDOException $e) {
       error_log("Error al modificar el logo de la empresa: " . $e->getMessage());
     }
     return null;
   }
 
-  
-  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array {
+
+  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array
+  {
     try {
-      $fecha_actual= date('Y-m-d');
+      $fecha_actual = date('Y-m-d');
       $stmt = $this->pdo->prepare(
         "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, contrasenaMesero) 
         VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :moduloMesero, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia, :contrasenaMesero)"
@@ -215,15 +220,15 @@ class EmpresaRepositorio {
       $stmt->bindParam(':contrasenaMesero', $contrasenaMeseroHash, PDO::PARAM_STR);
       $stmt->bindParam(':fecha_actual', $fecha_actual, PDO::PARAM_STR);
       $stmt->execute();
-      
+
       $id = $this->pdo->lastInsertId();
       $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id");
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->execute();
-      
+
       $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-      
+
       if ($data) {
         return $data;
       }
@@ -232,8 +237,9 @@ class EmpresaRepositorio {
     }
     return [];
   }
-  
-  public function guardarHorarios(int $id_empresa, array $horarios): bool {
+
+  public function guardarHorarios(int $id_empresa, array $horarios): bool
+  {
     try {
       $this->pdo->beginTransaction();
 
@@ -283,15 +289,15 @@ class EmpresaRepositorio {
 
       $this->pdo->commit();
       return true;
-
     } catch (Exception $e) {
       $this->pdo->rollBack();
       error_log("Error al guardar horarios (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
-  
-  public function guardarDiasNoLaborales(int $id_empresa, array $dias_no_laborales): array {
+
+  public function guardarDiasNoLaborales(int $id_empresa, array $dias_no_laborales): array
+  {
     try {
       $this->pdo->beginTransaction();
 
@@ -319,7 +325,7 @@ class EmpresaRepositorio {
       }
 
       $diasOrdenados = array_keys($diasLimpios);
-      usort($diasOrdenados, function($a, $b) {
+      usort($diasOrdenados, function ($a, $b) {
         [$da, $ma, $ya] = explode('/', $a);
         [$db, $mb, $yb] = explode('/', $b);
 
@@ -336,7 +342,6 @@ class EmpresaRepositorio {
 
       $this->pdo->commit();
       return $diasOrdenados;
-
     } catch (Exception $e) {
       if ($this->pdo->inTransaction()) {
         $this->pdo->rollBack();
@@ -346,7 +351,8 @@ class EmpresaRepositorio {
     }
   }
 
-  public function obtenerDiasNoLaborales(int $id_empresa): array {
+  public function obtenerDiasNoLaborales(int $id_empresa): array
+  {
     try {
       $stmt = $this->pdo->prepare(
         "SELECT
@@ -359,14 +365,14 @@ class EmpresaRepositorio {
       $stmt->execute();
 
       return $stmt->fetchAll(PDO::FETCH_COLUMN);
-
     } catch (PDOException $e) {
       error_log("Error al obtener días no laborales (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
 
-  public function obtenerHorariosYDiasNoLaborales(int $id_empresa): array {
+  public function obtenerHorariosYDiasNoLaborales(int $id_empresa): array
+  {
     try {
       $stmt = $this->pdo->prepare(
         "SELECT dia_semana, hora_apertura, hora_cierre
@@ -401,15 +407,15 @@ class EmpresaRepositorio {
         'horarios' => array_values($porDia),
         'noLab' => $this->obtenerDiasNoLaborales($id_empresa),
       ];
-
     } catch (PDOException $e) {
       error_log("Error al obtener horarios y no laborales (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
 
-  public function verificarContrasenaMesero(int $id_empresa, string $contrasena): bool {
-    
+  public function verificarContrasenaMesero(int $id_empresa, string $contrasena): bool
+  {
+
     try {
       $stmt = $this->pdo->prepare(
         "SELECT contrasenaMesero FROM Empresa WHERE id = :id_empresa LIMIT 1"
@@ -425,14 +431,14 @@ class EmpresaRepositorio {
       if (!$hash) return false;
 
       return password_verify($contrasena, $hash);
-
     } catch (PDOException $e) {
       error_log("Error al verificar contraseña mesero (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
 
-  public function registrarContrasenaCompartida(int $id_empresa, string $contrasena): void {
+  public function registrarContrasenaCompartida(int $id_empresa, string $contrasena): void
+  {
 
     try {
       $stmt = $this->pdo->prepare(
@@ -441,17 +447,31 @@ class EmpresaRepositorio {
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->bindParam(':contrasena', $contrasena, PDO::PARAM_STR);
       $stmt->execute();
-
     } catch (PDOException $e) {
       error_log("Error al registrar contraseña compartida (empresa $id_empresa): " . $e->getMessage());
       throw $e;
     }
   }
 
-  public function eliminar(int $id): bool {
+  public function eliminarContrasenaCompartida(int $id_empresa): void
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Empresa SET contrasenaMesero = NULL WHERE id = :id_empresa"
+      );
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error al eliminar contraseña compartida (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function eliminar(int $id): bool
+  {
     try {
       // Una sola consulta multitabla
-      $sql = 
+      $sql =
         "DELETE e, a, r, m, me, h, d
           FROM Empresa e
           LEFT JOIN Articulo a ON e.id = a.empresaId
@@ -464,9 +484,8 @@ class EmpresaRepositorio {
 
       $stmt = $this->pdo->prepare($sql);
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-      
-      return $stmt->execute();
 
+      return $stmt->execute();
     } catch (PDOException $e) {
       error_log("Error al eliminar empresa y relacionados en una consulta ($id): " . $e->getMessage());
       throw $e;

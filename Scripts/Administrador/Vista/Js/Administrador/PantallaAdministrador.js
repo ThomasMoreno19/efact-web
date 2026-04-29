@@ -52,6 +52,8 @@ class PantallaAdministrador {
     const BOTON_CONFIGURAR_HORARIOS = document.getElementById(
       "configurar-horarios",
     );
+    const BOTON_CONFIGURAR_MESEROS = document.getElementById("meseros");
+    BOTON_CONFIGURAR_MESEROS.classList.add("hidden");
     BOTON_CONFIGURAR_HORARIOS.classList.add("hidden");
     const BOTON_SECCION_MODIFICAR =
       document.getElementById("seccion-modificar");

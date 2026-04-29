@@ -1,214 +1,429 @@
 /* Scripts/Cliente/Vista/Css/pantallaCliente.css */
 
+html,
+body {
+  background-attachment: fixed;
+  background-size: cover;
 
-html, body {
-    background-attachment: fixed;
-    background-size: cover;
-    
-    /* 🔥 Agrega relleno para la zona “segura” en móviles */
-    padding-bottom: env(safe-area-inset-bottom);
+  /* 🔥 Agrega relleno para la zona “segura” en móviles */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 body {
-    font-family: sans-serif;
-    background: linear-gradient(to right, #292638 0%, #100e16 100%);
-    max-width: 100%;
+  font-family: sans-serif;
+  background: linear-gradient(to right, #292638 0%, #100e16 100%);
+  max-width: 100%;
+}
+
+.modal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.login-container {
+  background-color: rgba(255, 255, 255, 0.1); /* Slightly transparent white */
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); /* Deeper shadow */
+  text-align: center;
+  width: 100%;
+  max-width: 400px; /* Max width for the form container */
+  backdrop-filter: blur(10px); /* Frosted glass effect */
+  -webkit-backdrop-filter: blur(10px); /* For Safari */
+  border: 1px solid rgba(255, 255, 255, 0.2); /* Light border */
+}
+
+.form-group-login {
+  text-align: left; /* Align labels and inputs to the left */
+  margin-bottom: 20px; /* Space between form groups */
+}
+
+.form-group-login label {
+  display: block; /* Label on its own line */
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #e0e0e0; /* Slightly lighter white for labels */
+}
+
+.form-group-login input[type="text"],
+.form-group-login input[type="password"] {
+  width: 100%; /* Full width minus padding */
+  padding: 12px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Light border */
+  border-radius: 8px;
+  background-color: #34313d; /* Even more transparent background */
+  color: #ffffff; /* White text input */
+  font-size: 1em;
+  transition: all 0.3s ease; /* Smooth transitions */
+  box-sizing: border-box; /* padding no aumenta el ancho total */
+}
+
+.form-group-login input[type="text"]:focus,
+.form-group-login input[type="password"]:focus {
+  outline: none;
+  border-color: rgb(216 119 85); /* Highlight border on focus */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.02
+  ); /* Slightly less transparent on focus */
+  box-sizing: border-box;
+}
+
+/* Placeholder styling */
+.form-group-login input::placeholder {
+  color: #bbb; /* Lighter placeholder text */
+}
+
+.submit-button-login {
+  background: linear-gradient(
+    90deg,
+    #d46e64 0%,
+    #e89e13 100%
+  ); /* Orange to Red gradient */
+  color: white;
+  padding: 14px 25px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1em;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  margin-top: 20px; /* Space above the button */
+}
+
+.submit-button-login:hover {
+  background: linear-gradient(
+    90deg,
+    #e89e13 0%,
+    #d46e64 100%
+  ); /* Reverse gradient on hover */
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.3); /* More pronounced shadow on hover */
+  transform: translateY(-2px); /* Slight lift effect */
+}
+
+.submit-button-login:hover::before {
+  opacity: 1;
+}
+
+/* Compatibilidad para Firefox */
+input:autofill,
+input:autofill:hover,
+input:autofill:focus {
+  background-color: rgb(52 49 61) !important;
+  color: #ffffff !important;
+  caret-color: #ffffff !important;
+}
+
+.error-message {
+  color: #ffcccc;
+  background-color: rgba(255, 0, 0, 0.2);
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  font-size: 0.95em;
+  border: 1px solid rgba(255, 0, 0, 0.4);
+}
+
+.password-container {
+  position: relative;
+  display: block; /* usa block para controlar mejor el ancho */
+  width: 100%;
+}
+
+.password-container input {
+  width: 100%; /* importante: ocupar todo el ancho del contenedor */
+  padding: 12px 44px 12px 10px; /* espacio derecho para el botón (44px) */
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%); /* centra verticalmente */
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 4px;
+  z-index: 2; /* asegurar que quede arriba del input */
+  color: #e0e0e0; /* adaptar al tema oscuro */
+}
+
+.toggle-password:focus {
+  border-radius: 4px;
+}
+
+.toggle-password svg {
+  width: 22px;
+  height: 22px;
+  stroke: #e0e0e0;
+  transition: stroke 0.3s ease;
+}
+
+.toggle-password:hover svg {
+  stroke: #d67459; /* cambia de color al pasar el mouse */
+}
+
+.form-group-login label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: white;
 }
 
 #header {
-    background: linear-gradient(to right, #292638 0%, #100e16 100%);
-    position: fixed; /* 🔥 Lo mantiene siempre visible */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 190px;
-    z-index: 1000;
-    transition: height 0.4s ease, transform 0.5s ease, opacity 0.8s ease;
-    will-change: transform, height, opacity; /* mejora rendimiento */
-    text-align: center;
+  background: linear-gradient(to right, #292638 0%, #100e16 100%);
+  position: fixed; /* 🔥 Lo mantiene siempre visible */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 190px;
+  z-index: 1000;
+  transition:
+    height 0.4s ease,
+    transform 0.5s ease,
+    opacity 0.8s ease;
+  will-change: transform, height, opacity; /* mejora rendimiento */
+  text-align: center;
 }
 
 .oculto {
-    transform: translateY(-100%);
-    opacity: 0;
+  transform: translateY(-100%);
+  opacity: 0;
 }
 
 #header.minimizado {
-    height: 120px;
+  height: 120px;
 }
 
 #imagen-header {
-    height: 105px;
-    margin-top: 15px;
-    width: auto;
-    transition: height 0.3s ease, transform 0.3s ease, opacity 0.8s ease;
-    transform-origin: top center;
-    border-radius: 8px;
+  height: 105px;
+  margin-top: 15px;
+  width: auto;
+  transition:
+    height 0.3s ease,
+    transform 0.3s ease,
+    opacity 0.8s ease;
+  transform-origin: top center;
+  border-radius: 8px;
 }
 
-#imagen-header.minimizado{
-    height:80px;
+#imagen-header.minimizado {
+  height: 80px;
 }
 
 /* --- Encabezado flotante --- */
 #titulo-pagina {
-    margin: 0px;
-    font-size: 23px;
-    text-align: center;
-    color:white;
-    transition: height 0.3s ease, transform 0.3s ease, opacity 0.8s ease;
-    transform-origin: top center;
+  margin: 0px;
+  font-size: 23px;
+  text-align: center;
+  color: white;
+  transition:
+    height 0.3s ease,
+    transform 0.3s ease,
+    opacity 0.8s ease;
+  transform-origin: top center;
 }
 
-
-#info-extra{
-    color: white;
-    margin: 0% auto;
-    font-size: clamp(0.9rem, 50%, 45px);
-    display: inline-grid;
-    transition: height 0.3s ease, transform 0.3s ease, opacity 0.8s ease;
-    transform-origin: top center;
+#info-extra {
+  color: white;
+  margin: 0% auto;
+  font-size: clamp(0.9rem, 50%, 45px);
+  display: inline-grid;
+  transition:
+    height 0.3s ease,
+    transform 0.3s ease,
+    opacity 0.8s ease;
+  transform-origin: top center;
 }
 
 #titulo-pagina.minimizado {
-    transform: scale(0.7);
+  transform: scale(0.7);
 }
 
 #info-telefono {
-    background-color: #2c2a32;
-    padding: 0px 4px;
-    align-items: center;   /* centra verticalmente icono y texto */
-    gap: 6px;              /* espacio entre icono y número */
-    border-radius: 8px;
-    cursor: pointer;
-    user-select: none;
-    color: white;
-    transition: transform 0.2s, color 0.2s, background-color 0.3s;
-    width: fit-content;
-    margin: 0 auto;
+  background-color: #2c2a32;
+  padding: 0px 4px;
+  align-items: center; /* centra verticalmente icono y texto */
+  gap: 6px; /* espacio entre icono y número */
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  color: white;
+  transition:
+    transform 0.2s,
+    color 0.2s,
+    background-color 0.3s;
+  width: fit-content;
+  margin: 0 auto;
 }
 
 #info-telefono:hover {
-    background-color: transparent;
-    transform: scale(1.05);
-    color: #40c351;
+  background-color: transparent;
+  transform: scale(1.05);
+  color: #40c351;
 }
 
-#info-telefono svg{
-    vertical-align: top;
+#info-telefono svg {
+  vertical-align: top;
 }
 
 .info-empresa {
-    display: flex;
-    flex-direction: column-reverse;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 #info-empresa .oculto {
-    transform: translateY(0%);
+  transform: translateY(0%);
 }
 
-h2{
-    color: white;
-    align-items: center;
+h2 {
+  color: white;
+  align-items: center;
 }
 
 h3 {
-    color: white;
-    background-color: #0000006e;
-    padding: 2px;
-    border-radius: 8px;
+  color: white;
+  background-color: #0000006e;
+  padding: 2px;
+  border-radius: 8px;
 }
 
 ::-webkit-scrollbar {
-    width: 1.3vh;
-    position: absolute;
-    background-color: #100e16;
+  width: 1.3vh;
+  position: absolute;
+  background-color: #100e16;
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.25);
-    border-radius: 50px;
+  background-color: rgba(255, 255, 255, 0.25);
+  border-radius: 50px;
 }
 
 .moderador-dashboard {
-    flex-grow: 1; /* Allow the dashboard to take up available space */
-    width: 100%;
-    margin: 0 auto; /* Center the dashboard horizontally */
-    padding: 20px; /* Add some padding around the main content area */
-    box-sizing: border-box; /* Include padding in the width calculation */
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center content horizontally within dashboard */
+  flex-grow: 1; /* Allow the dashboard to take up available space */
+  width: 100%;
+  margin: 0 auto; /* Center the dashboard horizontally */
+  padding: 20px; /* Add some padding around the main content area */
+  box-sizing: border-box; /* Include padding in the width calculation */
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content horizontally within dashboard */
 }
 
 .submit-button {
-    /* AÑADIDO: Espacio de 1.0em arriba y abajo */
-    margin: 0.3em 0;
+  /* AÑADIDO: Espacio de 1.0em arriba y abajo */
+  margin: 0.3em 0;
 }
 
 .page-title {
-    color: white;
-    font-size: 2.2em; /* Make the title large */
-    text-align: center;
-    margin-bottom: 20px; /* Add some space below the title */
+  color: white;
+  font-size: 2.2em; /* Make the title large */
+  text-align: center;
+  margin-bottom: 20px; /* Add some space below the title */
 }
 
-.lista-central{
-    background-color: #242130;
-    position: relative;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Sombra */
-    z-index: 3;
-    padding: 1% 1% 4%;
-    margin: auto;
-    max-width: 100vh;
+.lista-central {
+  background-color: #242130;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Sombra */
+  z-index: 3;
+  padding: 1% 1% 4%;
+  margin: auto;
+  max-width: 100vh;
 }
 
-#boton-carrito{
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    z-index: 1000;
-    background-color: #e89e16;
-    border: none;
-    border-radius: 8px;
-    transition: all 0.4s ease;
-    cursor: pointer;
+#boton-carrito {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 1000;
+  background-color: #e89e16;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.4s ease;
+  cursor: pointer;
 }
 
-#boton-carrito:hover{
-    transform: scale(1.08);
+#boton-carrito:hover {
+  transform: scale(1.08);
 }
 
-#icono-carrito{
-    width: 50px;
-    height: 40px;
-    color: black;
+#icono-carrito {
+  width: 50px;
+  height: 40px;
+  color: black;
 }
 
-#cantidad-articulos-carrito{
-    background-color: red;
-    border-radius: 50%;
-    color: white;
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    font-size: 12px;
-    padding: 2px 6px;
+#cantidad-articulos-carrito {
+  background-color: red;
+  border-radius: 50%;
+  color: white;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+#titulo-modal-mesero {
+  color: white;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.submit-button {
+  width: 100%;
+  background-color: #20202b;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #0f0f15;
 }
 
 /* Clase que controla la visibilidad y la animación */
 .hidden {
-    display: none;
+  display: none;
 }
 
 @media screen and (max-width: 600px) {
-    .lista-central {
-        max-width: 90%;
-    }
-    
-    #titulo-pagina div img {
-        max-width: 13rem;
-        max-height: 7rem;
-    }
+  .lista-central {
+    max-width: 90%;
+  }
+
+  #titulo-pagina div img {
+    max-width: 13rem;
+    max-height: 7rem;
+  }
 }

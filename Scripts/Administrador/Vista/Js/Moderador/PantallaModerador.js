@@ -661,7 +661,7 @@ class PantallaModerador {
       "#btnEliminarContrasenaCompartida",
     );
     botonEliminarContrasenaCompartida.addEventListener("click", async () => {
-      await this.PedirConfirmacionEliminarContrasenaCompartida(modal);
+      await this.PedirConfirmacionEliminarContrasenaCompartida();
     });
 
     this.renderizarMeseros(modal);
@@ -742,14 +742,12 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
     }
   }
 
-  async PedirConfirmacionEliminarContrasenaCompartida(modal) {
+  async PedirConfirmacionEliminarContrasenaCompartida() {
     const seguro = confirm(
       `¿Estas seguro de eliminar la contraseña compartida?`,
     );
     if (seguro) {
       this.gestor.eliminarContrasenaCompartida(this.empresa.id);
-      modal.classList.add("hidden");
-      document.body.removeChild(modal);
     }
   }
 
