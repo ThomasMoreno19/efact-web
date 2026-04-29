@@ -187,19 +187,8 @@ body {
   width: auto;
   height: auto;
   object-fit: contain;
-#titulo-pagina div img {
-  width: 75%;
-  max-width: 13rem;
-  max-height: 7rem;
-  margin: auto;
-  width: auto;
-  height: auto;
-  object-fit: contain;
 }
 
-#titulo-pagina div p {
-  margin: 0% auto;
-  font-size: clamp(0.9rem, 50%, 45px);
 #titulo-pagina div p {
   margin: 0% auto;
   font-size: clamp(0.9rem, 50%, 45px);
@@ -253,9 +242,6 @@ body {
   flex-direction: column-reverse;
 }
 
-h2 {
-  color: white;
-  align-items: center;
 h2 {
   color: white;
   align-items: center;
@@ -549,4 +535,3 @@ br {
     display: none;
   }
 }
-

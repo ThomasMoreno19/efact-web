@@ -19,6 +19,10 @@ class PantallaAdministrador {
     this.agregarEventListeners();
   }
 
+  async habilitarVentanaPrincipal() {
+    await this.mostrarLista();
+  }
+
   agregarEventListeners() {
     if (this.botonNuevaEmpresa) {
       this.botonNuevaEmpresa.addEventListener("click", () => {
