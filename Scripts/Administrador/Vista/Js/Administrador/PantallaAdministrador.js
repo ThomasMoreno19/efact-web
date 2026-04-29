@@ -2,7 +2,14 @@ class PantallaAdministrador {
   constructor() {
     // Inicializamos el Gestor y los elementos del DOM
     this.listaEmpresas = document.getElementById("lista-empresas");
+    this.listaEmpresas = document.getElementById("lista-empresas");
     this.gestor = new GestorAdministrador();
+    this.botonNuevaEmpresa = document.getElementById("alta-empresa");
+    window.gestorDeEmpresasCallback = (empresa) =>
+      this.modalEmpresaSeleccionada(empresa);
+    window.gestorDeModeradoresCallback = (moderador) =>
+      this.modalModeradorSeleccionado(moderador);
+
     this.botonNuevaEmpresa = document.getElementById("alta-empresa");
     window.gestorDeEmpresasCallback = (empresa) =>
       this.modalEmpresaSeleccionada(empresa);
@@ -18,10 +25,6 @@ class PantallaAdministrador {
         this.abrirModalNuevaEmpresa();
       });
     }
-  }
-
-  async habilitarVentanaPrincipal() {
-    await this.mostrarLista();
   }
 
   async mostrarLista() {
@@ -66,6 +69,9 @@ class PantallaAdministrador {
     const BOTON_GESTION_ARTICULOS = document.getElementById("visitar-gestion");
 
     const BOTON_VISITAR_PAGINA = document.getElementById("visitar-pagina");
+
+    const BOTON_CONFIGURAR_MESEROS = document.getElementById("meseros");
+    BOTON_CONFIGURAR_MESEROS.classList.add("hidden");
 
     // Se cierra el modal si se clickea afuera
     MODAL.addEventListener("click", (event) => {
@@ -159,6 +165,7 @@ class PantallaAdministrador {
       const TIENE_CARRITO = FORMDATA.get("tieneCarrito") === "true";
       const MODULO_MESERO = FORMDATA.get("moduloMesero") === "true";
       const DESHABILITAR_EXCEL = FORMDATA.get("deshabilitarExcel") === "true";
+      const GESTION_MESERO = FORMDATA.get("gestionMesero") === "true";
       const EFECTIVO = FORMDATA.get("efectivo") === "true";
       const TARJETA = FORMDATA.get("tarjeta") === "true";
       const TRANSFERENCIA = FORMDATA.get("transferencia") === "true";
@@ -175,6 +182,7 @@ class PantallaAdministrador {
           TIENE_CARRITO,
           MODULO_MESERO,
           DESHABILITAR_EXCEL,
+          GESTION_MESERO,
           EFECTIVO,
           TARJETA,
           TRANSFERENCIA,
@@ -182,6 +190,7 @@ class PantallaAdministrador {
           IMAGEN,
         );
         await this.gestor.crearModerador(USUARIO, EMPRESA.id, CONTRASENA);
+        MODAL.classList.add("hidden");
         MODAL.classList.add("hidden");
         document.body.removeChild(MODAL);
         await this.mostrarLista();
@@ -200,12 +209,13 @@ class PantallaAdministrador {
     MODAL.addEventListener("click", (event) => {
       if (event.target === MODAL) {
         MODAL.classList.add("hidden");
+        MODAL.classList.add("hidden");
         document.body.appendChild(modalPadre);
+        document.body.removeChild(MODAL);
         document.body.removeChild(MODAL);
       }
     });
 
-    // Listener para los botones de metodos de pago
     document.querySelectorAll(".toggle-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         btn.classList.toggle("active");

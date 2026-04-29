@@ -3,14 +3,18 @@
 session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/env.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/env.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorEmpresa.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorAdministrador.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorModerador.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorMesero.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorArticulo.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorRubro.php';
 
 $url = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'); // Tomar la url (Elimina barras iniciales/finales).
 
+cargarEnv($_SERVER['DOCUMENT_ROOT'] . '/.env');
 cargarEnv($_SERVER['DOCUMENT_ROOT'] . '/.env');
 // Dividir la url en un array
 $url_segmentada = explode('/', $url);
@@ -18,6 +22,7 @@ $url_principal = $url_segmentada[0]; //lo que va antes de la primer barra en el 
 $porcionURL = implode('/', array_slice($url_segmentada, 1)); // el resto de la url, si la url entera es Empresa/mostrar/123, entonces porcionURl será mostrar/123
 
 $pdo = conectarBD();
+
 
 // Distribuir, dependiendo del primer segmento
 try {
@@ -44,6 +49,11 @@ try {
 
     case 'rubro':
       $controlador = new GestorRubro($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'mesero':
+      $controlador = new GestorMesero($pdo);
       $controlador->derivarURL($porcionURL);
       break;
 

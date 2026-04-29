@@ -3,7 +3,6 @@
 function conectarBD()
 {
   static $pdo = null;
-
   if ($pdo === null) {
     $host = getenv('DB_HOST');
     $dbname = getenv('DB_NAME');
@@ -25,6 +24,5 @@ function conectarBD()
       die($e->getMessage());
     }
   }
-
   return $pdo;
 }

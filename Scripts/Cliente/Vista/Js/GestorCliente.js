@@ -101,4 +101,56 @@ class GestorCliente {
 
     return await response.json();
   }
+
+  async iniciarSesionMesero(id_empresa, nombre, contrasena) {
+    const bodyData = { id_empresa: parseInt(id_empresa), nombre, contrasena };
+
+    const response = await fetch(`/mesero/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error al iniciar sesión de mesero" }));
+      throw new Error(err.error || "Error al iniciar sesión de mesero");
+    }
+
+    return await response.json();
+  }
+
+  async hayMeserosRegistrados(id_empresa) {
+    const bodyData = { id_empresa: parseInt(id_empresa) };
+
+    const response = await fetch(`/mesero/hay-meseros-registrados`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const err = await response
+        .json()
+        .catch(() => ({ error: "Error al verificar meseros registrados" }));
+      throw new Error(err.error || "Error al verificar meseros registrados");
+    }
+
+    return await response.json();
+  }
+
+  async validarSesionMesero(id_empresa) {
+    const bodyData = { id_empresa: parseInt(id_empresa) };
+    const response = await fetch(`/mesero/validar-sesion`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bodyData),
+      credentials: "include",
+    });
+
+    return await response.json();
+  }
 }

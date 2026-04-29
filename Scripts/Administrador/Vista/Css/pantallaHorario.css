@@ -3,9 +3,18 @@
   inset: 0;
   background-color: #222;
   z-index: 1000;
+  position: fixed;
+  inset: 0;
+  background-color: #222;
+  z-index: 1000;
 
   overflow-y: auto; /* permite que el modal crezca y la pantalla haga scroll */
+  overflow-y: auto; /* permite que el modal crezca y la pantalla haga scroll */
 
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* el modal arranca arriba y crece para abajo */
+  color: white;
   display: flex;
   justify-content: center;
   align-items: flex-start; /* el modal arranca arriba y crece para abajo */
@@ -18,6 +27,12 @@
   padding-bottom: 100px;
 }
 
+h2 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+  margin: auto auto;
+  width: 100%;
 h2 {
   text-align: center;
   font-size: 22px;
@@ -38,6 +53,11 @@ h2 {
   cursor: pointer;
   font-size: 38px;
   color: white;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 38px;
+  color: white;
 }
 
 #header-wrapper {
@@ -48,9 +68,30 @@ h2 {
   border-bottom: 2px solid #333;
   text-align: center;
   margin-bottom: 40px;
+  display: flex;
+  position: relative;
+  padding: 5px 20px;
+  background: #222;
+  border-bottom: 2px solid #333;
+  text-align: center;
+  margin-bottom: 40px;
 }
 
 .boton {
+  background-color: #e89e13;
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 15px;
+  width: fit-content;
+  font-size: 16px;
+  font-weight: bold;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
   background-color: #e89e13;
   border: none;
   color: white;
@@ -79,6 +120,9 @@ input[type="date"] {
   font-weight: 700;
   padding: 0 16px;
   outline: none;
+  transition:
+    border 0.15s ease,
+    box-shadow 0.15s ease;
   transition:
     border 0.15s ease,
     box-shadow 0.15s ease;
@@ -112,6 +156,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .horario-card {
+.horario-card {
   position: relative;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.14);
@@ -121,11 +166,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .horario-dia {
+.horario-dia {
   text-align: center;
   margin-bottom: 5px;
   font-size: 20px;
 }
 
+.horario-linea {
 .horario-linea {
   color: rgb(169 169 169);
   font-size: 15px;
@@ -133,9 +180,11 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 #horario-cierre {
+#horario-cierre {
   margin-bottom: 9px;
 }
 
+.subtitulo-horarios {
 .subtitulo-horarios {
   padding: 0px 10px;
   margin-bottom: 20px;
@@ -146,11 +195,13 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   padding: 0px 10px;
   display: flex;
   flex-wrap: wrap; /* 🔥 esto hace que bajen de línea */
+  flex-wrap: wrap; /* 🔥 esto hace que bajen de línea */
   gap: 15px;
   width: 100%;
   box-sizing: border-box;
 }
 
+.boton-final-container {
 .boton-final-container {
   position: fixed;
   bottom: 0;
@@ -168,6 +219,70 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   align-items: center;
 }
 
+.boton-final -container-meseros {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: rgba(34, 34, 34, 0.95);
+  border-top: 2px solid #333;
+  padding: 14px 18px;
+  z-index: 2000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.boton-mesero {
+  background-color: transparent;
+  border: none;
+  border-radius: 999px;
+  color: #e89e13;
+  padding: 10px 16px;
+  cursor: pointer;
+  width: fit-content;
+  font-size: 13px;
+  font-weight: bold;
+  margin: 0px 15px;
+  transition:
+    border 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#btnCargarMeseros:hover {
+  border: none;
+  background-color: #e89d133c;
+  color: #ffffff;
+}
+
+#contenedorRegistrarMesero {
+  cursor: pointer;
+  padding: 7px 16px;
+  transition:
+    border 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+#contenedorRegistrarMesero:hover {
+  background-color: #e89d133c;
+}
+
+.boton-final-container-meseros {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: rgba(34, 34, 34, 0.95);
+  border-top: 2px solid #333;
+  padding: 14px 18px;
+  z-index: 2000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .boton-final {
   margin: 0;
   left: auto;
@@ -178,6 +293,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   cursor: not-allowed;
 }
 
+.cierre {
 .cierre {
   margin-bottom: 8px;
 }
@@ -201,6 +317,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 .botonCambiarForm {
+.botonCambiarForm {
   background-color: transparent;
   color: #e89e13;
   padding: 10px 16px;
@@ -216,6 +333,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 #titulo-modulos-rango {
+#titulo-modulos-rango {
   margin-bottom: 18px;
   margin-top: 35px;
   font-weight: bold;
@@ -224,6 +342,7 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   display: flex;
 }
 
+#titulo-modulos-dia {
 #titulo-modulos-dia {
   margin-bottom: 18px;
   font-size: 18px;

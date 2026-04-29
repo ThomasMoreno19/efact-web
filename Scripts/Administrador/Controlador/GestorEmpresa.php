@@ -27,6 +27,7 @@ class GestorEmpresa
             echo json_encode($this->empresaRepositorio->obtenerTodas());
             break;
 
+
           case 'id':
             $this->mostrarPorId();
             break;
@@ -47,6 +48,10 @@ class GestorEmpresa
 
       case 'crear':
         $this->crear();
+        break;
+
+      case 'eliminar':
+        $this->eliminarEmpresa();
         break;
 
       case 'modificar-logo':
@@ -75,6 +80,14 @@ class GestorEmpresa
 
       case 'verificar-contrasena-mesero':
         $this->verificarContrasenaMesero();
+        break;
+
+      case 'registrar-contrasena-compartida':
+        $this->registrarContrasenaCompartida();
+        break;
+
+      case 'eliminar-contrasena-compartida':
+        $this->eliminarContrasenaCompartida();
         break;
 
       case 'guardar-excepciones-espectaculos':
@@ -536,6 +549,76 @@ class GestorEmpresa
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al verificar contraseña de mesero: ' . $e->getMessage()]);
+    }
+  }
+
+  private function registrarContrasenaCompartida(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+    $contrasena = (string)($datos['contrasena'] ?? '');
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos para registrar contraseña compartida.']);
+      return;
+    }
+
+    try {
+      $this->empresaRepositorio->registrarContrasenaCompartida($id_empresa, $contrasena);
+      $this->borrarCacheEmpresa($id_empresa);
+      http_response_code(200);
+      echo json_encode(['message' => 'Contraseña compartida registrada correctamente.']);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al registrar contraseña compartida: ' . $e->getMessage()]);
+    }
+  }
+
+  private function eliminarContrasenaCompartida(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta id_empresa para eliminar la contrasena compartida.']);
+      return;
+    }
+
+    try {
+      $this->empresaRepositorio->eliminarContrasenaCompartida($id_empresa);
+      $this->borrarCacheEmpresa($id_empresa);
+      http_response_code(200);
+      echo json_encode(['message' => 'Contraseña compartida eliminada correctamente.']);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al eliminar la contrasena compartida: ' . $e->getMessage()]);
+    }
+  }
+
+  private function eliminarEmpresa(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Falta id_empresa para eliminar la empresa.']);
+      return;
+    }
+
+    try {
+      $this->empresaRepositorio->eliminar($id_empresa);
+      $this->borrarCacheEmpresa($id_empresa);
+      http_response_code(200);
+      echo json_encode(['message' => 'Empresa eliminada correctamente.']);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al eliminar la empresa: ' . $e->getMessage()]);
     }
   }
 }

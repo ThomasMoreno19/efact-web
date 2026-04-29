@@ -26,6 +26,7 @@ class PantallaCliente {
     this.horarios = [];
 
     this.listaCentral = document.getElementById("lista-central");
+    this.listaCentral = document.getElementById("lista-central");
 
     this.carrito = new Carrito();
     this.articulo = null;
@@ -45,20 +46,40 @@ class PantallaCliente {
   async init() {
     const data = await this.gestor.conocerEmpresa(this.conocerSlug(2));
     this.empresa = new EmpresaVista(data);
-    window.gestorDeArticulosCallback = (articulo) => {
-      this.articuloSeleccionado(articulo);
-    };
-    this.botonCarrito.removeEventListener("click", this.onClickModalCarrito);
-    this.botonCarrito.addEventListener("click", this.onClickModalCarrito);
-    if (!document.getElementById("css-articulo-seleccionado")) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "/Scripts/Cliente/Vista/Css/articuloSeleccionado.css";
-      link.id = "css-articulo-seleccionado";
-      document.head.appendChild(link);
+    if (this.empresa.tieneCarrito) {
+      window.gestorDeArticulosCallback = (articulo) => {
+        this.articuloSeleccionado(articulo);
+      };
+      this.botonCarrito.removeEventListener("click", this.onClickModalCarrito);
+      this.botonCarrito.addEventListener("click", this.onClickModalCarrito);
+      if (!document.getElementById("css-articulo-seleccionado")) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = "/Scripts/Cliente/Vista/Css/articuloSeleccionado.css";
+        link.id = "css-articulo-seleccionado";
+        document.head.appendChild(link);
+      }
     }
     if (this.conocerEsMesero()) {
-      await this.solicitarContrasenaMesero();
+      const sesionActiva = await this.gestor.validarSesionMesero(
+        this.empresa.id,
+      );
+
+      if (!sesionActiva) {
+        if (this.empresa.tieneContrasenaMesero) {
+          this.solicitarContrasenaMesero();
+        } else {
+          const tieneMeseros = await this.gestor.hayMeserosRegistrados(
+            this.empresa.id,
+          );
+
+          if (tieneMeseros) {
+            await this.modalIniciarSesionMesero();
+          } else {
+            await this.solicitarContrasenaMesero();
+          }
+        }
+      }
     }
 
     try {
@@ -71,6 +92,8 @@ class PantallaCliente {
       this.horarios = { horarios: [], noLab: [] };
     }
 
+    const textoAdicional = "- Carta";
+    this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
     const textoAdicional = "- Carta";
     this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
 
@@ -918,22 +941,6 @@ class PantallaCliente {
     this.volverAtras();
   }
 
-  eventClickTelefono() {
-    navigator.clipboard.writeText(this.empresa.telefono).then(() => {
-      const numero = this.empresa.telefono.replace(/[^0-9]/g, "");
-      const esMovil = /Android|iPhone/i.test(navigator.userAgent);
-      const url = esMovil
-        ? `https://wa.me/${numero}`
-        : `https://web.whatsapp.com/send?phone=${numero}`;
-      window.open(url, "_blank");
-    });
-  }
-
-  timeToMinutes(hhmm) {
-    const [h, m] = hhmm.split(":").map(Number);
-    return h * 60 + m;
-  }
-
   // Devuelve segmentos en "timeline semanal"
   // Ej: Lunes 19:00-02:00 => [{start:1140, end:1560}]
   toSegments(diaIndex, apertura, cierre) {
@@ -1012,39 +1019,6 @@ class PantallaCliente {
       fecha.getMonth() + 1 === mm &&
       fecha.getDate() === dd
     );
-  }
-
-  isAhoraEnEspectaculo() {
-    const now = new Date();
-    const diaIndex = now.getDay();
-    const horaActual = now.toTimeString().slice(0, 5);
-
-    const ahoraMin =
-      diaIndex * this.MINUTOS_DIA + this.timeToMinutes(horaActual);
-
-    const ahoraSeg = { start: ahoraMin, end: ahoraMin + 1 };
-    const semana = 7 * this.MINUTOS_DIA;
-
-    for (const h of this.horariosEspectaculoCache) {
-      for (const r of h.rangos) {
-        const segs = this.toSegments(h.diaIndex, r.horaInicio, r.horaFin);
-
-        for (const seg of segs) {
-          if (this.overlap(ahoraSeg, seg)) {
-            return true;
-          }
-
-          const segPlus = {
-            start: seg.start + semana,
-            end: seg.end + semana,
-          };
-          if (this.overlap(ahoraSeg, segPlus)) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
   }
 
   async calcularPrecioActual() {
@@ -1167,23 +1141,100 @@ class PantallaCliente {
     return h * 60 + m;
   }
 
-  // Devuelve segmentos en "timeline semanal"
-  // Ej: Lunes 19:00-02:00 => [{start:1140, end:1560}]
-  toSegments(diaIndex, apertura, cierre) {
-    const startMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(apertura);
-    let endMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(cierre);
-
-    // Si cierre <= apertura => cruza medianoche
-    if (this.timeToMinutes(cierre) <= this.timeToMinutes(apertura)) {
-      endMin += this.MINUTOS_DIA;
-    }
-
-    return [{ start: startMin, end: endMin }];
+  eventClickTelefono() {
+    navigator.clipboard.writeText(this.empresa.telefono).then(() => {
+      const numero = this.empresa.telefono.replace(/[^0-9]/g, "");
+      const esMovil = /Android|iPhone/i.test(navigator.userAgent);
+      const url = esMovil
+        ? `https://wa.me/${numero}`
+        : `https://web.whatsapp.com/send?phone=${numero}`;
+      window.open(url, "_blank");
+    });
   }
 
-  // Detecta si dos rangos se pisan
-  overlap(a, b) {
-    return a.start < b.end && b.start < a.end;
+  async modalIniciarSesionMesero() {
+    // Evitar duplicados
+    this.listaCentral.classList.add("hidden");
+    if (document.getElementById("modal-mesero")) return;
+
+    const modal = document.createElement("div");
+    modal.id = "modal-mesero";
+    modal.classList.add("modal");
+
+    modal.innerHTML = `
+      <div class="login-container">
+        
+        <h2 id="titulo-modal-mesero">Iniciar sesión Mesero</h2>
+
+        <form id="login-form">
+          
+          <div class="form-group-login">
+            <label for="nombre-mesero">Usuario:</label>
+            <input type="text" id="nombre-mesero" name="nombre">
+          </div>
+          
+          <div class="form-group-login">
+            <label for="contrasena-mesero">Contraseña:</label>
+            <div class="password-container">
+              <input type="password" id="contrasena-mesero" name="contrasena">
+              
+              <button type="button" id="togglePasswordMesero" class="toggle-password">
+                👁
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-button-login">Acceder</button>
+        </form>
+
+        <p id="mensaje-error-mesero" class="error-message hidden"></p>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Toggle contraseña
+    const toggle = document.getElementById("togglePasswordMesero");
+    const passwordInput = document.getElementById("contrasena-mesero");
+    const error = document.getElementById("mensaje-error-mesero");
+
+    toggle.addEventListener("click", () => {
+      const type = passwordInput.type === "password" ? "text" : "password";
+      passwordInput.type = type;
+    });
+
+    document
+      .getElementById("login-form")
+      .addEventListener("submit", async (e) => {
+        e.preventDefault();
+        error.classList.add("hidden");
+
+        const nombre = document.getElementById("nombre-mesero").value;
+        const contrasena = document.getElementById("contrasena-mesero").value;
+
+        try {
+          const response = await this.gestor.iniciarSesionMesero(
+            this.empresa.id,
+            nombre,
+            contrasena,
+          );
+
+          if (response) {
+            document.body.removeChild(modal);
+            this.listaCentral.classList.remove("hidden");
+            sessionStorage.setItem(`mesero_auth_${this.conocerSlug(2)}`, "ok");
+            return;
+          }
+
+          if (response === false) {
+            error.textContent = "Credenciales incorrectas.";
+            error.classList.remove("hidden");
+          }
+        } catch (err) {
+          error.textContent = err.message;
+          error.classList.remove("hidden");
+        }
+      });
   }
 }
 

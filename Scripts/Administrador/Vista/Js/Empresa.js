@@ -12,6 +12,7 @@ class EmpresaVista {
     this.transferencia = empresa.transferencia ?? false;
     this.precio_delivery = empresa.precio_delivery ?? 1;
     this.precio_espectaculo = empresa.precio_espectaculo ?? 1;
+    this.tieneContrasenaMesero = empresa.tieneContrasenaMesero;
     this.logo_url = empresa.logo_url;
   }
 
@@ -60,6 +61,7 @@ class EmpresaVista {
           empresaTransferencia: this.transferencia,
           empresaPrecio_delivery: this.precio_delivery,
           empresaPrecio_espectaculo: this.precio_espectaculo,
+          empresaTieneContrasenaMesero: this.tieneContrasenaMesero,
           empresaLogoUrl: this.logo_url,
         },
       });
@@ -175,10 +177,6 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena" class="required">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" required>
-        </div>
-        <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero">
         </div>
         <div class="footer-wrapper">
           <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
@@ -492,6 +490,167 @@ class EmpresaVista {
     return modalDiasNoLaborales;
   }
 
+  modalMeseros() {
+    return `
+      <div class="wrapper" id="modalMeseros">
+        <div class="wrapper-content" id="lista-meseros-contenido">
+          <form id="formConfigurarHorariosEmpresa">
+            <header id="header-wrapper">
+              <h2 id="titulo-wrapper" class="titulo">Configuración de Meseros</h2>
+              <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
+            </header>
+
+            <div class="modulos">
+              <div class="lista-meseros">
+              </div>
+              <div class="mesero-item" id="contenedorRegistrarMesero">
+                <button type="button" class="boton-mesero" id="btnRegistrarMesero">
+                  + Registrar Mesero
+                </button>
+              </div>
+            </div>
+          </form>
+          
+
+          <div class="contrasena-compartida-meseros">
+            <form class="form-group" id="formRegistrarContrasenaCompartida">
+              <label for="contrasenaCompartida">Contraseña compartida:</label>
+              
+              <input 
+                type="password" 
+                id="contrasenaCompartida" 
+                name="contrasenaCompartida" 
+                maxlength="20"
+              >
+
+              <button 
+                type="button"
+                class="btn-mesero btn-eliminar" 
+                id="btnEliminarContrasenaCompartida"
+              >
+                <img src="../../../../Archivos/Iconos/trash.svg" alt="Eliminar">
+              </button>
+
+              <button 
+                type="submit" 
+                class="mesero-item" 
+                id="btnGuardarContrasenaCompartida"
+              >
+                Enviar
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <div class="boton-final-container-meseros">
+          <button type="button" class="boton-mesero" id="btnCargarMeseros">
+            + Cargar Meseros
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  modalCargarMeseros() {
+    const modalCargarMeseros = document.createElement("div");
+    modalCargarMeseros.classList.add("modal-configurar");
+    modalCargarMeseros.id = "modalCargarMeseros";
+
+    const modalCargarMeserosContenido = document.createElement("div");
+    modalCargarMeserosContenido.classList.add("modal-content-partial");
+
+    const htmlContent = `
+      <form id="formCargarMeseros">
+        <h2 id="titulo-modal">Cargar Meseros</h2>
+        <div class="form-group">
+          <label for="archivo">Seleccionar archivo Excel:</label>
+          <input type="file" id="archivo" name="archivo"
+            accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
+            required>
+        </div>
+        <div >
+          <button type="submit" class="submit-button">Cargar</button>
+        </div>
+      </form>
+    `;
+
+    modalCargarMeserosContenido.innerHTML = htmlContent;
+    modalCargarMeseros.appendChild(modalCargarMeserosContenido);
+
+    return modalCargarMeseros;
+  }
+
+  modalRegistrarMesero() {
+    const modalRegistrarMesero = document.createElement("div");
+    modalRegistrarMesero.classList.add("modal-configurar");
+    modalRegistrarMesero.id = "modalRegistrarMesero";
+
+    const modalRegistrarMeseroContenido = document.createElement("div");
+    modalRegistrarMeseroContenido.classList.add("modal-content-partial");
+
+    const htmlContent = `
+      <form id="formRegistrarMesero">
+        <h2 id="titulo-modal">Registrar Mesero</h2>
+        <div class="form-group">
+          <label for="nombre" class="required">Nombre</label>
+          <input type="text" id="nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+          <label for="abreviaturaNombre">Abreviatura</label>
+          <input type="text" id="abreviaturaNombre" name="abreviaturaNombre" maxlength="10">
+        </div>
+        <div class="form-group">
+          <label for="contrasena">Contraseña</label>
+          <input type="password" id="contrasena" name="contrasena" maxlength="20">
+        </div>
+        <button type="submit" class="boton" id="btnGuardarMesero">
+          Guardar
+        </button>
+        
+      </form>
+    `;
+
+    modalRegistrarMeseroContenido.innerHTML = htmlContent;
+    modalRegistrarMesero.appendChild(modalRegistrarMeseroContenido);
+
+    return modalRegistrarMesero;
+  }
+
+  modalModificarMesero(mesero) {
+    const modalModificarMesero = document.createElement("div");
+    modalModificarMesero.classList.add("modal-configurar");
+    modalModificarMesero.id = "modalModificarMesero";
+
+    const modalModificarMeseroContenido = document.createElement("div");
+    modalModificarMeseroContenido.classList.add("modal-content-partial");
+
+    const htmlContent = `
+      <form id="formModificarMesero">
+        <h2 id="titulo-modal">Modificar Mesero</h2>
+        <div class="form-group">
+          <label for="nombre" class="required">Nombre</label>
+          <input type="text" id="nombre" name="nombre" value="${mesero.nombre}" required>
+        </div>
+        <div class="form-group">
+          <label for="abreviaturaNombre">Abreviatura</label>
+          <input type="text" id="abreviaturaNombre" name="abreviaturaNombre" value="${mesero.abreviaturaNombre}" maxlength="10" required>
+        </div>
+        <div class="form-group">
+          <label for="contrasena">Contraseña</label>
+          <input type="password" id="contrasena" name="contrasena" placeholder="Dejar en blanco para no cambiar" maxlength="20">
+        </div>
+        <button type="submit" class="boton" id="btnGuardarMesero">
+          Guardar
+        </button>
+      </form>
+    `;
+
+    modalModificarMeseroContenido.innerHTML = htmlContent;
+    modalModificarMesero.appendChild(modalModificarMeseroContenido);
+
+    return modalModificarMesero;
+  }
+
   modalModificar(moderador) {
     const modalNuevaEmpresa = document.createElement("div");
     modalNuevaEmpresa.classList.add("modal-backdrop");
@@ -575,10 +734,6 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
-        </div>
-        <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña">
         </div>
         <div class="footer-wrapper">
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
@@ -707,10 +862,6 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
-        </div>
-        <div class="form-group">
-          <label for="contrasenaMesero">Contraseña de Mesero</label>
-          <input type="password" id="contrasenaMesero" name="contrasenaMesero" placeholder="Dejar vacío en caso de no cambiar la contraseña">
         </div>
         <div class="footer-wrapper">
           <button type="submit" id="boton-guardar-empresa">Enviar</button>

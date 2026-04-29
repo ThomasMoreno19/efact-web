@@ -6,8 +6,6 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Entidad/
 class EmpresaRepositorio
 {
   private $pdo;
-
-
   public function __construct(PDO $pdo)
   {
     $this->pdo = $pdo;
@@ -15,7 +13,14 @@ class EmpresaRepositorio
 
   public function obtenerPorId(int $id): ?array
   {
-    $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id;");
+    $stmt = $this->pdo->prepare("
+      SELECT 
+        *,
+        (contrasenaMesero IS NOT NULL AND contrasenaMesero <> '') AS tieneContrasenaMesero
+      FROM Empresa 
+      WHERE id = :id
+    ");
+
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -35,11 +40,12 @@ class EmpresaRepositorio
         'precio_delivery' => $data['precio_delivery'],
         'precio_espectaculo' => $data['precio_espectaculo'],
         'fecha_creacion' => $data['fecha_creacion'],
+        'tieneContrasenaMesero' => (bool)$data['tieneContrasenaMesero'],
       ];
     }
+
     return null;
   }
-
 
   public function obtenerTodas(): array
   {
@@ -62,6 +68,18 @@ class EmpresaRepositorio
           'transferencia' => $data['transferencia'],
           'logo_url' => $data['logo_url'],
           'fecha_creacion' => $data['fecha_creacion'],
+          'id' => $data['id'],
+          'nombre' => $data['nombre'],
+          'telefono' => $data['telefono'],
+          'ubicacion' => $data['ubicacion'],
+          'tieneCarrito' => $data['tieneCarrito'],
+          'moduloMesero' => $data['moduloMesero'],
+          'deshabilitarExcel' => $data['deshabilitar_excel'],
+          'efectivo' => $data['efectivo'],
+          'tarjeta' => $data['tarjeta'],
+          'transferencia' => $data['transferencia'],
+          'logo_url' => $data['logo_url'],
+          'fecha_creacion' => $data['fecha_creacion'],
         ];
       }
     } catch (PDOException $e) {
@@ -69,7 +87,6 @@ class EmpresaRepositorio
     }
     return $empresas;
   }
-
 
   public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $contrasenaMesero = null, ?string $logo_url = null): bool
   {
@@ -121,6 +138,7 @@ class EmpresaRepositorio
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
       return false;
+      return false;
     }
   }
 
@@ -167,36 +185,6 @@ class EmpresaRepositorio
     }
   }
 
-  public function eliminar(int $id): bool
-  {
-    try {
-      $this->pdo->beginTransaction();
-
-      $queries = [
-        "DELETE FROM articulo WHERE id_empresa = :id",
-        "DELETE FROM moderador WHERE id_empresa = :id",
-        "DELETE FROM mesero WHERE id_empresa = :id",
-        "DELETE FROM rubro WHERE id_empresa = :id",
-        "DELETE FROM dias_no_laborales_empresa WHERE id_empresa = :id",
-        "DELETE FROM horarios_empresa WHERE id_empresa = :id",
-        "DELETE FROM empresa WHERE id = :id"
-      ];
-
-      foreach ($queries as $sql) {
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-        $stmt->execute();
-      }
-
-      $this->pdo->commit();
-      return true;
-    } catch (PDOException $e) {
-      $this->pdo->rollBack();
-      error_log("Error al eliminar empresa y dependencias: " . $e->getMessage());
-      return false;
-    }
-  }
-
   public function modificarLogo(int $id, string $logo_url): ?array
   {
     try {
@@ -205,6 +193,7 @@ class EmpresaRepositorio
           SET logo_url = :logo_url
           WHERE id = :id;"
       );
+
 
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
@@ -223,10 +212,10 @@ class EmpresaRepositorio
     return null;
   }
 
-
   public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, string $contrasenaMesero): array
   {
     try {
+      $fecha_actual = date('Y-m-d');
       $fecha_actual = date('Y-m-d');
       $stmt = $this->pdo->prepare(
         "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, moduloMesero, deshabilitar_excel, efectivo, tarjeta, transferencia, precio_delivery, precio_espectaculo, contrasenaMesero) 
@@ -247,12 +236,15 @@ class EmpresaRepositorio
       $stmt->bindParam(':fecha_actual', $fecha_actual, PDO::PARAM_STR);
       $stmt->execute();
 
+
       $id = $this->pdo->lastInsertId();
       $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id");
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->execute();
 
+
       $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
 
 
       if ($data) {
@@ -277,6 +269,7 @@ class EmpresaRepositorio
     } catch (PDOException $e) {
       error_log("Error al guardar nueva empresa: " . $e->getMessage());
     }
+    return [];
     return [];
   }
 
@@ -371,7 +364,6 @@ class EmpresaRepositorio
         [$da, $ma, $ya] = explode('/', $a);
         [$db, $mb, $yb] = explode('/', $b);
 
-        if ((int)$ya !== (int)$yb) return (int)$ya - (int)$yb;
         if ((int)$ma !== (int)$mb) return (int)$ma - (int)$mb;
         return (int)$da - (int)$db;
       });
@@ -695,6 +687,61 @@ class EmpresaRepositorio
       return password_verify($contrasena, $hash);
     } catch (PDOException $e) {
       error_log("Error al verificar contraseña mesero (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function registrarContrasenaCompartida(int $id_empresa, string $contrasena): void
+  {
+
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Empresa SET contrasenaMesero = :contrasena WHERE id = :id_empresa"
+      );
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->bindParam(':contrasena', $contrasena, PDO::PARAM_STR);
+      $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error al registrar contraseña compartida (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function eliminarContrasenaCompartida(int $id_empresa): void
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Empresa SET contrasenaMesero = NULL WHERE id = :id_empresa"
+      );
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error al eliminar contraseña compartida (empresa $id_empresa): " . $e->getMessage());
+      throw $e;
+    }
+  }
+
+  public function eliminar(int $id): bool
+  {
+    try {
+      // Una sola consulta multitabla
+      $sql =
+        "DELETE e, a, r, m, me, h, d
+          FROM Empresa e
+          LEFT JOIN Articulo a ON e.id = a.empresaId
+          LEFT JOIN Rubro r ON e.id = r.empresaId
+          LEFT JOIN Moderador m ON e.id = m.empresaId
+          LEFT JOIN Mesero me ON e.id = me.empresaId
+          LEFT JOIN horarios_empresa h ON e.id = h.id_empresa
+          LEFT JOIN dias_no_laborales_empresa d ON e.id = d.id_empresa
+          WHERE e.id = :id";
+
+      $stmt = $this->pdo->prepare($sql);
+      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+
+      return $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error al eliminar empresa y relacionados en una consulta ($id): " . $e->getMessage());
       throw $e;
     }
   }

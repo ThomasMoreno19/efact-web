@@ -1,5 +1,4 @@
 <?php
-//Scripts/Administrador/Modelo/Entidad/EmpresaEntidad.php
 
 class Empresa
 {
@@ -11,7 +10,9 @@ class Empresa
   private string $ubicacion;
   private bool $tieneCarrito;
   private bool $moduloMesero;
+  private bool $gestionMesero;
   private array $rubros;
+  private bool $tieneContrasenaMesero;
 
 
   //Constructor
@@ -25,6 +26,8 @@ class Empresa
     $this->ubicacion = $ubicacion;
     $this->tieneCarrito = $tieneCarrito;
     $this->moduloMesero = $moduloMesero;
+    $this->gestionMesero = $gestionMesero;
+    $this->tieneContrasenaMesero = $tieneContrasenaMesero;
     $this->rubros = $rubros;
   }
 
@@ -73,6 +76,11 @@ class Empresa
   public function getRubros(): array
   {
     return $this->rubros;
+  }
+
+  public function tieneContrasenaMesero(): bool
+  {
+    return $this->tieneContrasenaMesero;
   }
 
 
@@ -125,5 +133,10 @@ class Empresa
   public function agregarRubro(Rubro $rubro): void
   {
     $this->rubros[] = $rubro;
+  }
+
+  public function setTieneContrasenaMesero(bool $tieneContrasenaMesero): void
+  {
+    $this->tieneContrasenaMesero = $tieneContrasenaMesero;
   }
 }
