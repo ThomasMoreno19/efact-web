@@ -725,21 +725,22 @@ class EmpresaRepositorio
   {
     try {
       // Una sola consulta multitabla
-      $sql =
-        "DELETE e, a, r, m, me, h, d
-          FROM Empresa e
-          LEFT JOIN Articulo a ON e.id = a.id_empresa
-          LEFT JOIN Rubro r ON e.id = r.id_empresa
-          LEFT JOIN Moderador m ON e.id = m.id_empresa
-          LEFT JOIN Mesero me ON e.id = me.id_empresa
-          LEFT JOIN horarios_empresa h ON e.id = h.id_empresa
-          LEFT JOIN dias_no_laborales_empresa d ON e.id = d.id_empresa
-          WHERE e.id = :id";
+      $this->pdo->beginTransaction();
 
-      $stmt = $this->pdo->prepare($sql);
-      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+      $this->pdo->prepare("DELETE FROM moderador WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM mesero WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM articulo WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM rubro WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM horarios_empresa WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM espectaculo_empresa WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM espectaculo_excepcion WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM dias_no_laborales_empresa WHERE id_empresa = ?")->execute([$id]);
 
-      return $stmt->execute();
+      $this->pdo->prepare("DELETE FROM empresa WHERE id = ?")->execute([$id]);
+
+      $this->pdo->commit();
+
+      return true;
     } catch (PDOException $e) {
       error_log("Error al eliminar empresa y relacionados en una consulta ($id): " . $e->getMessage());
       throw $e;

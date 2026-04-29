@@ -94,8 +94,6 @@ class PantallaCliente {
 
     const textoAdicional = "- Carta";
     this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
-    const textoAdicional = "- Carta";
-    this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
 
     await this.mostrarLogoEmpresa();
     await this.empresa.asignarIconoYPagina(textoAdicional);

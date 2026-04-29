@@ -887,12 +887,6 @@ class PantallaModerador {
         alert(`Error guardando espectaculos: ${error.message}`);
       }
     });
-
-    botonMeseros.addEventListener("click", async (event) => {
-      event.preventDefault();
-      this.abrirModalMeseros(modal);
-      document.body.removeChild(modal);
-    });
   }
 
   async renderizarMeseros(modal) {
