@@ -4,17 +4,40 @@ class Carrito {
   }
 
   agregarArticulo(articulo, precio_activo) {
-    const copia = {
-      id: articulo.id,
-      nombre: articulo.nombre,
-      precio: articulo.precio,
+    let copia = {
+      id: null,
+      nombre: null,
       cantidad: 1,
+      precio: null,
+      precios: {},
     };
-    if (articulo.nombre === undefined) {
-      copia.nombre = articulo.dataset.nombre;
-      copia.id = articulo.dataset.articuloId;
-      copia.precio = articulo.dataset[`precio${precio_activo}`];
+
+    // 🔹 Caso 1: viene como objeto (ArticuloVista)
+    if (articulo.nombre !== undefined) {
+      copia.id = articulo.id;
+      copia.nombre = articulo.nombre;
+
+      copia.precios = {
+        1: articulo.precio1,
+        2: articulo.precio2,
+        3: articulo.precio3,
+      };
     }
+
+    // 🔹 Caso 2: viene como DOM element
+    else {
+      copia.id = articulo.dataset.articuloId;
+      copia.nombre = articulo.dataset.nombre;
+
+      copia.precios = {
+        1: articulo.dataset.precio1,
+        2: articulo.dataset.precio2,
+        3: articulo.dataset.precio3,
+      };
+    }
+
+    copia.precio = copia.precios[precio_activo];
+
     this.articulos.push(copia);
   }
 
@@ -43,6 +66,15 @@ class Carrito {
   }
 
   mostrarArticulos() {
+    return this.articulos;
+  }
+
+  actualizarPrecios(precio_activo) {
+    this.articulos.forEach((articulo) => {
+      const precioSinPuntos = this.eliminarPuntoPrecio(articulo.precio);
+      articulo.precio = articulo.precios[`${precio_activo}`];
+    });
+    this.obtenerTotal();
     return this.articulos;
   }
 

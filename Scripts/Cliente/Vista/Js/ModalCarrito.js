@@ -41,6 +41,14 @@ class ModalCarrito {
         }
       }
     });
+
+    window.addEventListener("popstate", () => {
+      if (this.wrapper) {
+        this.wrapper.remove(); // Cierra el modal eliminándolo del DOM
+        this.wrapper = null; // Limpia la referencia
+        this.listaCentral.classList.remove("hidden"); // Muestra la lista central nuevamente
+      }
+    });
   }
 
   abrirModalCarrito() {
@@ -432,13 +440,10 @@ class ModalCarrito {
       if (typeof articulo.cantidad === "undefined") articulo.cantidad = 1;
       if (!articulo.observaciones) articulo.observaciones = ["", "", ""];
 
-      // 🔥 precio base (numérico limpio)
       const precioBase = this.carrito.eliminarPuntoPrecio(articulo.precio);
 
-      // 🔥 cálculos
       const subtotal = precioBase * articulo.cantidad;
 
-      // 🔥 formateo SOLO para mostrar
       const precioFormateado = this.carrito.insertarPuntoPrecio(precioBase);
       const subtotalFormateado = this.carrito.insertarPuntoPrecio(subtotal);
 
