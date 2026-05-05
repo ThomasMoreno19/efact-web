@@ -27,14 +27,6 @@
   padding-bottom: 100px;
 }
 
-h2 {
-  text-align: center;
-  font-size: 22px;
-  margin-bottom: 20px;
-  margin: auto auto;
-  width: 100%;
-}
-
 .modulos {
   margin-bottom: 20px;
   padding: 0px 0px 20px 0px;
@@ -162,6 +154,51 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   text-align: center;
   margin-bottom: 5px;
   font-size: 20px;
+}
+
+.boton-descargar {
+  background-color: rgba(232, 19, 19, 0.5);
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  width: fit-content;
+  margin-bottom: 10px;
+}
+
+#generar-qr-titulo {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 20px;
+  margin: auto auto;
+  width: 100%;
+}
+
+#qr-resultado {
+  display: flex;
+  margin-top: 20px;
+  text-align: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.qr-options {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+
+.qr-button {
+  background-color: #e89e13;
+  margin: 15px auto;
+  width: 220px;
+  border: none;
+  border-radius: 8px;
+  padding: 15px 15px;
+  font-weight: bold;
 }
 
 .horario-linea {
@@ -367,5 +404,8 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   }
   #tipo-excepcion {
     width: 50%;
+  }
+  .qr-options {
+    flex-direction: column;
   }
 }

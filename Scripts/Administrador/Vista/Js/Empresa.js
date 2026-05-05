@@ -778,11 +778,20 @@ class EmpresaVista {
         <button type = "button" class = "submit-button" id = "meseros" >Meseros</button>
         <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
         <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
+        <button type = "button" class = "submit-button" id = "qr-configuracion" >QR</button>
       </form>
     `;
 
     modalConfigurarEmpresaContenido.innerHTML = htmlContent;
     modalConfigurarEmpresa.appendChild(modalConfigurarEmpresaContenido);
+
+    modalConfigurarEmpresa
+      .querySelector("#qr-configuracion")
+      .addEventListener("click", () => {
+        const modalQR = this.modalQRConfiguracion();
+        document.querySelector(".lista-central").classList.add("hidden");
+        document.body.appendChild(modalQR); // Ensure modal is appended to the DOM
+      });
 
     return modalConfigurarEmpresa;
   }
@@ -839,14 +848,14 @@ class EmpresaVista {
         <div class="lista-botones form-group precios">
           <label for="precio-delivery">Precio de delivery</label>
           <select id="precio-delivery" name="precio-delivery">
-            <option value="1" ${this.precio_delivery === 1 ? "selected" : ""}>Sin seleccionar</option>
+            <option value="1" ${this.precio_delivery === 1 ? "selected" : ""}>Sin determinar</option>
             <option value="2" ${this.precio_delivery === 2 ? "selected" : ""}>Precio 2</option>
             <option value="3" ${this.precio_delivery === 3 ? "selected" : ""}>Precio 3</option>
           </select>
 
           <label for="precio-espectaculo">Precio de espectáculo</label>
           <select id="precio-espectaculo" name="precio-espectaculo">
-            <option value="1" ${this.precio_espectaculo === 1 ? "selected" : ""}>Sin seleccionar</option>
+            <option value="1" ${this.precio_espectaculo === 1 ? "selected" : ""}>Sin determinar</option>
             <option value="2" ${this.precio_espectaculo === 2 ? "selected" : ""}>Precio 2</option>
             <option value="3" ${this.precio_espectaculo === 3 ? "selected" : ""}>Precio 3</option>
           </select>
@@ -891,5 +900,157 @@ class EmpresaVista {
     modalNuevaEmpresa.appendChild(modalNuevaEmpresaContenido);
 
     return modalNuevaEmpresa;
+  }
+
+  modalQRConfiguracion() {
+    const modalQR = document.createElement("div");
+    modalQR.classList.add("modal-backdrop");
+    modalQR.id = "modal-qr-configuracion";
+
+    const modalQRContenido = document.createElement("div");
+    modalQRContenido.classList.add("modal-content");
+
+    const htmlContent = `
+    <div class="header-configurar">
+      <h2 id="generar-qr-titulo">Generar QR</h2>
+      <button type="button" id="cerrar-qr-modal" class="boton-cerrar">&times;</button>
+    </div>
+
+    <div class="engrupador">
+
+      <div class="qr-options">
+        <button id="qr-pagina-cafeteria" class="qr-button">Página de la cafetería (Configuraciones)</button>
+
+        <button id="qr-carta-local" class="qr-button">Carta como cliente en el local</button>
+
+        <button id="qr-carta-fuera" class="qr-button">Carta como cliente fuera del local (Delivery)</button>
+        <button id="qr-carta-mesero" class="qr-button">Carta como mesero (Registración de pedidos)</button>
+      </div>
+
+      <div id="qr-resultado" style="margin-top:20px; text-align:center;"></div>
+    </div>
+  `;
+
+    modalQRContenido.innerHTML = htmlContent;
+    modalQR.appendChild(modalQRContenido);
+
+    const baseURL = window.location.origin;
+
+    // Eventos
+    modalQR
+      .querySelector("#qr-pagina-cafeteria")
+      .addEventListener("click", () => {
+        this.generarQR(`${baseURL}/moderador/${this.id}`, "pagina-cafeteria");
+      });
+
+    modalQR.querySelector("#qr-carta-local").addEventListener("click", () => {
+      const subModal = this.modalSeleccionMesa();
+      document.body.appendChild(subModal);
+    });
+
+    modalQR.querySelector("#qr-carta-fuera").addEventListener("click", () => {
+      this.generarQR(`${baseURL}/carta/${this.id}`, "carta-delivery");
+    });
+
+    modalQR.querySelector("#qr-carta-mesero").addEventListener("click", () => {
+      this.generarQR(`${baseURL}/carta/${this.id}/mesero`, "carta-mesero");
+    });
+
+    modalQR.querySelector("#cerrar-qr-modal").addEventListener("click", () => {
+      modalQR.remove();
+      document.querySelector(".lista-central").classList.remove("hidden");
+    });
+
+    return modalQR;
+  }
+
+  generarQR(url, palabraParaDescargar = "") {
+    const contenedor = document.querySelector("#qr-resultado");
+    contenedor.innerHTML = "";
+
+    QRCode.toCanvas(url, { width: 200 }, (err, canvas) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+
+      contenedor.appendChild(canvas);
+
+      // Botón descargar
+      const btnDescargar = document.createElement("button");
+      btnDescargar.textContent = "Descargar QR";
+      btnDescargar.classList.add("boton-descargar");
+      btnDescargar.style.marginTop = "10px";
+
+      btnDescargar.addEventListener("click", () => {
+        const enlace = document.createElement("a");
+        enlace.href = canvas.toDataURL("image/png");
+        enlace.download = `qr-${this.nombre}-${palabraParaDescargar}.png`;
+        enlace.click();
+      });
+
+      contenedor.appendChild(btnDescargar);
+
+      // Link clickeable
+      const link = document.createElement("a");
+      link.href = url;
+      link.textContent = url;
+      link.target = "_blank";
+      link.style.color = "#e89e13";
+      link.style.display = "block";
+      link.style.marginTop = "10px";
+
+      contenedor.appendChild(link);
+    });
+  }
+
+  modalSeleccionMesa() {
+    const modal = document.createElement("div");
+    modal.classList.add("modal-backdrop");
+
+    const contenido = document.createElement("div");
+    contenido.classList.add("modal-content");
+    contenido.style.maxWidth = "300px";
+
+    contenido.innerHTML = `
+    <div class="header-configurar">
+      <h3>Ingresar número de mesa (opcional)</h3>
+      <button class="boton-cerrar" id="cerrar-submodal">&times;</button>
+    </div>
+
+    <div style="padding:15px; display:flex; flex-direction:column; gap:10px;">
+      <input type="number" id="input-mesa" min="1" max="500" placeholder="Ej: 12">
+
+      <button id="confirmar-mesa" class="submit-button">Generar QR</button>
+    </div>
+  `;
+
+    modal.appendChild(contenido);
+
+    // Cerrar
+    contenido
+      .querySelector("#cerrar-submodal")
+      .addEventListener("click", () => modal.remove());
+
+    const baseURL = window.location.origin;
+
+    // Confirmar
+    contenido.querySelector("#confirmar-mesa").addEventListener("click", () => {
+      const valor = contenido.querySelector("#input-mesa").value;
+
+      let url;
+
+      if (valor && valor >= 1 && valor <= 500) {
+        url = `${baseURL}/carta/${this.id}/local/${valor}`;
+      } else {
+        // slug opcional → sin mesa
+        url = `${baseURL}/carta/${this.id}/local`;
+      }
+
+      this.generarQR(url, "carta-local" + valor);
+      modal.remove();
+    });
+
+    return modal;
   }
 }

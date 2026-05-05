@@ -1,63 +1,67 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="/Archivos/Logos/Iteracion.png">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/PantallaModerador.css?v=<?php echo APP_VERSION; ?>">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/ListaArticulos.css?v=<?php echo APP_VERSION; ?>">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesAlta.css?v=<?php echo APP_VERSION; ?>">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesMostrarLista.css?v=<?php echo APP_VERSION; ?>">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonCargar.css?v=<?php echo APP_VERSION; ?>">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BarraBusqueda.css?v=<?php echo APP_VERSION; ?>">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/Loader.css?v=<?php echo APP_VERSION; ?>">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/pantallaHorario.css?v=<?php echo APP_VERSION; ?>">
-    <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/modalNuevaEmpresa.css?v=<?php echo APP_VERSION; ?>">
-    </head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/Archivos/Logos/Iteracion.png">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/PantallaModerador.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/ListaArticulos.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesAlta.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesMostrarLista.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonCargar.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BarraBusqueda.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/Loader.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/pantallaHorario.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/modalNuevaEmpresa.css?v=<?php echo APP_VERSION; ?>">
+</head>
+
 <body>
-    <header id="titulo-pagina">
-        <h1 id="titulo-pagina"></h1>
-    </header>
-    
-    <div class="boton-carga csv">
-        <button class="boton-cargar" type="button" id="boton-cargar-articulos">
-            <img src="../../../../Archivos/Iconos/excel.svg" alt="Cargar" width="28" height="28">
-            Cargar Artículos
-          </button>
-        <button class="boton-cargar" type="button" id="modificar-cafeteria">
-          <img src="../../../../Archivos/Iconos/SVG-Settings.svg" alt="Configurar" width="35" height="35">
-        </button>
+  <header id="titulo-pagina">
+    <h1 id="titulo-pagina"></h1>
+  </header>
+
+  <div class="boton-carga csv">
+    <button class="boton-cargar" type="button" id="boton-cargar-articulos">
+      <img src="../../../../Archivos/Iconos/excel.svg" alt="Cargar" width="28" height="28">
+      Cargar Artículos
+    </button>
+    <button class="boton-cargar" type="button" id="modificar-cafeteria">
+      <img src="../../../../Archivos/Iconos/SVG-Settings.svg" alt="Configurar" width="35" height="35">
+    </button>
+  </div>
+
+  <div class="lista-central" id="lista-central">
+    <div class="botones-lista">
+      <button class="boton-lista activo" type="button" id="boton-mostrar-articulos">Artículos</button>
+      <button class="boton-lista" type="button" id="boton-mostrar-rubros">Rubros</button>
     </div>
-    
-    <div class="lista-central" id="lista-central">
-        <div class="botones-lista">
-            <button class="boton-lista activo" type="button" id="boton-mostrar-articulos">Artículos</button>
-            <button class="boton-lista" type="button" id="boton-mostrar-rubros">Rubros</button>
-        </div>
-        <input type="text" id="barra-busqueda" class="barra" placeholder="Buscar artículos...">
-        
-        <div class="loader" id="loader">
-          <div class="cup">
-            <div class="cup-handle"></div>
-            <div class="smoke one"></div>
-            <div class="smoke two"></div>
-            <div class="smoke three"></div>
-          </div>
-          <div class="load">..........................</div>
-        </div>
-        <div class="listas">
-            <div class="lista" id="lista-articulos"></div>
-            <div class="lista" id="lista-rubros"></div>
-        </div>
+    <input type="text" id="barra-busqueda" class="barra" placeholder="Buscar artículos...">
+
+    <div class="loader" id="loader">
+      <div class="cup">
+        <div class="cup-handle"></div>
+        <div class="smoke one"></div>
+        <div class="smoke two"></div>
+        <div class="smoke three"></div>
+      </div>
+      <div class="load">..........................</div>
     </div>
-    
-    <script src="/Scripts/Administrador/Vista/Js/Articulo.js?v=<?php echo APP_VERSION; ?>"></script>
-    <script src="/Scripts/Administrador/Vista/Js/Empresa.js?v=<?php echo APP_VERSION; ?>"></script>
-    <script src="/Scripts/Administrador/Vista/Js/Rubro.js?v=<?php echo APP_VERSION; ?>"></script>
-    <script src="/Scripts/Administrador/Vista/Js/Moderador.js?v=<?php echo APP_VERSION; ?>"></script>
-    <script src="/Scripts/Administrador/Vista/Js/Moderador/PantallaModerador.js?v=<?php echo APP_VERSION; ?>"></script>
-    <script src="/Scripts/Administrador/Vista/Js/Moderador/GestorModerador.js?v=<?php echo APP_VERSION; ?>"></script>
-    <script src="/Scripts/Administrador/Vista/Js/dias_semana.const.js?v=<?php echo APP_VERSION; ?>"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <div class="listas">
+      <div class="lista" id="lista-articulos"></div>
+      <div class="lista" id="lista-rubros"></div>
+    </div>
+  </div>
+
+  <script src="/Scripts/Administrador/Vista/Js/Articulo.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Empresa.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Rubro.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Moderador.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Moderador/PantallaModerador.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Moderador/GestorModerador.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/dias_semana.const.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 </body>
+
 </html>

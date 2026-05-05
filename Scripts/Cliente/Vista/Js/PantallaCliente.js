@@ -45,6 +45,7 @@ class PantallaCliente {
 
   async init() {
     const data = await this.gestor.conocerEmpresa(this.conocerSlug(2));
+    console.log("Datos de la empresa recibidos:", data);
     this.empresa = new EmpresaVista(data);
     if (this.empresa.tieneCarrito) {
       window.gestorDeArticulosCallback = (articulo) => {
