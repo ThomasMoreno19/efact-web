@@ -158,6 +158,7 @@ class GestorModerador {
                   nombre_rubro: columnas[5].trim(),
                   publica_art: columnas[7].trim(),
                   publica_rub: columnas[8].trim(),
+                  no_procesado: columnas[9].trim(),
                 });
               }
             });
@@ -185,6 +186,7 @@ class GestorModerador {
                 nombre_rubro: columnas[5].trim(),
                 publica_art: columnas[7],
                 publica_rub: columnas[8],
+                no_procesado: columnas[9],
               });
             });
           }

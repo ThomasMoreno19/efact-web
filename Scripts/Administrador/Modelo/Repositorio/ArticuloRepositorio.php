@@ -85,7 +85,8 @@ class ArticuloRepositorio
                     precio1,
                     precio2,
                     precio3,
-                    codigo_carta
+                    codigo_carta,
+                    no_procesado
                 FROM Articulo
                 WHERE id_empresa = :id_empresa
                 ORDER BY id_rubro ASC, nombre ASC
@@ -114,7 +115,8 @@ class ArticuloRepositorio
                     precio1,
                     precio2,
                     precio3,
-                    codigo_carta
+                    codigo_carta,
+                    no_procesado
                 FROM Articulo
                 WHERE id_empresa = :id_empresa AND solo_mesero = 0
                 ORDER BY id_rubro ASC, nombre ASC
@@ -186,7 +188,7 @@ class ArticuloRepositorio
     $values = [];
     $params = [];
     foreach ($articulos as $i => $a) {
-      $values[] = "(:id$i, :id_rubro$i, :id_empresa$i,:nombre$i, :descripcion$i, :precio1$i, :precio2$i, :precio3$i, :codigo_carta$i, :solo_mesero$i, 1, 0, :logo_url$i)";
+      $values[] = "(:id$i, :id_rubro$i, :id_empresa$i,:nombre$i, :descripcion$i, :precio1$i, :precio2$i, :precio3$i, :codigo_carta$i, :solo_mesero$i, :no_procesado$i, 1, 0, :logo_url$i)";
       $params[":id$i"] = $a['id'];
       $params[":id_rubro$i"] = $a['id_rubro'];
       $params[":id_empresa$i"] = $a['id_empresa'];
@@ -197,10 +199,11 @@ class ArticuloRepositorio
       $params[":precio3$i"] = (string)$a['precio3'];
       $params[":codigo_carta$i"] = $a['codigo_carta'] ?? '';
       $params[":solo_mesero$i"] = $a['solo_mesero'] ?? 0;
+      $params[":no_procesado$i"] = $a['no_procesado'] ?? 0;
       $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
     }
 
-    $sql = "INSERT INTO Articulo (id, id_rubro, id_empresa, nombre, descripcion, precio1, precio2, precio3, codigo_carta, solo_mesero, aparece_en_csv, creado_en_pagina, logo_url)
+    $sql = "INSERT INTO Articulo (id, id_rubro, id_empresa, nombre, descripcion, precio1, precio2, precio3, codigo_carta, solo_mesero, no_procesado, aparece_en_csv, creado_en_pagina, logo_url)
                 VALUES " . implode(', ', $values) . "
                 ON DUPLICATE KEY UPDATE
                     id_rubro = VALUES(id_rubro),
@@ -212,6 +215,7 @@ class ArticuloRepositorio
                     precio3 = VALUES(precio3),
                     codigo_carta = VALUES(codigo_carta),
                     solo_mesero = VALUES(solo_mesero),
+                    no_procesado = VALUES(no_procesado),
                     aparece_en_csv = 1;";
 
     try {

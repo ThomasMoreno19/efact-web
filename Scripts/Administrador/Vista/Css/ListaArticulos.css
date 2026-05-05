@@ -1,108 +1,125 @@
 /* Scripts/Administrador/Vista/Css/Listas.css */
 
 .lista {
-    display: grid;
-    gap: 10px;
-    padding: 10px 0px;
+  display: grid;
+  gap: 10px;
+  padding: 10px 0px;
 }
 
 .rubro {
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
-    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    cursor: pointer;
-    overflow: hidden;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    height: 120px;
-    position: relative;
-    color: white;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 3px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  cursor: pointer;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 120px;
+  position: relative;
+  color: white;
 }
 
-.texto-vacio{
-    color: white;
-    justify-self: center;
+.texto-vacio {
+  color: white;
+  justify-self: center;
 }
 
 .rubro:hover {
-    transform: translateY(-2px); /* Efecto hover de levantamiento */
+  transform: translateY(-2px); /* Efecto hover de levantamiento */
 }
 
-.rubro p { /* Estilos para el nombre de la empresa */
-    /* Basado en tu '.empresa-info h3' original */
-    margin: 0.3vh;
-    font-size: clamp(0.1em, 3vw, 1.5em);
-    color: #fff;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+.rubro p {
+  /* Estilos para el nombre de la empresa */
+  /* Basado en tu '.empresa-info h3' original */
+  margin: 0.3vh;
+  font-size: clamp(0.1em, 3vw, 1.5em);
+  color: #fff;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .articulo {
-    background-color: transparent; /* Fondo semitransparente */
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column; /* Apila logo y nombre */
-    align-items: center;
-    transition: transform 0.2s ease-in-out;
-    text-align: center; /* Para centrar el texto del nombre de la empresa */
-    padding: 10px 5px;
-    cursor:pointer;
+  background-color: transparent; /* Fondo semitransparente */
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column; /* Apila logo y nombre */
+  align-items: center;
+  transition: transform 0.2s ease-in-out;
+  text-align: center; /* Para centrar el texto del nombre de la empresa */
+  padding: 10px 5px;
+  cursor: pointer;
 }
 
 .articulo:hover {
-    transform: translateY(-4px); /* Efecto hover de levantamiento */
+  transform: translateY(-4px); /* Efecto hover de levantamiento */
 }
 
-.articulo p { /* Estilos para el nombre de la empresa */
-    /* Basado en tu '.empresa-info h3' original */
-    margin: 0.3vh;
-    font-size: clamp(0.1em, 3vw, 1.5em);
-    color: #fff;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
+.articulo p {
+  /* Estilos para el nombre de la empresa */
+  /* Basado en tu '.empresa-info h3' original */
+  margin: 0.3vh;
+  font-size: clamp(0.1em, 3vw, 1.5em);
+  color: #fff;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .articulo-info {
-    display: flex;
-    justify-content: space-between; /* Nombre a la izquierda, precio a la derecha */
-    width: 100%;
-    padding: 0 10px;
+  display: flex;
+  justify-content: space-between; /* Nombre a la izquierda, precio a la derecha */
+  width: 100%;
+  padding: 0 10px;
 }
 
 #id-articulo {
-    color: #E89E13;
-    font-weight: 600;
+  color: #e89e13;
+  font-weight: 600;
 }
 
-p.descripcion{
-    color: #9f9f9f;
-    font-size: clamp(0.1em, 2.7vw, 1em);
-    align-self: self-start;
+p.descripcion {
+  color: #9f9f9f;
+  font-size: clamp(0.1em, 2.7vw, 1em);
+  align-self: self-start;
+}
+
+.no-procesado {
+  position: relative;
+  opacity: 0.7; /* opcional, para dar efecto visual */
+}
+
+.no-procesado::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 5%;
+  width: 90%;
+  height: 3px;
+  background-color: red;
+  transform: rotate(-10deg); /* inclinación opcional */
+  pointer-events: none;
 }
 
 @media screen and (max-width: 600px) {
-    .rubro img{
-        height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
-    }
+  .rubro img {
+    height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
+  }
 }
-
-
 
 #lista-rubros {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
-.titulo-rubro{
-    color: #e89e13;
-    justify-content: center;
-    align-items: center;
-    display: flex;
+.titulo-rubro {
+  color: #e89e13;
+  justify-content: center;
+  align-items: center;
+  display: flex;
 }
 
 .hidden {
-    display: none;
+  display: none;
 }

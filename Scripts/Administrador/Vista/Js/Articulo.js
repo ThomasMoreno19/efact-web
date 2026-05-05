@@ -9,6 +9,7 @@ class ArticuloVista {
       precio2,
       precio3,
       codigo_carta,
+      no_procesado,
       seleccionado = false,
     } = articulo;
     this.id = id;
@@ -19,6 +20,7 @@ class ArticuloVista {
     this.precio2 = precio2;
     this.precio3 = precio3;
     this.codigo_carta = codigo_carta;
+    this.no_procesado = no_procesado;
     this.seleccionado = seleccionado;
   }
 
@@ -55,29 +57,34 @@ class ArticuloVista {
 
     divArticulo.appendChild(infoContainer);
 
-    if (this.descripcion) {
-      const pDescripcion = document.createElement("p");
-      pDescripcion.textContent = this.descripcion;
-      pDescripcion.classList.add("descripcion");
+    if (!this.no_procesado) {
+      if (this.descripcion) {
+        const pDescripcion = document.createElement("p");
+        pDescripcion.textContent = this.descripcion;
+        pDescripcion.classList.add("descripcion");
 
-      divArticulo.appendChild(pDescripcion);
-    }
-
-    divArticulo.addEventListener("click", () => {
-      const event = new CustomEvent("articuloSeleccionado", { detail: this });
-      document.dispatchEvent(event);
-
-      divArticulo.classList.toggle("seleccionado");
-
-      // Reinicia animación si ya estaba activa
-      divArticulo.classList.remove("pulse");
-      void divArticulo.offsetWidth;
-      divArticulo.classList.add("pulse");
-
-      if (typeof window.gestorDeArticulosCallback === "function") {
-        window.gestorDeArticulosCallback(this);
+        divArticulo.appendChild(pDescripcion);
       }
-    });
+
+      divArticulo.addEventListener("click", () => {
+        const event = new CustomEvent("articuloSeleccionado", { detail: this });
+        document.dispatchEvent(event);
+
+        divArticulo.classList.toggle("seleccionado");
+
+        // Reinicia animación si ya estaba activa
+        divArticulo.classList.remove("pulse");
+        void divArticulo.offsetWidth;
+        divArticulo.classList.add("pulse");
+
+        if (typeof window.gestorDeArticulosCallback === "function") {
+          window.gestorDeArticulosCallback(this);
+        }
+      });
+    } else {
+      divArticulo.classList.add("no-procesado");
+      console.log(this.nombre + " no procesado: " + this.no_procesado);
+    }
 
     return divArticulo;
   }

@@ -211,7 +211,8 @@ class GestorArticulo
         'precio2' => $articulo['precio2'],
         'precio3' => $articulo['precio3'],
         'codigo_carta' => $articulo['codigo_carta_articulo'] ?? '',
-        'solo_mesero' => $articulo['publica_art'] ?? 0
+        'solo_mesero' => $articulo['publica_art'] ?? 0,
+        'no_procesado' => $articulo['no_procesado'] ?? 0,
       ];
     }
 
