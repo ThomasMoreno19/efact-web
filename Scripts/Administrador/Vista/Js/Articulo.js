@@ -33,6 +33,7 @@ class ArticuloVista {
     divArticulo.dataset.precio1 = this.precio1;
     divArticulo.dataset.precio2 = this.precio2;
     divArticulo.dataset.precio3 = this.precio3;
+    divArticulo.dataset.no_procesado = this.no_procesado;
 
     const infoContainer = document.createElement("div");
     infoContainer.classList.add("articulo-info");

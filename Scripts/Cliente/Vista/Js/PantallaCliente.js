@@ -329,31 +329,34 @@ class PantallaCliente {
       if (!nombre.includes(textoBusqueda)) return;
 
       const clon = articulo.cloneNode(true);
-      clon.addEventListener("click", () => {
-        this.clonesSeleccionados.push(clon);
-        const id = Number(clon.dataset.articuloId);
-        if (!this.listaArticulosSeleccionados.includes(id)) {
-          clon.classList.add("seleccionado");
-          this.listaArticulosSeleccionados.push(id);
-          this.carrito.agregarArticulo(clon, this.precioActual);
-          this.seleccionarArticulo(id);
-        } else {
-          this.clonesSeleccionados = this.clonesSeleccionados.filter(
-            (c) => c.dataset.articuloId != id,
+      console.log(clon.dataset);
+      if (clon.dataset.no_procesado === "0") {
+        clon.addEventListener("click", () => {
+          this.clonesSeleccionados.push(clon);
+          const id = Number(clon.dataset.articuloId);
+          if (!this.listaArticulosSeleccionados.includes(id)) {
+            clon.classList.add("seleccionado");
+            this.listaArticulosSeleccionados.push(id);
+            this.carrito.agregarArticulo(clon, this.precioActual);
+            this.seleccionarArticulo(id);
+          } else {
+            this.clonesSeleccionados = this.clonesSeleccionados.filter(
+              (c) => c.dataset.articuloId != id,
+            );
+            clon.classList.remove("seleccionado");
+            this.carrito.eliminarArticulo(id);
+            this.listaArticulosSeleccionados =
+              this.listaArticulosSeleccionados.filter((x) => x !== id);
+            this.sacarArticulo(id);
+          }
+          this.cantidadArticulosCarrito.textContent =
+            this.listaArticulosSeleccionados.length;
+          this.botonCarrito.classList.toggle(
+            "hidden",
+            this.listaArticulosSeleccionados.length === 0,
           );
-          clon.classList.remove("seleccionado");
-          this.carrito.eliminarArticulo(id);
-          this.listaArticulosSeleccionados =
-            this.listaArticulosSeleccionados.filter((x) => x !== id);
-          this.sacarArticulo(id);
-        }
-        this.cantidadArticulosCarrito.textContent =
-          this.listaArticulosSeleccionados.length;
-        this.botonCarrito.classList.toggle(
-          "hidden",
-          this.listaArticulosSeleccionados.length === 0,
-        );
-      });
+        });
+      }
 
       listaPlana.appendChild(clon);
     });
@@ -435,33 +438,34 @@ class PantallaCliente {
 
     articulosFiltrados.forEach((a) => {
       const clon = a.cloneNode(true);
-      clon.addEventListener("click", () => {
-        this.clonesSeleccionados.push(clon);
-        const id = Number(clon.dataset.articuloId);
-        if (!this.listaArticulosSeleccionados.includes(id)) {
-          clon.classList.add("seleccionado");
-          this.listaArticulosSeleccionados.push(
-            Number(clon.dataset.articuloId),
+      if (clon.no_procesado)
+        clon.addEventListener("click", () => {
+          this.clonesSeleccionados.push(clon);
+          const id = Number(clon.dataset.articuloId);
+          if (!this.listaArticulosSeleccionados.includes(id)) {
+            clon.classList.add("seleccionado");
+            this.listaArticulosSeleccionados.push(
+              Number(clon.dataset.articuloId),
+            );
+            this.carrito.agregarArticulo(clon, this.precioActual);
+            this.seleccionarArticulo(id);
+          } else {
+            this.clonesSeleccionados = this.clonesSeleccionados.filter(
+              (c) => c.dataset.articuloId != id,
+            );
+            clon.classList.remove("seleccionado");
+            this.carrito.eliminarArticulo(id);
+            this.listaArticulosSeleccionados =
+              this.listaArticulosSeleccionados.filter((x) => x !== id);
+            this.sacarArticulo(id);
+          }
+          this.cantidadArticulosCarrito.textContent =
+            this.listaArticulosSeleccionados.length;
+          this.botonCarrito.classList.toggle(
+            "hidden",
+            this.listaArticulosSeleccionados.length === 0,
           );
-          this.carrito.agregarArticulo(clon, this.precioActual);
-          this.seleccionarArticulo(id);
-        } else {
-          this.clonesSeleccionados = this.clonesSeleccionados.filter(
-            (c) => c.dataset.articuloId != id,
-          );
-          clon.classList.remove("seleccionado");
-          this.carrito.eliminarArticulo(id);
-          this.listaArticulosSeleccionados =
-            this.listaArticulosSeleccionados.filter((x) => x !== id);
-          this.sacarArticulo(id);
-        }
-        this.cantidadArticulosCarrito.textContent =
-          this.listaArticulosSeleccionados.length;
-        this.botonCarrito.classList.toggle(
-          "hidden",
-          this.listaArticulosSeleccionados.length === 0,
-        );
-      });
+        });
       listaPlana.appendChild(clon);
     });
 
