@@ -45,7 +45,6 @@ class PantallaCliente {
 
   async init() {
     const data = await this.gestor.conocerEmpresa(this.conocerSlug(2));
-    console.log("Datos de la empresa recibidos:", data);
     this.empresa = new EmpresaVista(data);
     if (this.empresa.tieneCarrito) {
       window.gestorDeArticulosCallback = (articulo) => {
@@ -329,7 +328,6 @@ class PantallaCliente {
       if (!nombre.includes(textoBusqueda)) return;
 
       const clon = articulo.cloneNode(true);
-      console.log(clon.dataset);
       if (clon.dataset.no_procesado === "0") {
         clon.addEventListener("click", () => {
           this.clonesSeleccionados.push(clon);
