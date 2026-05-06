@@ -84,7 +84,6 @@ class ArticuloVista {
       });
     } else {
       divArticulo.classList.add("no-procesado");
-      console.log(this.nombre + " no procesado: " + this.no_procesado);
     }
 
     return divArticulo;

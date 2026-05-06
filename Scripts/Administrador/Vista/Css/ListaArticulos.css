@@ -95,11 +95,9 @@ p.descripcion {
   content: "";
   position: absolute;
   top: 50%;
-  left: 5%;
-  width: 90%;
+  width: 98%;
   height: 3px;
-  background-color: red;
-  transform: rotate(-10deg); /* inclinación opcional */
+  background-color: rgba(255, 0, 0, 0.458);
   pointer-events: none;
 }
 

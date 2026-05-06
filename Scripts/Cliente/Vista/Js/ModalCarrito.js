@@ -69,12 +69,9 @@ class ModalCarrito {
     <div class="modal-carrito">
       <header id="header-modal-carrito">
         <button class="hidden boton-volver" id="boton-volver-carrito" type="button" >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
             </svg>
-            <div class="text">
-                Volver
-            </div>
         </button>
         <h2 id="titulo-modal-carrito">Carrito</h2>
         <button id="cerrar-modal-carrito" class="boton-cerrar">&times;</button>
@@ -88,9 +85,9 @@ class ModalCarrito {
         </div>
 
         <div id="zona-total">
-          <div id="total-carrito">
-              Total: $<span id="monto-total-carrito">0.00</span>
-          </div>
+            <div id="total-carrito">
+                Total: $<span id="monto-total-carrito">0.00</span>
+            </div>
           
           <p id="mensaje-fuera-horario" class="hidden mensaje-fuera-horario"></p>
           <button class = "boton hidden" id="boton-finalizar-compra">
@@ -122,10 +119,16 @@ class ModalCarrito {
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </button>
+          
+        <button id="borrar-carrito" class="btn-eliminar">
+          <img src="../../../../Archivos/Iconos/trash4.svg" alt="Eliminar" width="25" height="25"></img>
+        </button>
 
         </div>
+        
 
       </div>
+      
     </div>
     `;
 
@@ -137,6 +140,48 @@ class ModalCarrito {
       "",
       window.location.href,
     );
+
+    const botonEliminarCarrito = this.wrapper.querySelector("#borrar-carrito");
+    botonEliminarCarrito.addEventListener("click", () => {
+      this.confirmarEliminarCarrito();
+    });
+  }
+
+  confirmarEliminarCarrito() {
+    // Crear el HTML del modal
+    const overlay = document.createElement("div");
+    overlay.id = "modal-overlay";
+
+    overlay.innerHTML = `
+    <div class="modal-box">
+      <p>¿Desea eliminar todos los artículos del carrito?</p>
+      <div class="modal-actions">
+        <button id="modal-cancelar">Cancelar</button>
+        <button id="modal-confirmar">Eliminar</button>
+      </div>
+    </div>
+  `;
+
+    // Agregar al body
+    document.body.appendChild(overlay);
+
+    const btnConfirmar = overlay.querySelector("#modal-confirmar");
+    const btnCancelar = overlay.querySelector("#modal-cancelar");
+
+    const cerrarModal = () => {
+      overlay.remove();
+    };
+
+    btnConfirmar.addEventListener("click", () => {
+      this.carrito.mostrarArticulos().forEach((articulo) => {
+        this.onEliminarArticulo(articulo.id);
+      });
+      this.carrito.vaciarCarrito();
+      this.renderCarrito();
+      cerrarModal();
+    });
+
+    btnCancelar.addEventListener("click", cerrarModal);
   }
 
   diaIndexToNombre(diaIndex) {
@@ -398,6 +443,13 @@ class ModalCarrito {
   renderCarrito() {
     const cuerpo = document.getElementById("cuerpo-tabla-carrito");
     const totalSpan = document.querySelector("#monto-total-carrito");
+    const botonEliminarCarrito = this.wrapper.querySelector("#borrar-carrito");
+
+    if (!this.carrito.mostrarArticulos().length) {
+      botonEliminarCarrito.classList.add("hidden");
+    } else {
+      botonEliminarCarrito.classList.remove("hidden");
+    }
 
     if (!cuerpo || !totalSpan) return;
 
@@ -463,21 +515,21 @@ class ModalCarrito {
               data-id="${articulo.id}"
               data-index="0"
               maxlength="50"
-              placeholder="Observación del platillo">
+              placeholder="Observaciones del platillo">
             </textarea>
 
             <textarea class="observacion-textarea hidden"
               data-id="${articulo.id}"
               data-index="1"
               maxlength="50"
-              placeholder="Observación del platillo">
+              placeholder="Más observaciones">
             </textarea>
 
             <textarea class="observacion-textarea hidden"
               data-id="${articulo.id}"
               data-index="2"
               maxlength="50"
-              placeholder="Observación del platillo">
+              placeholder="Más observaciones">
             </textarea>
           </div>
         </div>
@@ -486,14 +538,7 @@ class ModalCarrito {
           <div class="subtotal-eliminar">
             <div class="celda col-subtotal">$${subtotalFormateado}</div>
             <button class="btn-eliminar" data-id="${articulo.id}">
-              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="#ffffff" version="1.1" id="Capa_1" width="19px" height="19px" viewBox="0 0 485 485" xml:space="preserve">
-                <g>
-                  <g>
-                    <rect x="67.224" width="350.535" height="71.81"></rect>
-                    <path d="M417.776,92.829H67.237V485h350.537V92.829H417.776z M165.402,431.447h-28.362V146.383h28.362V431.447z M256.689,431.447    h-28.363V146.383h28.363V431.447z M347.97,431.447h-28.361V146.383h28.361V431.447z"></path>
-                  </g>
-                </g>
-                </svg>
+              <img src="../../../../Archivos/Iconos/trash4.svg" alt="Eliminar Icon" height="20" width="20"/>
             </button>
           </div>
 
@@ -575,6 +620,8 @@ class ModalCarrito {
     this.botonEnviar.classList.remove("hidden");
     this.listaArticulos.classList.add("hidden");
     this.botonVolver.classList.remove("hidden");
+    document.querySelector("#borrar-carrito").classList.add("hidden");
+
     this.titulo.textContent = "Complete con sus datos personales";
 
     const viejo = document.getElementById("pedir-datos-wrapper");
@@ -614,7 +661,7 @@ class ModalCarrito {
             id="btnRetirar"
             data-value = "Retirar"
             class="toggle-btn btnes-forma-entrega">
-            <svg xmlns="http://www.w3.org/2000/svg" id="icono-retirar" width="20" heigth="20" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 icono">
+            <svg xmlns="http://www.w3.org/2000/svg" id="icono-retirar" width="23" height="23" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6 icono">
               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 .75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 0 0 3.75-.615A2.993 2.993 0 0 0 9.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 0 0 2.25 1.016c.896 0 1.7-.393 2.25-1.015a3.001 3.001 0 0 0 3.75.614m-16.5 0a3.004 3.004 0 0 1-.621-4.72l1.189-1.19A1.5 1.5 0 0 1 5.378 3h13.243a1.5 1.5 0 0 1 1.06.44l1.19 1.189a3 3 0 0 1-.621 4.72M6.75 18h3.75a.75.75 0 0 0 .75-.75V13.5a.75.75 0 0 0-.75-.75H6.75a.75.75 0 0 0-.75.75v3.75c0 .414.336.75.75.75Z" />
             </svg>
 
@@ -626,7 +673,7 @@ class ModalCarrito {
             data-value = "Delivery"
             class="toggle-btn btnes-forma-entrega">
 
-            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" width="20" height="20" x="0" y="0" viewBox="0 0 64 64" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><path d="M4 16h14.001a3 3 0 0 1 3 3v11.001a3 3 0 0 1-3 3h-14a3 3 0 0 1-3.001-3v-11a3 3 0 0 1 3-3z" class=""></path><circle cx="33.002" cy="7" r="5" class=""></circle><path d="M12.003 35.852a5.917 5.917 0 0 0 1.7 4.15H29.96v-4.155a.996.996 0 0 0-.996-.996H12.998a1 1 0 0 0-.995 1.001z" class=""></path><path d="M61.737 51.359a8.13 8.13 0 0 0-8.322-5.994 7.038 7.038 0 0 0 .24-1.791A5.925 5.925 0 0 0 51 38.75c-2.147-1.425-3.753-5.048-3.996-8.858h1.916a2.99 2.99 0 0 0 2.991-2.982v-1.986a2.99 2.99 0 0 0-2.991-2.982h-6.84c-5.782-1.665-7.522-3.583-8.561-4.732a7.382 7.382 0 0 1-.063-.07 3.706 3.706 0 0 0-2.018-3.813 3.64 3.64 0 0 0-5.122 2.497l-2.869 13.71a2.983 2.983 0 0 0 2.598 3.571l4.917.544a.994.994 0 0 1 .887 1.043l-.774 13.106a5.273 5.273 0 0 1-1.477-5.796H14.313c-1.612 2.671-4.193 7.679-3.149 10.936a4.04 4.04 0 0 0 2.609 2.622 3.726 3.726 0 0 0 1.39.15 6.406 6.406 0 0 0 12.78 0h17.14a1.262 1.262 0 0 0 .875-.423 6.997 6.997 0 0 0 .587 1.703.996.996 0 0 0 1.716.14c.117-.168.243-.33.376-.491a6.4 6.4 0 1 0 12.484-2.718.986.986 0 0 0 .875-1.075 7.763 7.763 0 0 0-.26-1.487zm-40.184 8.318a4.407 4.407 0 0 1-4.385-3.967h8.77a4.407 4.407 0 0 1-4.385 3.967zM40.94 48.754h-3.885l1.718-16.24a2.982 2.982 0 0 0-1.926-3.104l-4.9-1.829a.992.992 0 0 1-.622-1.149l.745-3.215a17.078 17.078 0 0 0 8.87 3.633zm14.586 11.218a4.413 4.413 0 0 1-4.961-4.86l.304-.38a11.083 11.083 0 0 1 7.676-1.51l.236.183a4.4 4.4 0 0 1-3.255 6.567z" class=""></path></g></svg>
+            <svg id="boton-delivery" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" width="23" height="23" x="0" y="0" viewBox="0 0 64 64" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><path d="M4 16h14.001a3 3 0 0 1 3 3v11.001a3 3 0 0 1-3 3h-14a3 3 0 0 1-3.001-3v-11a3 3 0 0 1 3-3z" class=""></path><circle cx="33.002" cy="7" r="5" class=""></circle><path d="M12.003 35.852a5.917 5.917 0 0 0 1.7 4.15H29.96v-4.155a.996.996 0 0 0-.996-.996H12.998a1 1 0 0 0-.995 1.001z" class=""></path><path d="M61.737 51.359a8.13 8.13 0 0 0-8.322-5.994 7.038 7.038 0 0 0 .24-1.791A5.925 5.925 0 0 0 51 38.75c-2.147-1.425-3.753-5.048-3.996-8.858h1.916a2.99 2.99 0 0 0 2.991-2.982v-1.986a2.99 2.99 0 0 0-2.991-2.982h-6.84c-5.782-1.665-7.522-3.583-8.561-4.732a7.382 7.382 0 0 1-.063-.07 3.706 3.706 0 0 0-2.018-3.813 3.64 3.64 0 0 0-5.122 2.497l-2.869 13.71a2.983 2.983 0 0 0 2.598 3.571l4.917.544a.994.994 0 0 1 .887 1.043l-.774 13.106a5.273 5.273 0 0 1-1.477-5.796H14.313c-1.612 2.671-4.193 7.679-3.149 10.936a4.04 4.04 0 0 0 2.609 2.622 3.726 3.726 0 0 0 1.39.15 6.406 6.406 0 0 0 12.78 0h17.14a1.262 1.262 0 0 0 .875-.423 6.997 6.997 0 0 0 .587 1.703.996.996 0 0 0 1.716.14c.117-.168.243-.33.376-.491a6.4 6.4 0 1 0 12.484-2.718.986.986 0 0 0 .875-1.075 7.763 7.763 0 0 0-.26-1.487zm-40.184 8.318a4.407 4.407 0 0 1-4.385-3.967h8.77a4.407 4.407 0 0 1-4.385 3.967zM40.94 48.754h-3.885l1.718-16.24a2.982 2.982 0 0 0-1.926-3.104l-4.9-1.829a.992.992 0 0 1-.622-1.149l.745-3.215a17.078 17.078 0 0 0 8.87 3.633zm14.586 11.218a4.413 4.413 0 0 1-4.961-4.86l.304-.38a11.083 11.083 0 0 1 7.676-1.51l.236.183a4.4 4.4 0 0 1-3.255 6.567z" class=""></path></g></svg>
             Delivery
           </button>
         </div>
@@ -658,7 +705,7 @@ class ModalCarrito {
               id="btnEfectivo"
               data-value = "Efectivo"
               class="toggle-btn btnes-metodos-pago ${!!this.empresa.efectivo ? "" : "hidden"}">
-              <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" width="19" height="19" x="0" y="0" viewBox="0 0 128 128" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><path d="M123.1 21.9H14.97a4.4 4.4 0 0 0-4.4 4.4v5.67H4.9a4.4 4.4 0 0 0-4.4 4.4v65.68a4.4 4.4 0 0 0 4.4 4.4h108.13a4.4 4.4 0 0 0 4.4-4.4v-5.67h5.67a4.4 4.4 0 0 0 4.4-4.4V26.3a4.4 4.4 0 0 0-4.4-4.4zm-9.67 80.15c0 .22-.18.4-.4.4H4.9c-.22 0-.4-.18-.4-.4V36.37c0-.22.18-.4.4-.4h108.13c.22 0 .4.18.4.4zm10.07-10.07c0 .22-.18.4-.4.4h-5.67V36.37a4.4 4.4 0 0 0-4.4-4.4H14.57V26.3c0-.22.18-.4.4-.4H123.1c.22 0 .4.18.4.4z" class=""></path><path d="M105.86 50.99c-4.11 0-7.45-3.34-7.45-7.45 0-1.1-.9-2-2-2h-74.9c-1.1 0-2 .9-2 2 0 4.11-3.34 7.45-7.45 7.45-1.1 0-2 .9-2 2v32.43c0 1.1.9 2 2 2 4.11 0 7.45 3.34 7.45 7.45 0 1.1.9 2 2 2h74.91c1.1 0 2-.9 2-2 0-4.11 3.34-7.45 7.45-7.45 1.1 0 2-.9 2-2V52.99c-.01-1.1-.9-2-2.01-2zm-2 32.61a11.47 11.47 0 0 0-9.27 9.27H23.34a11.47 11.47 0 0 0-9.27-9.27V54.82a11.47 11.47 0 0 0 9.27-9.27h71.25a11.47 11.47 0 0 0 9.27 9.27z" class=""></path><path d="M58.97 51.96c-9.51 0-17.25 7.74-17.25 17.25s7.74 17.25 17.25 17.25 17.25-7.74 17.25-17.25c-.01-9.51-7.74-17.25-17.25-17.25zm0 30.5c-7.3 0-13.25-5.94-13.25-13.25s5.94-13.25 13.25-13.25 13.25 5.94 13.25 13.25-5.95 13.25-13.25 13.25zM27.63 61.54c-4.23 0-7.67 3.44-7.67 7.67s3.44 7.67 7.67 7.67 7.67-3.44 7.67-7.67-3.44-7.67-7.67-7.67zm0 11.34c-2.02 0-3.67-1.65-3.67-3.67s1.65-3.67 3.67-3.67 3.67 1.65 3.67 3.67-1.65 3.67-3.67 3.67zM90.3 61.54c-4.23 0-7.67 3.44-7.67 7.67s3.44 7.67 7.67 7.67 7.67-3.44 7.67-7.67-3.44-7.67-7.67-7.67zm0 11.34c-2.02 0-3.67-1.65-3.67-3.67s1.65-3.67 3.67-3.67 3.67 1.65 3.67 3.67-1.65 3.67-3.67 3.67z"   class=""></path></g></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" width="23" height="23" x="0" y="0" viewBox="0 0 128 128" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><path d="M123.1 21.9H14.97a4.4 4.4 0 0 0-4.4 4.4v5.67H4.9a4.4 4.4 0 0 0-4.4 4.4v65.68a4.4 4.4 0 0 0 4.4 4.4h108.13a4.4 4.4 0 0 0 4.4-4.4v-5.67h5.67a4.4 4.4 0 0 0 4.4-4.4V26.3a4.4 4.4 0 0 0-4.4-4.4zm-9.67 80.15c0 .22-.18.4-.4.4H4.9c-.22 0-.4-.18-.4-.4V36.37c0-.22.18-.4.4-.4h108.13c.22 0 .4.18.4.4zm10.07-10.07c0 .22-.18.4-.4.4h-5.67V36.37a4.4 4.4 0 0 0-4.4-4.4H14.57V26.3c0-.22.18-.4.4-.4H123.1c.22 0 .4.18.4.4z" class=""></path><path d="M105.86 50.99c-4.11 0-7.45-3.34-7.45-7.45 0-1.1-.9-2-2-2h-74.9c-1.1 0-2 .9-2 2 0 4.11-3.34 7.45-7.45 7.45-1.1 0-2 .9-2 2v32.43c0 1.1.9 2 2 2 4.11 0 7.45 3.34 7.45 7.45 0 1.1.9 2 2 2h74.91c1.1 0 2-.9 2-2 0-4.11 3.34-7.45 7.45-7.45 1.1 0 2-.9 2-2V52.99c-.01-1.1-.9-2-2.01-2zm-2 32.61a11.47 11.47 0 0 0-9.27 9.27H23.34a11.47 11.47 0 0 0-9.27-9.27V54.82a11.47 11.47 0 0 0 9.27-9.27h71.25a11.47 11.47 0 0 0 9.27 9.27z" class=""></path><path d="M58.97 51.96c-9.51 0-17.25 7.74-17.25 17.25s7.74 17.25 17.25 17.25 17.25-7.74 17.25-17.25c-.01-9.51-7.74-17.25-17.25-17.25zm0 30.5c-7.3 0-13.25-5.94-13.25-13.25s5.94-13.25 13.25-13.25 13.25 5.94 13.25 13.25-5.95 13.25-13.25 13.25zM27.63 61.54c-4.23 0-7.67 3.44-7.67 7.67s3.44 7.67 7.67 7.67 7.67-3.44 7.67-7.67-3.44-7.67-7.67-7.67zm0 11.34c-2.02 0-3.67-1.65-3.67-3.67s1.65-3.67 3.67-3.67 3.67 1.65 3.67 3.67-1.65 3.67-3.67 3.67zM90.3 61.54c-4.23 0-7.67 3.44-7.67 7.67s3.44 7.67 7.67 7.67 7.67-3.44 7.67-7.67-3.44-7.67-7.67-7.67zm0 11.34c-2.02 0-3.67-1.65-3.67-3.67s1.65-3.67 3.67-3.67 3.67 1.65 3.67 3.67-1.65 3.67-3.67 3.67z"   class=""></path></g></svg>
             Efectivo
           </button>
 
@@ -666,7 +713,7 @@ class ModalCarrito {
               id="btnTarjeta"
               data-value = "Tarjeta"
               class="toggle-btn btnes-metodos-pago ${!!this.empresa.tarjeta ? "" : "hidden"}">
-              <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" width="19" height="19" x="0" y="0" viewBox="0 0 512.002 512.002" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><path d="M502.903 96.829c-6.634-7.842-15.924-12.632-26.161-13.487L116.185 53.236c-10.238-.855-20.192 2.328-28.035 8.961-7.811 6.607-12.594 15.85-13.476 26.037L67.42 156.29H38.455C17.251 156.29 0 173.541 0 194.745v225.702c0 21.204 17.251 38.455 38.455 38.455h361.813c21.205 0 38.456-17.251 38.456-38.455v-36.613l12.839 1.072c1.083.09 2.16.135 3.228.135 19.768 0 36.62-15.209 38.294-35.257l18.781-224.919c.854-10.237-2.329-20.193-8.963-28.036zM38.455 176.29h361.813c10.176 0 18.456 8.279 18.456 18.455v20.566H20v-20.566c0-10.176 8.279-18.455 18.455-18.455zM20 235.311h398.724V276.8H20zm380.268 203.591H38.455c-10.176 0-18.455-8.279-18.455-18.455V296.8h398.724v123.647c0 10.176-8.28 18.455-18.456 18.455zM491.935 123.2l-18.781 224.919c-.847 10.141-9.788 17.706-19.927 16.856l-14.503-1.211V194.745c0-21.204-17.251-38.455-38.456-38.455H87.534l7.039-66.04c.008-.076.015-.151.021-.228.847-10.141 9.783-17.705 19.927-16.855l360.558 30.106c4.913.41 9.372 2.709 12.555 6.473s4.711 8.541 4.301 13.454z"  ></path><path d="M376.873 326.532h-96.242c-5.523 0-10 4.477-10 10v62.789c0 5.523 4.477 10 10 10h96.242c5.523 0 10-4.477 10-10v-62.789c0-5.523-4.477-10-10-10zm-10 62.789h-76.242v-42.789h76.242z" class=""></path></g></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" width="23" height="23" x="0" y="0" viewBox="0 0 512.002 512.002" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><path d="M502.903 96.829c-6.634-7.842-15.924-12.632-26.161-13.487L116.185 53.236c-10.238-.855-20.192 2.328-28.035 8.961-7.811 6.607-12.594 15.85-13.476 26.037L67.42 156.29H38.455C17.251 156.29 0 173.541 0 194.745v225.702c0 21.204 17.251 38.455 38.455 38.455h361.813c21.205 0 38.456-17.251 38.456-38.455v-36.613l12.839 1.072c1.083.09 2.16.135 3.228.135 19.768 0 36.62-15.209 38.294-35.257l18.781-224.919c.854-10.237-2.329-20.193-8.963-28.036zM38.455 176.29h361.813c10.176 0 18.456 8.279 18.456 18.455v20.566H20v-20.566c0-10.176 8.279-18.455 18.455-18.455zM20 235.311h398.724V276.8H20zm380.268 203.591H38.455c-10.176 0-18.455-8.279-18.455-18.455V296.8h398.724v123.647c0 10.176-8.28 18.455-18.456 18.455zM491.935 123.2l-18.781 224.919c-.847 10.141-9.788 17.706-19.927 16.856l-14.503-1.211V194.745c0-21.204-17.251-38.455-38.456-38.455H87.534l7.039-66.04c.008-.076.015-.151.021-.228.847-10.141 9.783-17.705 19.927-16.855l360.558 30.106c4.913.41 9.372 2.709 12.555 6.473s4.711 8.541 4.301 13.454z"  ></path><path d="M376.873 326.532h-96.242c-5.523 0-10 4.477-10 10v62.789c0 5.523 4.477 10 10 10h96.242c5.523 0 10-4.477 10-10v-62.789c0-5.523-4.477-10-10-10zm-10 62.789h-76.242v-42.789h76.242z" class=""></path></g></svg>
             Tarjeta
           </button>
 
@@ -674,7 +721,7 @@ class ModalCarrito {
               id="btnTransferencia"
               data-value = "Transferencia"
               class="toggle-btn btnes-metodos-pago ${!!this.empresa.transferencia ? "" : "hidden"}">
-              <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" fill="currentColor" width="19" height="19" x="0" y="0" viewBox="0 0 24 24" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><g ><path d="M21 11H7c-.6 0-1-.4-1-1s.4-1 1-1h11.6l-2.3-2.3c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l4 4c.3.3.4.7.2 1.1-.1.4-.5.6-.9.6zM7 19c-.3 0-.5-.1-.7-.3l-4-4c-.3-.3-.4-.7-.2-1.1s.5-.6.9-.6h14c.6 0 1 .4 1 1s-.4 1-1 1H5.4l2.3 2.3c.4.4.4 1 0 1.4-.2.2-.4.3-.7.3z" class=""></path></g></g></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" stroke="currentColor" fill="currentColor" width="23" height="23" x="0" y="0" viewBox="0 0 24 24" style="enable-background:new 0 0 512 512" xml:space="preserve" class="icono"><g><g ><path d="M21 11H7c-.6 0-1-.4-1-1s.4-1 1-1h11.6l-2.3-2.3c-.4-.4-.4-1 0-1.4s1-.4 1.4 0l4 4c.3.3.4.7.2 1.1-.1.4-.5.6-.9.6zM7 19c-.3 0-.5-.1-.7-.3l-4-4c-.3-.3-.4-.7-.2-1.1s.5-.6.9-.6h14c.6 0 1 .4 1 1s-.4 1-1 1H5.4l2.3 2.3c.4.4.4 1 0 1.4-.2.2-.4.3-.7.3z" class=""></path></g></g></svg>
               Transferencia
           </button>
         </div>
@@ -947,6 +994,7 @@ class ModalCarrito {
     this.botonSigPaso.classList.remove("hidden");
     this.wrapperA.classList.add("hidden");
     this.titulo.textContent = "Carrito";
+    document.getElementById("borrar-carrito").classList.remove("hidden");
   }
 
   renderizadorFormulario() {

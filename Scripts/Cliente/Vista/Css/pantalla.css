@@ -304,7 +304,7 @@ h3 {
 }
 
 ::-webkit-scrollbar {
-  width: 1.3vh;
+  width: 0.7vh;
   position: absolute;
   background-color: #100e16;
 }
@@ -417,5 +417,9 @@ h3 {
   #titulo-pagina div img {
     max-width: 13rem;
     max-height: 7rem;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
   }
 }

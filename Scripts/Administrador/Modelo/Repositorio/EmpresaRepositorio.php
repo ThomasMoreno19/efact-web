@@ -728,16 +728,16 @@ class EmpresaRepositorio
       // Una sola consulta multitabla
       $this->pdo->beginTransaction();
 
-      $this->pdo->prepare("DELETE FROM moderador WHERE id_empresa = ?")->execute([$id]);
-      $this->pdo->prepare("DELETE FROM mesero WHERE id_empresa = ?")->execute([$id]);
-      $this->pdo->prepare("DELETE FROM articulo WHERE id_empresa = ?")->execute([$id]);
-      $this->pdo->prepare("DELETE FROM rubro WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM Moderador WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM Mesero WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM Articulo WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM Rubro WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM horarios_empresa WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM espectaculo_empresa WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM espectaculo_excepcion WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM dias_no_laborales_empresa WHERE id_empresa = ?")->execute([$id]);
 
-      $this->pdo->prepare("DELETE FROM empresa WHERE id = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM Empresa WHERE id = ?")->execute([$id]);
 
       $this->pdo->commit();
 
