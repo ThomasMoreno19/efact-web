@@ -10,6 +10,8 @@ class PantallaCliente {
     this.listaArticulos = document.getElementById("lista-articulos");
     this.listaRubros = document.getElementById("lista-rubros");
     this.barraBusqueda = document.getElementById("barra-busqueda");
+    this.botonLlamarMesero = document.getElementById("boton-llamar-mesero");
+    this.botonPedirCuenta = document.getElementById("boton-pedir-cuenta");
     this.onBuscarGeneral = this.filtrarArticulos.bind(this);
     this.onBuscarRubro = null;
     this.onClickVolver = this.eventClickVolver.bind(this);
@@ -87,6 +89,9 @@ class PantallaCliente {
       this.espectaculos = await this.gestor.obtenerEspectaculos(
         this.empresa.id,
       );
+      this.aplicarCooldown("mesero", this.botonLlamarMesero);
+
+      this.aplicarCooldown("cuenta", this.botonPedirCuenta);
     } catch (error) {
       console.warn("No se pudieron cargar horarios/no laborables:", error);
       this.horarios = { horarios: [], noLab: [] };
@@ -126,6 +131,43 @@ class PantallaCliente {
     if (!this.esDelivery || this.conocerEsMesero()) {
       this.precioActual = await this.calcularPrecioActual();
       this.observarPrecioActual();
+      if (!this.conocerEsMesero()) {
+        const numeroMesa = this.conocerSlug(4);
+
+        // =========================
+        // LLAMAR MESERO
+        // =========================
+
+        this.botonLlamarMesero.classList.remove("hidden");
+
+        this.botonLlamarMesero.addEventListener("click", () => {
+          if (numeroMesa) {
+            this.modalConfirmacion("¿Deseás llamar al mesero?", () =>
+              this.llamarMesero(numeroMesa),
+            );
+          } else {
+            this.modalNumeroMesa("mesero");
+          }
+        });
+
+        // =========================
+        // PEDIR CUENTA
+        // =========================
+
+        if (this.empresa.botonPedirCuenta)
+          this.botonPedirCuenta.classList.remove("hidden");
+        else this.botonPedirCuenta.classList.add("hidden");
+
+        this.botonPedirCuenta.addEventListener("click", () => {
+          if (numeroMesa) {
+            this.modalConfirmacion("¿Deseás pedir la cuenta?", () =>
+              this.pedirCuenta(numeroMesa),
+            );
+          } else {
+            this.modalNumeroMesa("cuenta");
+          }
+        });
+      }
     } else {
       this.precioActual = this.empresa.precio_delivery;
     }
@@ -1233,7 +1275,7 @@ class PantallaCliente {
           }
 
           if (response === false) {
-            error.textContent = "Credenciales incorrectas.";
+            error.textContent = "Credenciales incorrectas";
             error.classList.remove("hidden");
           }
         } catch (err) {
@@ -1257,6 +1299,166 @@ class PantallaCliente {
         this.precioActual = this.empresa.precio_delivery;
       }
     }, 2000);
+  }
+
+  modalConfirmacion(texto, callbackConfirmar) {
+    const modal = document.createElement("div");
+
+    modal.classList.add("modal");
+
+    modal.innerHTML = `
+      <div class="modal-box">
+        <p>${texto}</p>
+
+        <div class="modal-actions">
+          <button id="cancelar" class="boton-modal">Cancelar</button>
+          <button id="confirmar" class="boton-modal">Confirmar</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector("#confirmar").addEventListener("click", () => {
+      callbackConfirmar();
+      modal.remove();
+    });
+
+    modal.querySelector("#cancelar").addEventListener("click", () => {
+      modal.remove();
+    });
+  }
+
+  modalLlamarMesero() {
+    const modal = document.createElement("div");
+    modal.id = "modal-llamar-mesero";
+    modal.classList.add("modal");
+
+    modal.innerHTML = `
+      <div class="modal-box">
+        <p>¿Cuál es tu número de mesa?</p>
+      </div>
+    `;
+  }
+
+  llamarMesero(numeroMesa) {
+    this.iniciarCooldown("mesero", this.botonLlamarMesero);
+    const mensaje = `¡Hola! Solicito llamar al mesero para la mesa: ${numeroMesa}`;
+
+    const url = `https://wa.me/${this.empresa.telefono}?text=${encodeURIComponent(mensaje)}`;
+
+    window.open(url, "_blank");
+  }
+
+  modalNumeroMesa(tipo) {
+    const modal = document.createElement("div");
+
+    modal.classList.add("modal");
+
+    modal.innerHTML = `
+      <div class="modal-box">
+        <p>Ingresá tu número de mesa</p>
+
+        <input 
+          type="number"
+          id="numero-mesa"
+          class="input"
+          min="0"
+          max="500"
+          placeholder="Número de mesa"
+        />
+
+        <div class="modal-actions">
+          <button id="cancelar" class="boton-modal">Cancelar</button>
+          <button id="confirmar" class="boton-modal">Confirmar</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelector("#confirmar").addEventListener("click", () => {
+      const numeroMesa = modal.querySelector("#numero-mesa").value;
+
+      if (!numeroMesa) {
+        alert("Ingresá un número de mesa");
+        return;
+      }
+
+      if (tipo === "mesero") {
+        this.llamarMesero(numeroMesa);
+      } else {
+        this.pedirCuenta(numeroMesa);
+      }
+
+      modal.remove();
+    });
+
+    modal.querySelector("#cancelar").addEventListener("click", () => {
+      modal.remove();
+    });
+  }
+
+  pedirCuenta(numeroMesa) {
+    this.iniciarCooldown("cuenta", this.botonPedirCuenta);
+    const mensaje = `¡Hola! Solicito pedir la cuenta para la mesa: ${numeroMesa}`;
+
+    const url = `https://wa.me/${this.empresa.telefono}?text=${encodeURIComponent(mensaje)}`;
+
+    window.open(url, "_blank");
+  }
+
+  iniciarCooldown(tipo, boton) {
+    const DURACION = 60 * 1000; // 1 minuto
+
+    const expiracion = Date.now() + DURACION;
+
+    localStorage.setItem(`cooldown_${tipo}`, expiracion.toString());
+
+    this.aplicarCooldown(tipo, boton);
+  }
+
+  aplicarCooldown(tipo, boton) {
+    const expiracion = localStorage.getItem(`cooldown_${tipo}`);
+
+    if (!expiracion) return;
+
+    const restante = Number(expiracion) - Date.now();
+
+    if (restante <= 0) {
+      localStorage.removeItem(`cooldown_${tipo}`);
+
+      boton.disabled = false;
+      boton.classList.remove("cooldown");
+
+      return;
+    }
+
+    boton.disabled = true;
+    boton.classList.add("cooldown");
+
+    const actualizarTexto = () => {
+      const segundos = Math.ceil((Number(expiracion) - Date.now()) / 1000);
+
+      if (segundos <= 0) {
+        clearInterval(intervalo);
+
+        localStorage.removeItem(`cooldown_${tipo}`);
+
+        boton.disabled = false;
+        boton.classList.remove("cooldown");
+
+        boton.innerText = tipo === "mesero" ? "Mesero" : "Pedir cuenta";
+
+        return;
+      }
+
+      boton.innerText = `\n ${segundos}s \n`;
+    };
+
+    actualizarTexto();
+
+    const intervalo = setInterval(actualizarTexto, 1000);
   }
 }
 

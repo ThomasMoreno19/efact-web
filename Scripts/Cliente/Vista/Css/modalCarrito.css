@@ -212,7 +212,7 @@
 }
 
 .btn-cant {
-  background-color: #e89e13;
+  background-color: #ffad15;
   border: none;
   color: white;
   width: 21px;
@@ -223,7 +223,7 @@
 }
 
 .btn-eliminar {
-  background-color: #7c0404;
+  background-color: #eb2a2a;
   border: none;
   color: white;
   padding: 0px 5px;
@@ -252,7 +252,7 @@
 }
 
 .boton {
-  background-color: #e89e13;
+  background-color: #ffad15;
   border: none;
   color: white;
   padding: 10px 20px;
@@ -401,7 +401,7 @@
 }
 
 #modal-cancelar {
-  background-color: #ff4d4d;
+  background-color: #e89e13;
   border: none;
   color: white;
   padding: 10px 20px;
@@ -410,7 +410,7 @@
 }
 
 #modal-confirmar {
-  background-color: #e89e13;
+  background-color: #eb2a2a;
   border: none;
   color: white;
   padding: 10px 20px;

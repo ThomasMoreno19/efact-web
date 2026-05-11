@@ -10,13 +10,12 @@ class Empresa
   private string $ubicacion;
   private bool $tieneCarrito;
   private bool $moduloMesero;
-  private bool $gestionMesero;
   private array $rubros;
   private bool $tieneContrasenaMesero;
 
 
   //Constructor
-  public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, ?array $rubros = [])
+  public function __construct(int $id, string $nombre, string $fecha_creacion, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $moduloMesero, bool $tieneContrasenaMesero, ?array $rubros = [])
   {
     $this->id = $id;
     $this->nombre = $nombre;
@@ -26,7 +25,6 @@ class Empresa
     $this->ubicacion = $ubicacion;
     $this->tieneCarrito = $tieneCarrito;
     $this->moduloMesero = $moduloMesero;
-    $this->gestionMesero = $gestionMesero;
     $this->tieneContrasenaMesero = $tieneContrasenaMesero;
     $this->rubros = $rubros;
   }

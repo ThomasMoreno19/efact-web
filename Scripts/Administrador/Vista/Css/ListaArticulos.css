@@ -33,8 +33,6 @@
 }
 
 .rubro p {
-  /* Estilos para el nombre de la empresa */
-  /* Basado en tu '.empresa-info h3' original */
   margin: 0.3vh;
   font-size: clamp(0.1em, 3vw, 1.5em);
   color: #fff;

@@ -12,6 +12,7 @@ class EmpresaVista {
     this.transferencia = empresa.transferencia ?? false;
     this.precio_delivery = empresa.precio_delivery ?? 1;
     this.precio_espectaculo = empresa.precio_espectaculo ?? 1;
+    this.botonPedirCuenta = empresa.botonPedirCuenta ?? false;
     this.tieneContrasenaMesero = empresa.tieneContrasenaMesero;
     this.logo_url = empresa.logo_url;
   }
@@ -25,6 +26,7 @@ class EmpresaVista {
     transferencia,
     precio_delivery,
     precio_espectaculo,
+    botonPedirCuenta,
   ) {
     this.nombre = nombre;
     this.telefono = telefono;
@@ -34,6 +36,7 @@ class EmpresaVista {
     this.transferencia = transferencia;
     this.precio_delivery = precio_delivery;
     this.precio_espectaculo = precio_espectaculo;
+    this.botonPedirCuenta = botonPedirCuenta;
   }
 
   mostrarUna() {
@@ -61,6 +64,7 @@ class EmpresaVista {
           empresaTransferencia: this.transferencia,
           empresaPrecio_delivery: this.precio_delivery,
           empresaPrecio_espectaculo: this.precio_espectaculo,
+          empresaBotonPedirCuenta: this.botonPedirCuenta,
           empresaTieneContrasenaMesero: this.tieneContrasenaMesero,
           empresaLogoUrl: this.logo_url,
         },
@@ -797,12 +801,12 @@ class EmpresaVista {
   }
 
   modalModificarParaModerador(moderador) {
-    const modalNuevaEmpresa = document.createElement("div");
-    modalNuevaEmpresa.classList.add("modal-backdrop");
-    modalNuevaEmpresa.id = "modalModificarEmpresa";
+    const modalModificarEmpresa = document.createElement("div");
+    modalModificarEmpresa.classList.add("modal-backdrop");
+    modalModificarEmpresa.id = "modalModificarEmpresa";
 
-    const modalNuevaEmpresaContenido = document.createElement("div");
-    modalNuevaEmpresaContenido.classList.add("modal-content");
+    const modalModificarEmpresaContenido = document.createElement("div");
+    modalModificarEmpresaContenido.classList.add("modal-content");
     const htmlContent = `
       <form id="formModificarEmpresa">
         <div id="header-wrapper">
@@ -841,6 +845,7 @@ class EmpresaVista {
             Transferencia
           </button>
         </div>
+
         <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
@@ -860,6 +865,23 @@ class EmpresaVista {
             <option value="3" ${this.precio_espectaculo === 3 ? "selected" : ""}>Precio 3</option>
           </select>
         </div>
+
+        <text id="titulo-modulos"> Funcionalidades </text>
+
+        <div class="lista-botones funcionalidades">
+          <button
+            type="button"
+            id="btnPedirCuenta"
+            class="toggle-btn ${this.botonPedirCuenta ? "active" : ""}">
+            Pedir cuenta
+          </button>
+        </div>
+
+        <input
+          type="hidden"
+          name="pedirCuenta"
+          id="pedirCuenta"
+          value="${!!this.botonPedirCuenta}">
         
         <div class="form-group">
           <label for="imagen">Imagen</label>
@@ -878,18 +900,18 @@ class EmpresaVista {
         </div>
       </form>
     `;
-    modalNuevaEmpresaContenido.innerHTML = htmlContent;
+    modalModificarEmpresaContenido.innerHTML = htmlContent;
     if (!this.tieneCarrito) {
       const listaBotones =
-        modalNuevaEmpresaContenido.querySelector(".lista-botones");
+        modalModificarEmpresaContenido.querySelector(".lista-botones");
       const btnEfectivo =
-        modalNuevaEmpresaContenido.querySelector("#btnEfectivo");
+        modalModificarEmpresaContenido.querySelector("#btnEfectivo");
       const btnTarjeta =
-        modalNuevaEmpresaContenido.querySelector("#btnTarjeta");
+        modalModificarEmpresaContenido.querySelector("#btnTarjeta");
       const btnTransferencia =
-        modalNuevaEmpresaContenido.querySelector("#btnTransferencia");
+        modalModificarEmpresaContenido.querySelector("#btnTransferencia");
       const textoMetodosPago =
-        modalNuevaEmpresaContenido.querySelector("#titulo-modulos");
+        modalModificarEmpresaContenido.querySelector("#titulo-modulos");
       listaBotones.classList.add("hidden");
       textoMetodosPago.classList.add("hidden");
       btnEfectivo.classList.add("hidden");
@@ -897,9 +919,9 @@ class EmpresaVista {
       btnTransferencia.classList.add("hidden");
     }
 
-    modalNuevaEmpresa.appendChild(modalNuevaEmpresaContenido);
+    modalModificarEmpresa.appendChild(modalModificarEmpresaContenido);
 
-    return modalNuevaEmpresa;
+    return modalModificarEmpresa;
   }
 
   modalQRConfiguracion() {

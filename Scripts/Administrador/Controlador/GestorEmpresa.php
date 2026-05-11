@@ -260,6 +260,7 @@ class GestorEmpresa
     $transferencia = $datos['transferencia'];
     $precio_delivery = $datos['precio_delivery'];
     $precio_espectaculo = $datos['precio_espectaculo'];
+    $botonPedirCuenta = $datos['botonPedirCuenta'];
     $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
 
     if (empty($id_empresa) || empty($nombre)) {
@@ -270,7 +271,7 @@ class GestorEmpresa
 
 
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $precio_delivery, $precio_espectaculo, $contrasenaMesero);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $precio_delivery, $precio_espectaculo, $botonPedirCuenta, $contrasenaMesero);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);

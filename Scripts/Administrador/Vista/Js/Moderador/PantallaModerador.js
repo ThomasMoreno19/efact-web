@@ -545,6 +545,10 @@ class PantallaModerador {
         if (btn.id === "btnTransferencia") {
           document.getElementById("transferencia").value = activo;
         }
+
+        if (btn.id === "btnPedirCuenta") {
+          document.getElementById("pedirCuenta").value = activo;
+        }
       });
     });
 
@@ -578,6 +582,7 @@ class PantallaModerador {
       const transferencia = formData.get("transferencia") === "true";
       const precio_delivery = formData.get("precio-delivery");
       const precio_espectaculo = formData.get("precio-espectaculo");
+      const botonPedirCuenta = formData.get("pedirCuenta") === "true";
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
       const contrasenaMesero = formData.get("contrasenaMesero");
@@ -596,6 +601,7 @@ class PantallaModerador {
           transferencia,
           precio_delivery,
           precio_espectaculo,
+          botonPedirCuenta,
           contrasenaMesero,
         );
         if (imagen && imagen.size > 0) {
@@ -617,6 +623,7 @@ class PantallaModerador {
           transferencia,
           parseInt(precio_delivery),
           parseInt(precio_espectaculo),
+          botonPedirCuenta,
         );
         this.mostrarLista(this.listaArticulos);
         modal.classList.add("hidden");
