@@ -387,14 +387,11 @@ h3 {
 }
 
 .lista-central {
-  background-color: #242130;
+  background-color: transparent;
   position: relative;
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Sombra */
   z-index: 3;
-  padding: 1% 1% 4%;
   margin: auto;
-  max-width: 100vh;
 }
 
 #boton-carrito {
@@ -476,10 +473,6 @@ h3 {
 }
 
 @media screen and (max-width: 600px) {
-  .lista-central {
-    max-width: 90%;
-  }
-
   #titulo-pagina div img {
     max-width: 13rem;
     max-height: 7rem;

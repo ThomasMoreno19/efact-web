@@ -96,6 +96,7 @@
   transition: transform 0.2s ease-in-out;
   text-align: center; /* Para centrar el texto del nombre de la empresa */
   padding: 10px 5px;
+  margin-bottom: 10px;
 }
 
 .articulo p {
