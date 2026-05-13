@@ -1482,7 +1482,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     botonPedirCuenta = document.getElementById("boton-pedir-cuenta");
     const posicionActual = window.scrollY;
 
-    if (30 > posicionActual) {
+    if (20 > posicionActual) {
       header.classList.remove("minimizado");
       tituloPagina.classList.remove("minimizado");
       imagenHeader.classList.remove("minimizado");
