@@ -21,22 +21,23 @@
 
 <body>
   <header id="header">
-    <img id="imagen-header" />
-    <h1 id="titulo-pagina" />
-    <h1 id="info-extra" />
     <button class="hidden boton-volver" id="boton-volver" type="button">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
       </svg>
-      <div class="text">
-        Volver
-      </div>
     </button>
+    <img id="imagen-header" />
+
+    <h1 id="titulo-pagina"></h1>
+
+    <div id="info-extra"></div>
+
+
   </header>
 
   <div class="botones-llamar">
     <button class="boton-llamar hidden" type="button" id="boton-llamar-mesero">
-      <svg fill="#000000" height="32px" width="32px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+      <svg fill="#e9b44c" height="35px" width="35px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 237.888 237.888" xml:space="preserve">
         <g>
           <path d="M197.047,59.153C185.153,23.771,153.764,0,118.938,0C82.628,0,50.816,25.12,39.779,62.506
@@ -47,11 +48,13 @@
           <polygon points="64.61,180.791 64.61,237.888 118.61,221.853 172.61,237.888 172.61,180.791 118.61,196.829 	" />
         </g>
       </svg>
-      Llamar
+      <span class="texto-boton">
+        Llamar
+      </span>
     </button>
 
     <button class="boton-llamar hidden" type="button" id="boton-pedir-cuenta">
-      <svg fill="#000000" height="32px" width="32px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+      <svg fill="#e9b44c" height="35px" width="35px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
         viewBox="0 0 512 512" xml:space="preserve">
         <g>
           <g>
@@ -109,7 +112,9 @@
           </g>
         </g>
       </svg>
-      Cuenta
+      <span class="texto-boton">
+        Cuenta
+      </span>
     </button>
   </div>
 
@@ -124,7 +129,27 @@
 
   <div class="lista-central" id="lista-central">
 
-    <input type="text" id="barra-busqueda" class="barra .hidden" placeholder="Buscar artículos...">
+    <div id="contenedor-busqueda" class="contenedor-busqueda hidden">
+
+      <input
+        type="text"
+        id="barra-busqueda"
+        class="barra hidden"
+        placeholder="Buscar artículos" />
+
+      <svg
+        class="icono-busqueda"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </div>
     <div class="loader" id="loader">
       <div class="cup">
         <div class="cup-handle"></div>
@@ -136,7 +161,7 @@
     </div>
 
     <div class="listas">
-      <h2 id="titulo-rubros">Rubros</h2>
+      <h2 id="titulo-rubros" class="hidden"></h2>
       <div class="lista" id="lista-articulos"></div>
       <div class="lista" id="lista-rubros"></div>
     </div>

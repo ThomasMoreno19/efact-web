@@ -1,38 +1,42 @@
 /* Estilos para la barra de búsqueda */
 #barra-busqueda {
-    font-size: 1.1em;
-    border: none; /* Borde gris claro */
-    padding: 7px 5px;
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.01); /* Fondo blanco */
-    box-shadow: 1px 2px 6px rgba(0, 0, 0, 0.3); /* Sombra suave para un efecto de profundidad */
-    margin: 7% 13% 5%; 
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    color:#ffffffa6;
-    width:75%;
-    outline: none;
+  font-size: 16px;
+  border: none; /* Borde gris claro */
+  padding: 9px 5px;
+  border-radius: 8px;
+  background-color: transparent;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  color: #777;
+  width: 280px;
+  outline: none;
 }
 
-/* Estilos al enfocar la barra de búsqueda */
-#barra-busqueda:focus {
-    outline: none ;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Sombra suave para un efecto de profundidad */
+.contenedor-busqueda {
+  position: relative;
+  border-radius: 8px;
+  display: flex;
+  padding: 0px 5px;
+  max-width: 300px;
+  margin: 35px auto;
+  flex-direction: row;
+  background-color: #181818;
+}
+
+.icono-busqueda {
+  width: 20px;
+  color: #777;
+  pointer-events: none;
 }
 
 /* Estilos para el texto de ejemplo (placeholder) */
 #barra-busqueda::placeholder {
-    color: #999; /* Color de texto gris más claro */
-    opacity: 0.4;
-    font-style: italic; /* Texto en cursiva */
+  color: #777; /* Color de texto gris más claro */
+  font-style: italic; /* Texto en cursiva */
 }
 
 /* Clase que controla la visibilidad y la animación */
 .hidden {
-    display: none;
-}
-
-@media screen and (max-width: 600px) {
-  #barra-busqueda {
-    margin: 7% 13% 5%;
-  }
+  display: none;
 }

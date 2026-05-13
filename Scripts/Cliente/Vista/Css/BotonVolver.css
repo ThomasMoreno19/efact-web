@@ -2,14 +2,20 @@
 
 .boton-volver {
   background-color: #ffffff00; /* Transparent background */
-  color: #e89e13;
-  width: 6em;
-  height: 2.5em;
+  color: #e9b44c;
   border: none;
   transition: all 0.4s ease;
   display: flex;
   align-items: center; /* Centra verticalmente SVG y texto */
   cursor: pointer;
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  z-index: 9;
+}
+
+.boton-volver.minimizado {
+  transform: scale(0.9);
 }
 
 .boton-volver:hover {
@@ -17,7 +23,8 @@
 }
 
 .boton-volver svg {
-  width: 1.6em;
+  width: 33px;
+  height: 33px;
   /* margin: -0.2em 0.8em 1em; -- Ya no es necesario con el nuevo posicionamiento */
   position: relative; /* <--- CAMBIO CLAVE: Cambia de 'absolute' a 'relative' */
   /* Esto permite que el SVG se posicione dentro del flujo del flexbox */

@@ -5,11 +5,15 @@ class PantallaCliente {
     this.header = document.getElementById("header");
     this.imagenHeader = document.getElementById("imagen-header");
     this.tituloPagina = document.getElementById("titulo-pagina");
+    this.botonVolver = document.getElementById("boton-volver");
     this.infoExtra = document.getElementById("info-extra");
     this.gestor = new GestorCliente();
     this.listaArticulos = document.getElementById("lista-articulos");
     this.listaRubros = document.getElementById("lista-rubros");
     this.barraBusqueda = document.getElementById("barra-busqueda");
+    this.contenedorBarraBusqueda = document.getElementById(
+      "contenedor-busqueda",
+    );
     this.botonLlamarMesero = document.getElementById("boton-llamar-mesero");
     this.botonPedirCuenta = document.getElementById("boton-pedir-cuenta");
     this.onBuscarGeneral = this.filtrarArticulos.bind(this);
@@ -18,7 +22,6 @@ class PantallaCliente {
     this.onClickTelefono = this.eventClickTelefono.bind(this);
     this.onClickModalCarrito = this.abrirModalCarrito.bind(this);
     this.onPopState = this.eventPopState.bind(this);
-    this.botonVolver = document.getElementById("boton-volver");
     this.tituloRubros = document.getElementById("titulo-rubros");
     this.loader = document.getElementById("loader");
     this.botonCarrito = document.getElementById("boton-carrito");
@@ -121,6 +124,7 @@ class PantallaCliente {
     this.loader.classList.remove("hidden");
     this.tituloRubros.classList.add("hidden");
     this.barraBusqueda.classList.add("hidden");
+    this.contenedorBarraBusqueda.classList.add("hidden");
     this.listaArticulos.classList.add("hidden");
     this.listaRubros.classList.add("hidden");
     this.botonVolver.classList.add("hidden");
@@ -146,7 +150,7 @@ class PantallaCliente {
               this.llamarMesero(numeroMesa),
             );
           } else {
-            this.modalNumeroMesa("mesero");
+            this.modalNumeroMesa("mesero", "¿Deseas llamar al mesero?");
           }
         });
 
@@ -164,7 +168,7 @@ class PantallaCliente {
               this.pedirCuenta(numeroMesa),
             );
           } else {
-            this.modalNumeroMesa("cuenta");
+            this.modalNumeroMesa("cuenta", "¿Deseas pedir la cuenta?");
           }
         });
       }
@@ -177,6 +181,7 @@ class PantallaCliente {
     this.loader.classList.add("hidden");
     this.tituloRubros.classList.remove("hidden");
     this.barraBusqueda.classList.remove("hidden");
+    this.contenedorBarraBusqueda.classList.remove("hidden");
     this.listaArticulos.classList.remove("hidden");
     this.listaRubros.classList.remove("hidden");
   }
@@ -279,6 +284,7 @@ class PantallaCliente {
     this.limpiarBusqueda();
     this.botonVolver.classList.remove("hidden");
     this.barraBusqueda.classList.remove("hidden");
+    this.contenedorBarraBusqueda.classList.remove("hidden");
     this.listaRubros.classList.add("hidden");
     this.listaArticulos.classList.remove("hidden");
 
@@ -1329,18 +1335,6 @@ class PantallaCliente {
     });
   }
 
-  modalLlamarMesero() {
-    const modal = document.createElement("div");
-    modal.id = "modal-llamar-mesero";
-    modal.classList.add("modal");
-
-    modal.innerHTML = `
-      <div class="modal-box">
-        <p>¿Cuál es tu número de mesa?</p>
-      </div>
-    `;
-  }
-
   llamarMesero(numeroMesa) {
     this.iniciarCooldown("mesero", this.botonLlamarMesero);
     const mensaje = `¡Hola! Solicito llamar al mesero para la mesa: ${numeroMesa}`;
@@ -1350,14 +1344,14 @@ class PantallaCliente {
     window.open(url, "_blank");
   }
 
-  modalNumeroMesa(tipo) {
+  modalNumeroMesa(tipo, texto) {
     const modal = document.createElement("div");
 
     modal.classList.add("modal");
 
     modal.innerHTML = `
       <div class="modal-box">
-        <p>Ingresá tu número de mesa</p>
+        <h3 class="texto-modal-mesa">${texto}</h3>
 
         <input 
           type="number"
@@ -1483,38 +1477,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     tituloPagina = document.getElementById("titulo-pagina");
     imagenHeader = document.getElementById("imagen-header");
     infoExtra = document.getElementById("info-extra");
+    botonVolver = document.getElementById("boton-volver");
+    botonLlamarMesero = document.getElementById("boton-llamar-mesero");
+    botonPedirCuenta = document.getElementById("boton-pedir-cuenta");
     const posicionActual = window.scrollY;
 
     if (30 > posicionActual) {
       header.classList.remove("minimizado");
       tituloPagina.classList.remove("minimizado");
       imagenHeader.classList.remove("minimizado");
+      botonLlamarMesero.classList.remove("minimizado");
+      botonPedirCuenta.classList.remove("minimizado");
+      botonVolver.classList.remove("minimizado");
       infoExtra.classList.remove("minimizado");
       infoExtra.classList.remove("oculto");
     } else {
       header.classList.add("minimizado");
       tituloPagina.classList.add("minimizado");
       imagenHeader.classList.add("minimizado");
+      botonLlamarMesero.classList.add("minimizado");
+      botonPedirCuenta.classList.add("minimizado");
+      botonVolver.classList.add("minimizado");
       infoExtra.classList.add("oculto");
-    }
-
-    // Si bajás, ocultar el encabezado
-    if (posicionActual > ultimaPosicionScroll && posicionActual > 100) {
-      header.classList.add("oculto");
-      tituloPagina.classList.add("oculto");
-      imagenHeader.classList.add("oculto");
-      infoExtra.classList.add("oculto");
-
-      header.classList.remove("minimizado");
-      tituloPagina.classList.remove("minimizado");
-      imagenHeader.classList.remove("minimizado");
-      infoExtra.classList.remove("minimizado");
-    }
-    // Si subís, mostrarlo de nuevo
-    else if (ultimaPosicionScroll > posicionActual) {
-      header.classList.remove("oculto");
-      tituloPagina.classList.remove("oculto");
-      imagenHeader.classList.remove("oculto");
     }
 
     ultimaPosicionScroll = posicionActual;

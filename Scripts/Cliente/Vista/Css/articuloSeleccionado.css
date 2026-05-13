@@ -3,25 +3,25 @@
 }
 
 .articulo.seleccionado {
-  background-color: #f2a619 !important;
+  background-color: #e8a114 !important;
   -webkit-tap-highlight-color: transparent;
 }
 
+.articulo.seleccionado.fondo-impar {
+  background-color: #f5b73a !important;
+}
+
 .articulo.seleccionado #id-articulo {
-  color: #3d2800 !important;
+  color: #4e3300 !important;
 }
 
 .articulo.seleccionado .descripcion {
   color: #343333 !important;
 }
 
-.articulo.seleccionado.fondo-impar {
-  background-color: #d69215 !important;
-}
-
 /* Animación de pulso para artículos seleccionados */
 .articulo.pulse {
-  animation: pulse 0.25s ease-out;
+  animation: pulse 0.35s ease-out;
 }
 
 .articulo:hover {
@@ -34,7 +34,7 @@
     transform: scale(1);
   }
   50% {
-    transform: scale(1.05); /* Se agranda */
+    transform: scale(1.01); /* Se agranda */
   }
   100% {
     transform: scale(1); /* Vuelve a su tamaño */
