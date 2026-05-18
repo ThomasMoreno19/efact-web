@@ -61,6 +61,9 @@ class GestorRubro
         $this->eliminarNoUtilizados();
         break;
 
+      case 'subir-video':
+        $this->subirVideo();
+        break;
 
       default:
         http_response_code(404);
@@ -94,7 +97,7 @@ class GestorRubro
       echo $json;
     } catch (Exception $e) {
       http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar los articulos entre los valores recibidos' . $e->getMessage()]);
+      echo json_encode(['error' => 'Error al mostrar los rubros entre los valores recibidos' . $e->getMessage()]);
     }
   }
 
@@ -122,7 +125,7 @@ class GestorRubro
       echo $json;
     } catch (Exception $e) {
       http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar los articulos entre los valores recibidos' . $e->getMessage()]);
+      echo json_encode(['error' => 'Error al mostrar los rubros entre los valores recibidos' . $e->getMessage()]);
     }
   }
 
@@ -147,7 +150,6 @@ class GestorRubro
         // Añade el artículo completo a la nueva lista.
         $nuevaLista[] = $articulo_final;
       } catch (Exception $e) {
-        // Como pediste, no se manejan los errores
       }
     }
     $this->borrarCacheTodos($id_empresa);
@@ -169,8 +171,6 @@ class GestorRubro
 
     return unlink($cacheFile);
   }
-
-
 
   private function setearEn0(): void
   {
@@ -205,7 +205,6 @@ class GestorRubro
       }
     }
   }
-
 
   private function modificar(): void
   {
@@ -255,5 +254,101 @@ class GestorRubro
       http_response_code(500);
       echo json_encode(['error' => 'Error al mover el archivo subido.']);
     }
+  }
+
+  private function subirVideo(): void
+  {
+    // Al usar FormData en JS, los campos de texto viajan en $_POST
+    if (empty($_POST['id_rubro']) || empty($_POST['id_empresa']) || empty($_FILES['archivo']['tmp_name'])) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos obligatorios o el archivo de video.']);
+      return;
+    }
+
+    $id_rubro = (int)$_POST['id_rubro'];
+    $id_empresa = (int)$_POST['id_empresa'];
+
+    // URL del video actual que viene desde el cliente para poder eliminarlo si existe
+    $articulo_video_url = !empty($_POST['video_url']) ? $_POST['video_url'] : null;
+
+    // 1. Configuración de ruta dinámica por empresa
+    $directorioDestino = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Videos/' . $id_empresa . '/';
+
+    if (!is_dir($directorioDestino)) {
+      mkdir($directorioDestino, 0755, true);
+    }
+
+    // 2. Validación de límite de almacenamiento (1 GB por carpeta de empresa)
+    $limiteMaximoBytes = 1 * 1024 * 1024 * 1024; // 1 GB en bytes
+    $pesoCarpetaActual = $this->obtenerTamañoDirectorio($directorioDestino);
+    $pesoNuevoArchivo = $_FILES['archivo']['size'];
+
+    if (($pesoCarpetaActual + $pesoNuevoArchivo) > $limiteMaximoBytes) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Se ha excedido el espacio máximo permitido de 1GB para esta empresa.']);
+      return;
+    }
+
+    // Procesamiento del nombre del archivo
+    $nombreOriginal = basename($_FILES['archivo']['name']);
+    $nombreSinEspacios = str_replace(' ', '-', $nombreOriginal);
+
+    $infoArchivo = pathinfo($nombreSinEspacios);
+    $nombreBase = $infoArchivo['filename'];
+    $extension = isset($infoArchivo['extension']) ? '.' . $infoArchivo['extension'] : '';
+
+    $nombreArchivo = $nombreBase . "-rubro" . $id_rubro . "_empresa" . $id_empresa . $extension;
+    $rutaDestino = $directorioDestino . $nombreArchivo;
+
+    if (move_uploaded_file($_FILES['archivo']['tmp_name'], $rutaDestino)) {
+      // Nueva URL relativa para almacenar en la BD
+      $video_url = '/Archivos/Videos/' . $id_empresa . '/' . $nombreArchivo;
+
+      // Guardar en la base de datos a través del repositorio
+      $guardadoExitoso = $this->rubroRepositorio->agregarUrlVideo($id_rubro, $id_empresa, $video_url);
+
+      if ($guardadoExitoso) {
+        // 3. Si se guardó con éxito el nuevo, eliminamos el archivo físico anterior (si existía)
+        if ($articulo_video_url) {
+          $rutaVideoAnterior = $_SERVER['DOCUMENT_ROOT'] . $articulo_video_url;
+          if (file_exists($rutaVideoAnterior) && is_file($rutaVideoAnterior)) {
+            unlink($rutaVideoAnterior);
+          }
+        }
+
+        http_response_code(200);
+        $this->borrarCacheTodos($id_empresa);
+        echo json_encode(['url' => $video_url, 'mensaje' => 'Video subido y registrado con éxito.']);
+        return;
+      } else {
+        if (file_exists($rutaDestino)) {
+          unlink($rutaDestino);
+        }
+        http_response_code(500);
+        echo json_encode(['error' => 'Error al registrar la URL del video en la base de datos.']);
+        return;
+      }
+    } else {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al mover el archivo de video al servidor.']);
+      return;
+    }
+  }
+
+  private function obtenerTamañoDirectorio(string $ruta): int
+  {
+    $totalBytes = 0;
+    if (!is_dir($ruta)) return $totalBytes;
+
+    $elementos = scandir($ruta);
+    foreach ($elementos as $elemento) {
+      if ($elemento !== '.' && $elemento !== '..') {
+        $rutaCompleta = $ruta . $elemento;
+        if (is_file($rutaCompleta)) {
+          $totalBytes += filesize($rutaCompleta);
+        }
+      }
+    }
+    return $totalBytes;
   }
 }

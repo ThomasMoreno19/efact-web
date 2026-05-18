@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesAlta.css?v=<?php echo APP_VERSION; ?>">
   <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonesMostrarLista.css?v=<?php echo APP_VERSION; ?>">
   <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BotonCargar.css?v=<?php echo APP_VERSION; ?>">
-  <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/BarraBusqueda.css?v=<?php echo APP_VERSION; ?>">
+  <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/BarraBusqueda.css?v=<?php echo APP_VERSION; ?>">
   <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/BotonVolver.css?v=<?php echo APP_VERSION; ?>">
   <link rel="stylesheet" href="/Scripts/Cliente/Vista/Css/MadeBy.css?v=<?php echo APP_VERSION; ?>">
   <link rel="stylesheet" href="/Scripts/Administrador/Vista/Css/Loader.css?v=<?php echo APP_VERSION; ?>">
@@ -150,6 +150,7 @@
           stroke-linejoin="round" />
       </svg>
     </div>
+
     <div class="loader" id="loader">
       <div class="cup">
         <div class="cup-handle"></div>

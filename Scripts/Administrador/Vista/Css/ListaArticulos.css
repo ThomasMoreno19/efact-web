@@ -23,6 +23,18 @@
   color: white;
 }
 
+.container {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.btn-ver-video {
+  background-color: transparent;
+  border: none;
+  margin: 0px 10px;
+  cursor: pointer;
+}
+
 .texto-vacio {
   color: white;
   justify-self: center;
@@ -44,12 +56,13 @@
   background-color: transparent; /* Fondo semitransparente */
   border-radius: 8px;
   display: flex;
-  flex-direction: column; /* Apila logo y nombre */
+  flex-direction: row-reverse;
   align-items: center;
   transition: transform 0.2s ease-in-out;
   text-align: center; /* Para centrar el texto del nombre de la empresa */
   padding: 10px 5px;
   cursor: pointer;
+  margin-bottom: 10px;
 }
 
 .articulo:hover {
@@ -57,10 +70,9 @@
 }
 
 .articulo p {
-  /* Estilos para el nombre de la empresa */
-  /* Basado en tu '.empresa-info h3' original */
-  margin: 0.3vh;
-  font-size: clamp(0.1em, 3vw, 1.5em);
+  margin: 0px;
+  text-align: left;
+  font-size: 24px;
   color: #fff;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -68,9 +80,14 @@
 
 .articulo-info {
   display: flex;
-  justify-content: space-between; /* Nombre a la izquierda, precio a la derecha */
   width: 100%;
-  padding: 0 10px;
+  padding: 0 5px;
+  flex-direction: column;
+}
+
+#nombre-articulo-modal {
+  margin-bottom: 10px;
+  font-size: 28px;
 }
 
 #id-articulo {
@@ -80,7 +97,7 @@
 
 p.descripcion {
   color: #9f9f9f;
-  font-size: clamp(0.1em, 2.7vw, 1em);
+  font-size: 17px;
   align-self: self-start;
 }
 
@@ -102,6 +119,14 @@ p.descripcion {
 @media screen and (max-width: 600px) {
   .rubro img {
     height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
+  }
+
+  .articulo p {
+    font-size: 20px;
+  }
+
+  p.descripcion {
+    font-size: 15px;
   }
 }
 

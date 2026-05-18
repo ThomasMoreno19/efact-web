@@ -31,6 +31,7 @@ class RubroRepositorio
           'nombre' => $data['nombre'],
           'id_empresa' => $data['id_empresa'],
           'logo_url' => $data['logo_url'],
+          'video_url' => $data['video_url'],
           'fecha_eliminado' => $data['fecha_eliminado'],
           'aparece_en_csv' => $data['aparece_en_csv'],
           'creado_en_pagina' => $data['creado_en_pagina']
@@ -51,7 +52,8 @@ class RubroRepositorio
                     id,
                     id_empresa,
                     nombre,
-                    logo_url
+                    logo_url,
+                    video_url
                 FROM Rubro
                 WHERE id_empresa= :id_empresa AND solo_mesero = 0
                 ORDER BY nombre ASC;
@@ -63,7 +65,8 @@ class RubroRepositorio
           'id' => $data['id'],
           'nombre' => $data['nombre'],
           'id_empresa' => $data['id_empresa'],
-          'logo_url' => $data['logo_url']
+          'logo_url' => $data['logo_url'],
+          'video_url' => $data['video_url']
         ];
       }
     } catch (PDOException $e) {
@@ -224,9 +227,25 @@ class RubroRepositorio
     }
   }
 
-  public function sosAtributo(string $atributo)
+  public function agregarUrlVideo(int $id, int $id_empresa, string $video_url): bool
   {
-    $atributosPermitidos = ['nombre', 'fecha_eliminado'];
-    return in_array($atributo, $atributosPermitidos);
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Rubro
+             SET video_url = :video_url
+             WHERE id = :id AND id_empresa = :id_empresa;"
+      );
+
+      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->bindParam(':video_url', $video_url, PDO::PARAM_STR);
+
+      if ($stmt->execute()) {
+        return true;
+      }
+    } catch (PDOException $e) {
+      error_log("Error al agregar URL de video al artículo: " . $e->getMessage());
+    }
+    return false;
   }
 }

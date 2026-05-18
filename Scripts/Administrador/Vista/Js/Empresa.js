@@ -780,8 +780,6 @@ class EmpresaVista {
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Horarios</button>
         <button type = "button" class = "submit-button" id = "configurar-espectaculos" >Espectáculos</button>
         <button type = "button" class = "submit-button" id = "meseros" >Meseros</button>
-        <button type = "button" class = "submit-button" id = "visitar-pagina" >Página de Carta</button>
-        <button type = "button" class = "submit-button" id = "visitar-gestion" >Página de Gestión</button>
         <button type = "button" class = "submit-button" id = "qr-configuracion" >QR</button>
       </form>
     `;

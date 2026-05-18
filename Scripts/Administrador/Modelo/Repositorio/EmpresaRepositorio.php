@@ -273,7 +273,6 @@ class EmpresaRepositorio
       error_log("Error al guardar nueva empresa: " . $e->getMessage());
     }
     return [];
-    return [];
   }
 
   public function guardarHorarios(int $id_empresa, array $horarios): bool

@@ -534,6 +534,64 @@ class GestorModerador {
     }
   }
 
+  async subirVideoArticulo(archivo, id_articulo, id_empresa, video_url) {
+    const formData = new FormData();
+    formData.append("archivo", archivo);
+    formData.append("id_articulo", id_articulo);
+    formData.append("id_empresa", id_empresa);
+    formData.append("video_url", video_url);
+
+    try {
+      const response = await fetch(`/articulo/subir-video`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al subir video" }));
+        throw new Error(
+          errorData.message || `Error al subir video: ${response.status}`,
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error al subir video:", error);
+      throw error;
+    }
+  }
+
+  async subirVideoRubro(archivo, id_rubro, id_empresa, video_url) {
+    const formData = new FormData();
+    formData.append("archivo", archivo);
+    formData.append("id_rubro", id_rubro);
+    formData.append("id_empresa", id_empresa);
+    formData.append("video_url", video_url);
+
+    try {
+      const response = await fetch(`/rubro/subir-video`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al subir video" }));
+        throw new Error(
+          errorData.message || `Error al subir video: ${response.status}`,
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error al subir video:", error);
+      throw error;
+    }
+  }
+
   async loguearAdministrador(nombre, contrasena) {
     try {
       // Realiza el fetch a la URL 'admin/login/nombre/contrasena'

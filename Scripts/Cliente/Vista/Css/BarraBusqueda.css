@@ -1,0 +1,42 @@
+/* Estilos para la barra de búsqueda */
+#barra-busqueda {
+  font-size: 16px;
+  border: none; /* Borde gris claro */
+  padding: 9px 5px;
+  border-radius: 8px;
+  background-color: transparent;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  color: white;
+  width: 280px;
+  outline: none;
+}
+
+.contenedor-busqueda {
+  position: relative;
+  border-radius: 8px;
+  display: flex;
+  padding: 0px 5px;
+  max-width: 300px;
+  margin: 35px auto;
+  flex-direction: row;
+  background-color: #181818;
+}
+
+.icono-busqueda {
+  width: 20px;
+  color: #777;
+  pointer-events: none;
+}
+
+/* Estilos para el texto de ejemplo (placeholder) */
+#barra-busqueda::placeholder {
+  color: #777; /* Color de texto gris más claro */
+  font-style: italic; /* Texto en cursiva */
+}
+
+/* Clase que controla la visibilidad y la animación */
+.hidden {
+  display: none;
+}

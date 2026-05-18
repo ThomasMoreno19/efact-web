@@ -70,9 +70,6 @@ class PantallaAdministrador {
     );
 
     BOTON_CONFIGURAR_ESPECTACULOS.classList.add("hidden");
-    const BOTON_GESTION_ARTICULOS = document.getElementById("visitar-gestion");
-
-    const BOTON_VISITAR_PAGINA = document.getElementById("visitar-pagina");
 
     const BOTON_CONFIGURAR_MESEROS = document.getElementById("meseros");
     BOTON_CONFIGURAR_MESEROS.classList.add("hidden");
@@ -82,16 +79,6 @@ class PantallaAdministrador {
       if (event.target === MODAL) {
         document.body.removeChild(MODAL);
       }
-    });
-
-    BOTON_VISITAR_PAGINA.addEventListener("click", (event) => {
-      event.preventDefault();
-      window.open(`/carta/${empresa.id}`, "_blank");
-    });
-
-    BOTON_GESTION_ARTICULOS.addEventListener("click", (event) => {
-      event.preventDefault();
-      window.open(`/moderador/${empresa.id}`, "_blank");
     });
 
     BOTON_SECCION_MODIFICAR.addEventListener("click", async (event) => {

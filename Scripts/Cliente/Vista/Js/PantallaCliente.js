@@ -207,18 +207,13 @@ class PantallaCliente {
 
       // 1. Generar la lista de rubros como botones y guardar las referencias
       rubrosRecibidos.forEach((rubro) => {
-        const id = rubro.id;
-        const nombre = rubro.nombre;
-        const id_empresa = rubro.id_empresa;
-        const logo_url = rubro.logo_url;
-
-        const rubroVista = new RubroVista(id, id_empresa, nombre, logo_url);
+        const rubroVista = new RubroVista(rubro);
         const rubroBoton = rubroVista.mostrarUno(); // 'mostrarUno' ahora actúa como un botón
         rubroBoton.onclick = () => {
           this.barraBusqueda.value = "";
           this.tituloRubros.classList.add("hidden");
-          this.filtrarArticulosPorRubro(id);
-          this.cambiarHeaderPorRubro(nombre, logo_url);
+          this.filtrarArticulosPorRubro(rubro.id);
+          this.cambiarHeaderPorRubro(rubro.nombre, rubro.logo_url);
         };
         this.listaRubros.appendChild(rubroBoton);
         this.todosLosRubros.push(rubroBoton);

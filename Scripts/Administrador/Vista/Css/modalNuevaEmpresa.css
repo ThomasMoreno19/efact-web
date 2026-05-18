@@ -9,6 +9,7 @@
   justify-content: center;
   align-items: flex-start;
   color: white;
+  touch-action: none;
 }
 
 h3 {
@@ -20,10 +21,11 @@ h3 {
   width: 100%;
   padding: 0px 10px;
   padding-bottom: 100px;
+  touch-action: none;
 }
 
 .modal-content-configurar {
-  background-color: #16161f;
+  background-color: #1e1e1e;
   padding: 30px 40px;
   border-radius: 10px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
@@ -31,6 +33,7 @@ h3 {
   max-width: 500px;
   position: relative;
   animation: slideIn 0.3s ease-in-out;
+  touch-action: none;
 }
 
 #header-wrapper {
@@ -101,23 +104,24 @@ h3 {
   background-color: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(5px);
   animation: fadeIn 0.3s ease-in-out;
+  touch-action: none;
 }
 
 .submit-button {
   width: 100%;
-  background-color: #20202b;
-  color: white;
-  padding: 12px 20px;
+  background-color: #e8a114;
+  color: black;
+  padding: 10px 16px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: bold;
   transition: background-color 0.3s ease;
 }
 
 .submit-button:hover {
-  background-color: #0f0f15;
+  background-color: #ffc116;
 }
 
 .form-group {
@@ -216,6 +220,10 @@ option {
   .form-group input[type="password"],
   select {
     width: 70%;
+  }
+
+  .modal-content-configurar {
+    max-width: 70%;
   }
 }
 

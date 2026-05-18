@@ -68,7 +68,7 @@ try {
   }
 } catch (Exception $e) {
   http_response_code(500); // Internal Server Error
-  error_log("Error en el enrutador central para URI: " . $requestUri . " - " . $e->getMessage());
+  error_log("Error en el enrutador central para URI: " . $e->getMessage());
   echo "<h1>500 - Error Interno del Servidor</h1>";
 }
 

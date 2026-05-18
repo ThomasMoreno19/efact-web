@@ -21,17 +21,22 @@ class PantallaModerador {
     this.botonCargarArticulos = document.getElementById(
       "boton-cargar-articulos",
     );
+
     this.botonModificarCafeteria = document.getElementById(
       "modificar-cafeteria",
     );
 
     this.barraBusqueda = document.getElementById("barra-busqueda");
+    this.contenedorBarraBusqueda = document.getElementById(
+      "contenedor-busqueda",
+    );
     this.tituloPagina = document.getElementById("titulo-pagina");
     this.loader = document.getElementById("loader");
     window.gestorDeArticulosCallback = (articulo) =>
       this.modalArticuloSeleccionado(articulo);
-    window.gestorDeRubrosCallback = (id, id_empresa, nombre, logo_url) =>
-      this.modalRubroSeleccionado(id, id_empresa, nombre, logo_url);
+    window.gestorDeRubrosCallback = (rubro) => {
+      this.modalRubroSeleccionado(rubro);
+    };
     this.agregarEventListeners();
     this.todosLosArticulos = [];
     this.arrayContainerRubro = [];
@@ -103,6 +108,7 @@ class PantallaModerador {
           this.listaRubros.classList.add("hidden");
           this.listaArticulos.classList.remove("hidden");
           this.barraBusqueda.classList.remove("hidden");
+          this.contenedorBarraBusqueda.classList.remove("hidden");
         }
       });
 
@@ -113,6 +119,7 @@ class PantallaModerador {
           this.listaRubros.classList.remove("hidden");
           this.listaArticulos.classList.add("hidden");
           this.barraBusqueda.classList.add("hidden");
+          this.contenedorBarraBusqueda.classList.add("hidden");
         }
       });
     }
@@ -247,22 +254,14 @@ class PantallaModerador {
           lista.innerHTML = `<p class="texto-vacio"> No se encontraron rubros. </p>`;
         } else {
           rubrosRecibidos.forEach((rubroArray) => {
-            const id = rubroArray["id"];
-            const nombre = rubroArray["nombre"];
-            const id_empresa = rubroArray["id_empresa"];
-            const logo_url = rubroArray["logo_url"];
-            const rubroRecibido = new RubroVista(
-              id,
-              id_empresa,
-              nombre,
-              logo_url,
-            );
+            const rubroRecibido = new RubroVista(rubroArray);
             lista.appendChild(rubroRecibido.mostrarUno());
           });
         }
       }
       await this.aplicarColoresAlternados(lista);
       this.barraBusqueda.classList.remove("hidden");
+      this.contenedorBarraBusqueda.classList.remove("hidden");
     } catch (error) {
       console.error("Error en mostrarLista:", error);
       lista.innerHTML = `<p class="texto-error"> Error al cargar los datos: ${error.message}. Por favor, recargue la página. </p>`;
@@ -275,19 +274,48 @@ class PantallaModerador {
     this.articuloSeleccionado = articulo;
     // Agregamos un ID al modal para poder identificarlo
     document.body.appendChild(modal);
+
+    const botonSubirVideoArticulo = document.getElementById(
+      "boton-subir-video-articulo",
+    );
     const botonModificarArticulo = document.getElementById("modificar");
 
     this.clickFuera(modal);
+
+    botonSubirVideoArticulo.addEventListener("click", () => {
+      this.abrirModalSubirVideoArticulo(articulo);
+    });
 
     botonModificarArticulo.addEventListener("click", () => {
       this.abrirModalModificarArticulo(modal);
     });
   }
 
-  async modalRubroSeleccionado(id, id_empresa, nombre, logo_url) {
+  async modalRubroSeleccionado(rubro) {
     if (this.empresa.deshabilitarExcel) return;
-    const rubro = new RubroVista(id, id_empresa, nombre, logo_url);
-    const modal = rubro.modalModificar(nombre, logo_url);
+    const modal = rubro.modalConfigurar();
+    this.rubroSeleccionado = rubro;
+    // Agregamos un ID al modal para poder identificarlo
+    document.body.appendChild(modal);
+
+    this.clickFuera(modal);
+
+    const botonModificar = document.getElementById("modificar");
+    const botonSubirVideo = document.getElementById("boton-subir-video-rubro");
+
+    botonModificar.addEventListener("click", () => {
+      this.abrirModalModificarRubro(rubro);
+    });
+
+    botonSubirVideo.addEventListener("click", () => {
+      this.abrirModalSubirVideoRubro(rubro);
+    });
+  }
+
+  async modalRubroModificar(rubro) {
+    if (this.empresa.deshabilitarExcel) return;
+    const Rubro = new RubroVista(rubro);
+    const modal = rubro.modalModificar(rubro.nombre);
 
     // Agregamos un ID al modal para poder identificarlo
     document.body.appendChild(modal);
@@ -322,6 +350,7 @@ class PantallaModerador {
           this.botonListaRubros.classList.add("activo");
           this.botonListaArticulos.classList.remove("activo");
           this.barraBusqueda.classList.add("hidden");
+          this.contenedorBarraBusqueda.classList.add("hidden");
         } else {
           document.body.appendChild(modal);
         }
@@ -520,6 +549,88 @@ class PantallaModerador {
     return modal;
   }
 
+  abrirModalSubirVideoArticulo(articulo) {
+    const modal = articulo.modalSubirVideoArticulo();
+    document.body.appendChild(modal);
+
+    this.clickFuera(modal);
+
+    const modalContent = modal.querySelector(".modal-content-partial");
+
+    const form = document.getElementById("form-cargar-video");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const archivoInput = document.getElementById("archivo-video");
+      const archivo = archivoInput.files[0];
+
+      try {
+        this.insertarLoader(modalContent);
+
+        // Llamada al método correspondiente en tu gestor (adaptar según tu backend)
+        const respuesta = await this.gestor.subirVideoArticulo(
+          archivo,
+          articulo.id,
+          this.empresa.id,
+          articulo.video_url, // O el id del artículo si disponés de él aquí
+        );
+
+        this.mensajeExitoso(modalContent, "Video/GIF cargado exitosamente.");
+
+        // Actualización de la vista si es necesario
+        this.loader.classList.remove("hidden");
+        this.listaArticulos.classList.add("hidden");
+        await this.mostrarLista(this.listaArticulos);
+        this.loader.classList.add("hidden");
+        this.listaArticulos.classList.remove("hidden");
+      } catch (error) {
+        if (error.value == "Error al procesar el archivo:") {
+          this.mensajeError(modalContent, error);
+        }
+      }
+    });
+  }
+
+  abrirModalSubirVideoRubro(rubro) {
+    const modal = rubro.modalSubirVideoRubro();
+    document.body.appendChild(modal);
+
+    this.clickFuera(modal);
+
+    const modalContent = modal.querySelector(".modal-content-partial");
+
+    const form = document.getElementById("form-cargar-video");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const archivoInput = document.getElementById("archivo-video");
+      const archivo = archivoInput.files[0];
+
+      try {
+        this.insertarLoader(modalContent);
+
+        // Llamada al método correspondiente en tu gestor (adaptar según tu backend)
+        const respuesta = await this.gestor.subirVideoRubro(
+          archivo,
+          rubro.id,
+          this.empresa.id,
+          rubro.video_url, // O el id del artículo si disponés de él aquí
+        );
+
+        this.mensajeExitoso(modalContent, "Video/GIF cargado exitosamente.");
+
+        // Actualización de la vista si es necesario
+        this.loader.classList.remove("hidden");
+        this.listaRubros.classList.add("hidden");
+        await this.mostrarLista(this.listaRubros);
+        this.loader.classList.add("hidden");
+        this.listaRubros.classList.remove("hidden");
+      } catch (error) {
+        if (error.value == "Error al procesar el archivo:") {
+          this.mensajeError(modalContent, error);
+        }
+      }
+    });
+  }
+
   async abrirModalModificar(modalPadre) {
     const moderador = await this.gestor.obtenerModerador(this.empresa.id);
     const modal = this.empresa.modalModificarParaModerador(moderador);
@@ -645,7 +756,6 @@ class PantallaModerador {
     const idEmpresa = document.getElementById("id-empresa");
     idEmpresa.classList.add("hidden");
     const botonSecccionModificar = document.getElementById("seccion-modificar");
-    const botonVisitarPagina = document.getElementById("visitar-pagina");
     const botonConfigurarHorarios = document.getElementById(
       "configurar-horarios",
     );
@@ -654,16 +764,7 @@ class PantallaModerador {
     );
     const botonMeseros = document.getElementById("meseros");
 
-    const botonVisitarGestion = document.getElementById("visitar-gestion");
-    botonVisitarGestion.classList.add("hidden");
-
     this.clickFuera(modal);
-
-    botonVisitarPagina.addEventListener("click", (event) => {
-      event.preventDefault();
-      window.open(`/carta/${this.empresa.id}`, "_blank");
-    });
-
     botonSecccionModificar.addEventListener("click", async (event) => {
       event.preventDefault();
       await this.abrirModalModificar(modal);
@@ -2071,8 +2172,7 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
     }
 
     articulos.forEach((articulo, index) => {
-      articulo.style.backgroundColor =
-        index % 2 === 0 ? "rgb(26 24 36 / 96%)" : "#242130";
+      articulo.style.backgroundColor = index % 2 === 0 ? "#1d1d1d" : "#2c2c2e";
     });
   }
 

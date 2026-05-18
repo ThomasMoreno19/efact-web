@@ -34,7 +34,8 @@ class ArticuloRepositorio
         $data['fecha_eliminado'],
         $data['aparece_en_csv'],
         $data['creado_en_pagina'],
-        $data['logo_url']
+        $data['logo_url'],
+        $data['video_url'],
       );
     }
     return null;
@@ -54,7 +55,8 @@ class ArticuloRepositorio
                     precio1, 
                     precio2, 
                     precio3, 
-                    codigo_carta 
+                    codigo_carta,
+                    video_url
                 FROM Articulo
                 WHERE id_rubro = :id_rubro
                 ORDER BY nombre ASC
@@ -86,7 +88,8 @@ class ArticuloRepositorio
                     precio2,
                     precio3,
                     codigo_carta,
-                    no_procesado
+                    no_procesado,
+                    video_url
                 FROM Articulo
                 WHERE id_empresa = :id_empresa
                 ORDER BY id_rubro ASC, nombre ASC
@@ -116,7 +119,8 @@ class ArticuloRepositorio
                     precio2,
                     precio3,
                     codigo_carta,
-                    no_procesado
+                    no_procesado,
+                    video_url
                 FROM Articulo
                 WHERE id_empresa = :id_empresa AND solo_mesero = 0
                 ORDER BY id_rubro ASC, nombre ASC
@@ -308,5 +312,27 @@ class ArticuloRepositorio
       error_log("Error al setear CSV en 0: " . $e->getMessage());
       return false;
     }
+  }
+
+  public function agregarUrlVideo(int $id, int $id_empresa, string $video_url): bool
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Articulo
+             SET video_url = :video_url
+             WHERE id = :id AND id_empresa = :id_empresa;"
+      );
+
+      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->bindParam(':video_url', $video_url, PDO::PARAM_STR);
+
+      if ($stmt->execute()) {
+        return true;
+      }
+    } catch (PDOException $e) {
+      error_log("Error al agregar URL de video al artículo: " . $e->getMessage());
+    }
+    return false;
   }
 }
