@@ -8,4 +8,9 @@ Scripts/cuenta.php
 Scripts/Cache/*
 !Scripts/Cache/
 
+Archivos/Videos/*
+!Archivos/Videos/
+Archivos/Iconos/*
+!Archivos/Iconos/
+
 .env*
