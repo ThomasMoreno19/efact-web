@@ -6,11 +6,12 @@ Archivos/Logos/Rubro/*
 index.php
 Scripts/cuenta.php
 Scripts/Cache/*
-!Scripts/Cache/
+!Scripts/Cache/.gitkeep
 
 Archivos/Videos/*
-!Archivos/Videos/
+!Archivos/Videos/.gitkeep
+
 Archivos/Iconos/*
-!Archivos/Iconos/
+!Archivos/Iconos/.gitkeep
 
 .env*
