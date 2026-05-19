@@ -29,7 +29,7 @@ class RubroVista {
     </svg>`;
   }
 
-  mostrarUno() {
+  mostrarUno(paraCliente = false) {
     const divRubro = document.createElement("div");
     divRubro.classList.add("rubro");
     divRubro.dataset.RubroId = this.id; //🤣😎
@@ -58,7 +58,9 @@ class RubroVista {
 
       botonVideo.addEventListener("click", (e) => {
         e.stopPropagation(); // Evita que se dispare el click del divArticulo (selección/animación)
-        this.mostrarModalReproductor(this.video_url);
+        if (paraCliente)
+          this.mostrarModalReproductorParaCliente(this.video_url);
+        else this.mostrarModalReproductor(this.video_url);
       });
 
       container2.appendChild(botonVideo);
@@ -89,6 +91,7 @@ class RubroVista {
     const codigoCartaTexto = this.codigo_carta ? ` (${this.codigo_carta})` : "";
 
     const htmlContent = `
+    <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
     <form id="form-configurar-rubro">
       <h2 id="nombre-articulo-modal">${this.nombre}</h2>
       <button type="button" class="submit-button" id="modificar">Modificar</button>
@@ -96,7 +99,17 @@ class RubroVista {
     </form>`;
 
     modalContenido.innerHTML = htmlContent;
+
     modal.appendChild(modalContenido);
+
+    const closeBtn = modal.querySelector(".close-modal-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        modal.remove();
+      });
+    }
 
     return modal;
   }
@@ -110,6 +123,7 @@ class RubroVista {
     modalModificarContenido.classList.add("modal-content-partial");
 
     const htmlContent = `
+    <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
             <form id="form-modificar-rubro" method="POST" enctype="multipart/form-data"> 
                 <h2 id ="titulo-modal">Modificar Rubro</h2> 
                 <div class="form-group"> 
@@ -124,6 +138,15 @@ class RubroVista {
             </form> `;
     modalModificarContenido.innerHTML = htmlContent;
     modalModificar.appendChild(modalModificarContenido);
+
+    const closeBtn = modalModificar.querySelector(".close-modal-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        modalModificar.remove();
+      });
+    }
     return modalModificar;
   }
 
@@ -132,6 +155,7 @@ class RubroVista {
     modal.classList.add("modal");
     modal.innerHTML = `
     <div class="modal-content-partial">
+      <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
       <h2>Subir Video o GIF</h2>
       
       <form id="form-cargar-video">
@@ -168,6 +192,14 @@ class RubroVista {
       } else {
         boton.classList.add("disabled");
       }
+    }
+    const closeBtn = modal.querySelector(".close-modal-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        modal.remove();
+      });
     }
 
     // Eventos de click y arrastre
@@ -237,6 +269,14 @@ class RubroVista {
 
       accionBotonCargar(true);
     }
+    const eliminarBtn = modal.querySelector("#eliminar-video");
+    if (eliminarBtn) {
+      eliminarBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        this.modalEliminarVideo();
+      });
+    }
 
     return modal;
   }
@@ -244,11 +284,15 @@ class RubroVista {
   mostrarModalReproductor(url) {
     const modal = document.createElement("div");
     modal.classList.add("modal");
+    modal.id = "modal-video-rubro";
 
     modal.innerHTML = `
       <div class="modal-content-partial" id="modal-video">
-        <span class="close-modal-btn" style="position: absolute; top: -15px; right: 0px; cursor: pointer; font-size: 50px;">&times;</span>
-        <h3 id="nombre-video" style="margin-bottom: 15px; font-size: 24px;">${this.nombre}</h3>
+        <button class="btn-eliminar" id="eliminar-video">
+          <img src="../../../../Archivos/Iconos/trash4.svg" alt="Eliminar Icon" height="25" width="25"/>
+        </button>
+        <span class="close-modal-btn" style="position: absolute; top: -20px; right: 0px; cursor: pointer; font-size: 50px;">&times;</span>
+        <h3 id="nombre-video" style="font-size: 21px;width: 75%;margin: auto;">${this.nombre}</h3>
         <div class="reproductor-container">
           ${
             url.toLowerCase().endsWith(".gif")
@@ -258,7 +302,61 @@ class RubroVista {
                   autoplay 
                   loop 
                   controls 
-                  playsinline">
+                  playsinline
+                  controlsList="nodownload noplaybackrate"
+                  disablePictureInPicture
+                >
+                </video>`
+          }
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    this.clickFuera(modal);
+
+    const closeBtn = modal.querySelector(".close-modal-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        modal.remove();
+      });
+    }
+
+    const eliminarBtn = modal.querySelector("#eliminar-video");
+    if (eliminarBtn) {
+      eliminarBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        this.modalEliminarVideo();
+      });
+    }
+  }
+
+  mostrarModalReproductorParaCliente(url) {
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.id = "modal-video-rubro";
+
+    modal.innerHTML = `
+      <div class="modal-content-partial" id="modal-video">
+        <span class="close-modal-btn" style="position: absolute; top: -20px; right: 0px; cursor: pointer; font-size: 50px;">&times;</span>
+        <h3 id="nombre-video" style="font-size: 21px;width: 75%;margin: auto;">${this.nombre}</h3>
+        <div class="reproductor-container">
+          ${
+            url.toLowerCase().endsWith(".gif")
+              ? `<img src="${url}" alt="GIF Artículo" style="max-width: 100%; border-radius: 8px;"/>`
+              : `<video 
+                  src="${url}" 
+                  autoplay 
+                  loop 
+                  controls 
+                  playsinline
+                  controlsList="nodownload noplaybackrate"
+                  disablePictureInPicture
+                >
                 </video>`
           }
         </div>
@@ -292,6 +390,44 @@ class RubroVista {
       if (clickEmpezoAfuera && clickTerminoAfuera) {
         document.body.removeChild(modal);
       }
+    });
+  }
+
+  modalEliminarVideo() {
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.id = "modal-eliminar-video";
+
+    const contenido = document.createElement("div");
+    contenido.classList.add("modal-content-partial");
+
+    contenido.innerHTML = `
+      <h2>¿Deseas eliminar el video?</h2>
+      <button type="button" class="submit-button" id="confirmar-eliminar-video">Confirmar</button>
+      <button type="button" class="submit-button eliminar" id="cancelar-eliminar-video">Cancelar</button>
+    `;
+
+    modal.appendChild(contenido);
+
+    document.body.appendChild(modal);
+
+    this.clickFuera(modal);
+
+    const confirmarBtn = document.getElementById("confirmar-eliminar-video");
+    const cancelarBtn = document.getElementById("cancelar-eliminar-video");
+
+    confirmarBtn.addEventListener("click", () => {
+      const event = new CustomEvent("videoEliminarRubro", { detail: this });
+      document.dispatchEvent(event);
+      if (typeof window.eliminarVideoRubro === "function") {
+        window.eliminarVideoRubro(this);
+        document.getElementById("modal-video-rubro").remove();
+        modal.remove();
+      }
+    });
+
+    cancelarBtn.addEventListener("click", () => {
+      modal.remove();
     });
   }
 }

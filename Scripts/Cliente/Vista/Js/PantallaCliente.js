@@ -208,7 +208,7 @@ class PantallaCliente {
       // 1. Generar la lista de rubros como botones y guardar las referencias
       rubrosRecibidos.forEach((rubro) => {
         const rubroVista = new RubroVista(rubro);
-        const rubroBoton = rubroVista.mostrarUno(); // 'mostrarUno' ahora actúa como un botón
+        const rubroBoton = rubroVista.mostrarUno(true); // 'mostrarUno' ahora actúa como un botón
         rubroBoton.onclick = () => {
           this.barraBusqueda.value = "";
           this.tituloRubros.classList.add("hidden");
@@ -252,6 +252,7 @@ class PantallaCliente {
             const articuloRecibido = new ArticuloVista(articulo);
             const elementoArticulo = articuloRecibido.mostrarUna(
               this.precioActual,
+              true,
             );
 
             listaArticulosDiv.appendChild(elementoArticulo);

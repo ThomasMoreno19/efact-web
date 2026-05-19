@@ -558,7 +558,6 @@ class GestorModerador {
 
       return await response.json();
     } catch (error) {
-      console.error("Error al subir video:", error);
       throw error;
     }
   }
@@ -587,8 +586,66 @@ class GestorModerador {
 
       return await response.json();
     } catch (error) {
-      console.error("Error al subir video:", error);
       throw error;
+    }
+  }
+
+  async eliminarVideoArticulo(id_articulo, video_url, id_empresa) {
+    const bodyData = {
+      id_articulo: id_articulo,
+      video_url: video_url,
+      id_empresa: id_empresa,
+    };
+
+    try {
+      const response = await fetch(`/articulo/eliminar-video`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al eliminar video" }));
+        throw new Error(
+          errorData.message || `Error al eliminar el video: ${response.status}`,
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error al eliminar el video:", error);
+      throw error;
+    }
+  }
+
+  async eliminarVideoRubro(id_rubro, video_url, id_empresa) {
+    const bodyData = {
+      id_rubro: id_rubro,
+      video_url: video_url,
+      id_empresa: id_empresa,
+    };
+
+    try {
+      const response = await fetch(`/rubro/eliminar-video`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al eliminar video" }));
+        throw new Error(
+          errorData.message || `Error al eliminar el video: ${response.status}`,
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      return error;
     }
   }
 

@@ -108,8 +108,22 @@ body {
 }
 
 .btn-eliminar {
-  border-color: #e81313;
-  color: #e89e13;
+  background-color: #eb2a2a;
+  border: none;
+  color: white;
+  padding: 0px 5px;
+  width: 35px;
+  height: 35px;
+  border-radius: 5px;
+  cursor: pointer;
+  position: absolute;
+  top: -20px;
+  left: 0px;
+  z-index: 12;
+}
+
+.btn-eliminar img {
+  filter: invert(100%) sepia(100%) grayscale(100%) brightness(150%);
 }
 
 .btn-editar:hover {
@@ -131,11 +145,6 @@ body {
 
 .btn-mesero:hover img {
   filter: invert(0);
-}
-
-.btn-eliminar:hover {
-  background-color: #e81313;
-  color: #fff;
 }
 
 #titulo-pagina {
@@ -387,6 +396,7 @@ h3 {
     max-height: 70vh;
     object-fit: contain;
     border-radius: 8px;
+    outline: none;
   }
 }
 

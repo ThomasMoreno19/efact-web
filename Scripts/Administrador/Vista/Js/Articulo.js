@@ -47,7 +47,7 @@ class ArticuloVista {
     </svg>`;
   }
 
-  mostrarUna(precio_activo = 1) {
+  mostrarUna(precio_activo = 1, paraCliente = false) {
     const divArticulo = document.createElement("div");
     divArticulo.classList.add("articulo");
     divArticulo.dataset.articuloId = this.id; //🤣😎
@@ -90,7 +90,9 @@ class ArticuloVista {
 
       botonVideo.addEventListener("click", (e) => {
         e.stopPropagation(); // Evita que se dispare el click del divArticulo (selección/animación)
-        this.mostrarModalReproductor(this.video_url);
+        if (paraCliente)
+          this.mostrarModalReproductorParaCliente(this.video_url);
+        else this.mostrarModalReproductor(this.video_url);
       });
 
       container2.appendChild(botonVideo);
@@ -142,6 +144,7 @@ class ArticuloVista {
     const codigoCartaTexto = this.codigo_carta ? ` (${this.codigo_carta})` : "";
 
     const htmlContent = `
+    <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 30px;">&times;</span>
             <form id="form-configurar-articulo">
                 <h2 id="nombre-articulo-modal">${this.nombre}${codigoCartaTexto}</h2>
                 <h2 id="id-articulo">Precio 1: $${this.precio1}</h2>
@@ -151,8 +154,20 @@ class ArticuloVista {
                 <button type="button" class="submit-button" id="boton-subir-video-articulo">Subir video</button>
             </form>`;
 
+    const modal = document.getElementById("modal-configurar-articulo");
+
     modalContenido.innerHTML = htmlContent;
     modalConfigurarArticulo.appendChild(modalContenido);
+
+    const closeBtn = modalConfigurarArticulo.querySelector(".close-modal-btn");
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        modalConfigurarArticulo.remove();
+      });
+    }
 
     return modalConfigurarArticulo;
   }
@@ -171,6 +186,7 @@ class ArticuloVista {
     const precioSinPuntos3 = this.sacarPuntosPrecio(this.precio3);
 
     contenido.innerHTML = `
+    <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 30px;">&times;</span>
             <form id="form-modificar-articulo">
                 <h2>Modificar Artículo</h2>
                 <div class="form-group">
@@ -202,6 +218,16 @@ class ArticuloVista {
         `;
 
     modal.appendChild(contenido);
+
+    const closeBtn = modal.querySelector(".close-modal-btn");
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        modal.remove();
+      });
+    }
     return modal;
   }
 
@@ -210,6 +236,8 @@ class ArticuloVista {
     modal.classList.add("modal");
     modal.innerHTML = `
     <div class="modal-content-partial">
+    
+    <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 30px;">&times;</span>
       <h2>Subir Video o GIF</h2>
       
       <form id="form-cargar-video">
@@ -316,17 +344,81 @@ class ArticuloVista {
       accionBotonCargar(true);
     }
 
+    const modalContentPartial = modal.querySelector(".modal-content-partial");
+
+    const closeBtn = modalContentPartial.querySelector(".close-modal-btn");
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        modal.remove();
+      });
+    }
+
     return modal;
   }
 
   mostrarModalReproductor(url) {
     const modal = document.createElement("div");
     modal.classList.add("modal");
+    modal.id = "modal-video-articulo";
 
     modal.innerHTML = `
       <div class="modal-content-partial" id="modal-video">
-        <span class="close-modal-btn" style="position: absolute; top: -15px; right: 0px; cursor: pointer; font-size: 50px;">&times;</span>
-        <h3 id="nombre-video" style="margin-bottom: 15px; font-size: 24px;">${this.nombre}</h3>
+        <button class="btn-eliminar" id="eliminar-video">
+          <img src="../../../../Archivos/Iconos/trash4.svg" alt="Eliminar Icon" height="25" width="25"/>
+        </button>
+        <span class="close-modal-btn" style="position: absolute; top: -20px; right: 0px; cursor: pointer; font-size: 50px;">&times;</span>
+        <h3 id="nombre-video" style="font-size: 22px; width: 75%; margin: auto;">${this.nombre}</h3>
+        <div class="reproductor-container">
+          ${
+            url.toLowerCase().endsWith(".gif")
+              ? `<img src="${url}" alt="GIF Artículo" style="max-width: 100%; border-radius: 8px;"/>`
+              : `<video 
+                  src="${url}" 
+                  autoplay 
+                  loop 
+                  controls 
+                  playsinline">
+                </video>`
+          }
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    this.clickFuera(modal);
+
+    const closeBtn = modal.querySelector(".close-modal-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        modal.remove();
+      });
+    }
+
+    const eliminarBtn = modal.querySelector("#eliminar-video");
+    if (eliminarBtn) {
+      eliminarBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        this.modalEliminarVideo();
+      });
+    }
+  }
+
+  mostrarModalReproductorParaCliente(url) {
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.id = "modal-video-articulo";
+
+    modal.innerHTML = `
+      <div class="modal-content-partial" id="modal-video">
+        <span class="close-modal-btn" style="position: absolute; top: -20px; right: 0px; cursor: pointer; font-size: 50px;">&times;</span>
+        <h3 id="nombre-video" style="font-size: 22px; width: 75%; margin: auto;">${this.nombre}</h3>
         <div class="reproductor-container">
           ${
             url.toLowerCase().endsWith(".gif")
@@ -374,6 +466,44 @@ class ArticuloVista {
       if (clickEmpezoAfuera && clickTerminoAfuera) {
         document.body.removeChild(modal);
       }
+    });
+  }
+
+  modalEliminarVideo() {
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    modal.id = "modal-eliminar-video";
+
+    const contenido = document.createElement("div");
+    contenido.classList.add("modal-content-partial");
+
+    contenido.innerHTML = `
+      <h2>¿Deseas eliminar el video?</h2>
+      <button type="button" class="submit-button" id="confirmar-eliminar-video">Confirmar</button>
+      <button type="button" class="submit-button eliminar" id="cancelar-eliminar-video">Cancelar</button>
+    `;
+
+    modal.appendChild(contenido);
+
+    document.body.appendChild(modal);
+
+    this.clickFuera(modal);
+
+    const confirmarBtn = document.getElementById("confirmar-eliminar-video");
+    const cancelarBtn = document.getElementById("cancelar-eliminar-video");
+
+    confirmarBtn.addEventListener("click", () => {
+      const event = new CustomEvent("videoEliminarArticulo", { detail: this });
+      document.dispatchEvent(event);
+      if (typeof window.eliminarVideoArticulo === "function") {
+        window.eliminarVideoArticulo(this);
+        document.getElementById("modal-video-articulo").remove();
+        modal.remove();
+      }
+    });
+
+    cancelarBtn.addEventListener("click", () => {
+      modal.remove();
     });
   }
 }

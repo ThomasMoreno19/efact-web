@@ -65,6 +65,10 @@ class GestorRubro
         $this->subirVideo();
         break;
 
+      case 'eliminar-video':
+        $this->eliminarVideo();
+        break;
+
       default:
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Rubro.']);
@@ -350,5 +354,34 @@ class GestorRubro
       }
     }
     return $totalBytes;
+  }
+
+  private function eliminarVideo(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_rubro = $datos['id_rubro'];
+    $id_empresa = $datos['id_empresa'];
+    $video_url = $datos['video_url'];
+
+    if ($video_url) {
+      $rutaVideo = $_SERVER['DOCUMENT_ROOT'] . $video_url;
+      if (file_exists($rutaVideo) && is_file($rutaVideo)) {
+        unlink($rutaVideo);
+      }
+    }
+
+    $guardadoExitoso = $this->rubroRepositorio->eliminarUrlVideo($id_rubro, $id_empresa, $video_url);
+
+    if ($guardadoExitoso) {
+      http_response_code(200);
+      $this->borrarCacheTodos($id_empresa);
+      echo json_encode(['mensaje' => 'Video eliminado con éxito.']);
+      return;
+    } else {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al eliminar el video.']);
+      return;
+    }
   }
 }

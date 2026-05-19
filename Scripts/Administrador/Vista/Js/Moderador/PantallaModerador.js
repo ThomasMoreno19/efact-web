@@ -37,6 +37,7 @@ class PantallaModerador {
     window.gestorDeRubrosCallback = (rubro) => {
       this.modalRubroSeleccionado(rubro);
     };
+
     this.agregarEventListeners();
     this.todosLosArticulos = [];
     this.arrayContainerRubro = [];
@@ -54,6 +55,13 @@ class PantallaModerador {
       this.espectaculos = await this.gestor.obtenerEspectaculos(
         this.empresa.id,
       );
+      window.eliminarVideoArticulo = (articulo) => {
+        this.eliminarVideoArticulo(articulo);
+      };
+
+      window.eliminarVideoRubro = (rubro) => {
+        this.eliminarVideoRubro(rubro);
+      };
     } catch (error) {
       this.horariosGuardados = [];
       this.diasNoLaboralesGuardados = [];
@@ -226,6 +234,7 @@ class PantallaModerador {
               const elementoArticulo = articuloRecibido.mostrarUna(
                 this.precioActual,
               );
+
               // ✅ Agregarlo al DOM
               listaArticulosDiv.appendChild(elementoArticulo);
 
@@ -304,7 +313,7 @@ class PantallaModerador {
     const botonSubirVideo = document.getElementById("boton-subir-video-rubro");
 
     botonModificar.addEventListener("click", () => {
-      this.abrirModalModificarRubro(rubro);
+      this.modalRubroModificar(rubro);
     });
 
     botonSubirVideo.addEventListener("click", () => {
@@ -400,7 +409,6 @@ class PantallaModerador {
       }
     });
   }
-
   abrirModalCargarArticulos() {
     const modal = this.modalCargarArticulos();
     document.body.appendChild(modal);
@@ -445,6 +453,7 @@ class PantallaModerador {
     modal.classList.add("modal");
     modal.innerHTML = `
       <div class="modal-content-partial">
+      <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
         <h2>Excel</h2>
         
         <form id="form-cargar">
@@ -546,6 +555,11 @@ class PantallaModerador {
       accionBotonCargar(true);
     }
 
+    const closeBtn = modal.querySelector(".close-modal-btn");
+    closeBtn.addEventListener("click", () => {
+      modal.remove();
+    });
+
     return modal;
   }
 
@@ -583,9 +597,7 @@ class PantallaModerador {
         this.loader.classList.add("hidden");
         this.listaArticulos.classList.remove("hidden");
       } catch (error) {
-        if (error.value == "Error al procesar el archivo:") {
-          this.mensajeError(modalContent, error);
-        }
+        this.mensajeError(modalContent, error);
       }
     });
   }
@@ -2622,6 +2634,25 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
     const anio = date.getUTCFullYear();
 
     return `${dia}/${mes}/${anio}`;
+  }
+
+  async eliminarVideoArticulo(articulo) {
+    const mensaje = await this.gestor.eliminarVideoArticulo(
+      articulo.id,
+      articulo.video_url,
+      this.empresa.id,
+    );
+    console.log(mensaje);
+    await this.mostrarLista(this.listaArticulos);
+  }
+
+  async eliminarVideoRubro(rubro) {
+    await this.gestor.eliminarVideoRubro(
+      rubro.id,
+      rubro.video_url,
+      this.empresa.id,
+    );
+    await this.mostrarLista(this.listaRubros);
   }
 }
 

@@ -335,4 +335,25 @@ class ArticuloRepositorio
     }
     return false;
   }
+
+  public function eliminarUrlVideo(int $id, int $id_empresa): bool
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Articulo
+             SET video_url = ''
+             WHERE id = :id AND id_empresa = :id_empresa;"
+      );
+
+      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+
+      if ($stmt->execute()) {
+        return true;
+      }
+    } catch (PDOException $e) {
+      error_log("Error al eliminar URL de video del artículo: " . $e->getMessage());
+    }
+    return false;
+  }
 }
