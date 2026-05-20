@@ -47,7 +47,7 @@ class ArticuloVista {
     </svg>`;
   }
 
-  mostrarUna(precio_activo = 1, paraCliente = false) {
+  mostrarUna(precio_activo = 1, paraClientes = false) {
     const divArticulo = document.createElement("div");
     divArticulo.classList.add("articulo");
     divArticulo.dataset.articuloId = this.id; //🤣😎
@@ -90,7 +90,7 @@ class ArticuloVista {
 
       botonVideo.addEventListener("click", (e) => {
         e.stopPropagation(); // Evita que se dispare el click del divArticulo (selección/animación)
-        if (paraCliente)
+        if (paraClientes)
           this.mostrarModalReproductorParaCliente(this.video_url);
         else this.mostrarModalReproductor(this.video_url);
       });
