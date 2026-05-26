@@ -13,6 +13,7 @@ class EmpresaVista {
     this.precio_delivery = empresa.precio_delivery ?? 1;
     this.precio_espectaculo = empresa.precio_espectaculo ?? 1;
     this.botonPedirCuenta = empresa.botonPedirCuenta ?? false;
+    this.botonLlamarMesero = empresa.botonLlamarMesero ?? false;
     this.tieneContrasenaMesero = empresa.tieneContrasenaMesero;
     this.logo_url = empresa.logo_url;
   }
@@ -27,6 +28,7 @@ class EmpresaVista {
     precio_delivery,
     precio_espectaculo,
     botonPedirCuenta,
+    botonLlamarMesero,
   ) {
     this.nombre = nombre;
     this.telefono = telefono;
@@ -37,6 +39,7 @@ class EmpresaVista {
     this.precio_delivery = precio_delivery;
     this.precio_espectaculo = precio_espectaculo;
     this.botonPedirCuenta = botonPedirCuenta;
+    this.botonLlamarMesero = botonLlamarMesero;
   }
 
   mostrarUna() {
@@ -873,6 +876,13 @@ class EmpresaVista {
             class="toggle-btn ${this.botonPedirCuenta ? "active" : ""}">
             Pedir cuenta
           </button>
+
+          <button
+            type="button"
+            id="btnLlamarMesero"
+            class="toggle-btn ${this.botonLlamarMesero ? "active" : ""}">
+            Llamar mesero
+          </button>
         </div>
 
         <input
@@ -880,6 +890,12 @@ class EmpresaVista {
           name="pedirCuenta"
           id="pedirCuenta"
           value="${!!this.botonPedirCuenta}">
+
+        <input
+          type="hidden"
+          name="llamarMesero"
+          id="llamarMesero"
+          value="${!!this.botonLlamarMesero}">
         
         <div class="form-group">
           <label for="imagen">Imagen</label>

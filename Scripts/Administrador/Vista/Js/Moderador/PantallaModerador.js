@@ -409,6 +409,7 @@ class PantallaModerador {
       }
     });
   }
+
   abrirModalCargarArticulos() {
     const modal = this.modalCargarArticulos();
     document.body.appendChild(modal);
@@ -672,6 +673,10 @@ class PantallaModerador {
         if (btn.id === "btnPedirCuenta") {
           document.getElementById("pedirCuenta").value = activo;
         }
+
+        if (btn.id === "btnLlamarMesero") {
+          document.getElementById("llamarMesero").value = activo;
+        }
       });
     });
 
@@ -706,6 +711,7 @@ class PantallaModerador {
       const precio_delivery = formData.get("precio-delivery");
       const precio_espectaculo = formData.get("precio-espectaculo");
       const botonPedirCuenta = formData.get("pedirCuenta") === "true";
+      const botonLlamarMesero = formData.get("llamarMesero") === "true";
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
       const contrasenaMesero = formData.get("contrasenaMesero");
@@ -725,6 +731,7 @@ class PantallaModerador {
           precio_delivery,
           precio_espectaculo,
           botonPedirCuenta,
+          botonLlamarMesero,
           contrasenaMesero,
         );
         if (imagen && imagen.size > 0) {
@@ -747,6 +754,7 @@ class PantallaModerador {
           parseInt(precio_delivery),
           parseInt(precio_espectaculo),
           botonPedirCuenta,
+          botonLlamarMesero,
         );
         this.mostrarLista(this.listaArticulos);
         modal.classList.add("hidden");

@@ -40,6 +40,7 @@ class EmpresaRepositorio
         'precio_delivery' => $data['precio_delivery'],
         'precio_espectaculo' => $data['precio_espectaculo'],
         'botonPedirCuenta' => $data['botonPedirCuenta'],
+        'botonLlamarMesero' => $data['botonLlamarMesero'],
         'fecha_creacion' => $data['fecha_creacion'],
         'tieneContrasenaMesero' => (bool)$data['tieneContrasenaMesero'],
       ];
@@ -57,18 +58,6 @@ class EmpresaRepositorio
       );
       while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $empresas[] = [
-          'id' => $data['id'],
-          'nombre' => $data['nombre'],
-          'telefono' => $data['telefono'],
-          'ubicacion' => $data['ubicacion'],
-          'tieneCarrito' => $data['tieneCarrito'],
-          'moduloMesero' => $data['moduloMesero'],
-          'deshabilitarExcel' => $data['deshabilitar_excel'],
-          'efectivo' => $data['efectivo'],
-          'tarjeta' => $data['tarjeta'],
-          'transferencia' => $data['transferencia'],
-          'logo_url' => $data['logo_url'],
-          'fecha_creacion' => $data['fecha_creacion'],
           'id' => $data['id'],
           'nombre' => $data['nombre'],
           'telefono' => $data['telefono'],
@@ -143,7 +132,7 @@ class EmpresaRepositorio
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, int $precio_delivery, int $precio_espectaculo, bool $botonPedirCuenta, ?string $contrasenaMesero = null): bool
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, int $precio_delivery, int $precio_espectaculo, bool $botonPedirCuenta, bool $botonLlamarMesero, ?string $contrasenaMesero = null): bool
   {
     try {
       $sql = "UPDATE Empresa
@@ -155,7 +144,8 @@ class EmpresaRepositorio
           transferencia = :transferencia,
           precio_delivery = :precio_delivery,
           precio_espectaculo = :precio_espectaculo,
-          botonPedirCuenta = :botonPedirCuenta";
+          botonPedirCuenta = :botonPedirCuenta,
+          botonLlamarMesero = :botonLlamarMesero";
 
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $sql .= ", contrasenaMesero = :contrasenaMesero";
@@ -175,7 +165,7 @@ class EmpresaRepositorio
       $stmt->bindParam(':precio_delivery', $precio_delivery, PDO::PARAM_INT);
       $stmt->bindParam(':precio_espectaculo', $precio_espectaculo, PDO::PARAM_INT);
       $stmt->bindParam(':botonPedirCuenta', $botonPedirCuenta, PDO::PARAM_BOOL);
-
+      $stmt->bindParam(':botonLlamarMesero', $botonLlamarMesero, PDO::PARAM_BOOL);
       if ($contrasenaMesero !== null && $contrasenaMesero !== '') {
         $contrasenaMeseroHash = password_hash($contrasenaMesero, PASSWORD_DEFAULT);
         $stmt->bindParam(':contrasenaMesero', $contrasenaMeseroHash, PDO::PARAM_STR);
@@ -264,7 +254,7 @@ class EmpresaRepositorio
           'efectivo' => $data['efectivo'],
           'tarjeta' => $data['tarjeta'],
           'transferencia' => $data['transferencia'],
-          'precio_deliveryt' => $data['precio_delivery'],
+          'precio_delivery' => $data['precio_delivery'],
           'precio_espectaculo' => $data['precio_espectaculo'],
           'contrasenaMesero' => $data['contrasenaMesero'],
         ];

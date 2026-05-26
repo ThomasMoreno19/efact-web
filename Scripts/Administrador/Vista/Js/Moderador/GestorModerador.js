@@ -493,6 +493,7 @@ class GestorModerador {
     precio_delivery,
     precio_espectaculo,
     botonPedirCuenta,
+    botonLlamarMesero,
     contrasenaMesero,
   ) {
     const bodyData = {
@@ -506,6 +507,7 @@ class GestorModerador {
       precio_delivery: precio_delivery,
       precio_espectaculo: precio_espectaculo,
       botonPedirCuenta: botonPedirCuenta,
+      botonLlamarMesero: botonLlamarMesero,
       contrasenaMesero: contrasenaMesero,
     };
 

@@ -161,6 +161,9 @@ class PantallaCliente {
         if (this.empresa.botonPedirCuenta)
           this.botonPedirCuenta.classList.remove("hidden");
         else this.botonPedirCuenta.classList.add("hidden");
+        if (this.empresa.botonLlamarMesero) {
+          this.botonLlamarMesero.classList.remove("hidden");
+        } else this.botonLlamarMesero.classList.add("hidden");
 
         this.botonPedirCuenta.addEventListener("click", () => {
           if (numeroMesa) {

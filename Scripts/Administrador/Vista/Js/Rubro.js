@@ -6,27 +6,11 @@ class RubroVista {
     this.nombre = nombre;
     this.logo_url = logo_url;
     this.video_url = video_url;
-    this.videoSVG = `<svg height="33px" width="33px" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" 
-        viewBox="0 0 512 512"  xml:space="preserve">
-      <style type="text/css">
-        .st0{fill:#ffffff;}
-      </style>
-      <g>
-        <path class="st0" d="M0,74.451v363.098h512V74.451H0z M71.524,167.241H47.957c-4.215,0-7.633-3.417-7.633-7.632v-42.974
-          c0-4.215,3.418-7.631,7.633-7.631h23.566c4.215,0,7.631,3.416,7.631,7.631v42.974C79.154,163.824,75.738,167.241,71.524,167.241z
-          M47.957,221.844h23.566c4.215,0,7.631,3.417,7.631,7.633v42.974c0,4.215-3.416,7.632-7.631,7.632H47.957
-          c-4.215,0-7.633-3.417-7.633-7.632v-42.974C40.324,225.261,43.742,221.844,47.957,221.844z M47.957,344.758h23.566
-          c4.215,0,7.631,3.418,7.631,7.632v42.975c0,4.215-3.416,7.632-7.631,7.632H47.957c-4.215,0-7.633-3.417-7.633-7.632V352.39
-          C40.324,348.176,43.742,344.758,47.957,344.758z M198.982,326.856V185.144c0-5.875,6.359-9.547,11.447-6.609l122.725,70.856
-          c5.088,2.937,5.088,10.281,0,13.218L210.43,333.465C205.342,336.402,198.982,332.73,198.982,326.856z M464.041,167.241h-23.565
-          c-4.215,0-7.633-3.417-7.633-7.632v-42.974c0-4.215,3.418-7.631,7.633-7.631h23.565c4.215,0,7.631,3.416,7.631,7.631v42.974
-          C471.672,163.824,468.256,167.241,464.041,167.241z M440.476,221.844h23.565c4.215,0,7.631,3.417,7.631,7.633v42.974
-          c0,4.215-3.416,7.632-7.631,7.632h-23.565c-4.215,0-7.633-3.417-7.633-7.632v-42.974
-          C432.844,225.261,436.262,221.844,440.476,221.844z M440.476,344.758h23.565c4.215,0,7.631,3.418,7.631,7.632v42.975
-          c0,4.215-3.416,7.632-7.631,7.632h-23.565c-4.215,0-7.633-3.417-7.633-7.632V352.39
-          C432.844,348.176,436.262,344.758,440.476,344.758z"/>
-      </g>
-    </svg>`;
+    this.videoSVG = `<svg width="50px" height="50px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M12 3C4.5885 3 3 4.5885 3 12C3 19.4115 4.5885 21 12 21C19.4115 21 21 19.4115 21 12C21 4.5885 19.4115 3 12 3ZM15.224 13.0171C16.011 12.5674 16.011 11.4326 15.224 10.9829L10.7817 8.44446C10.0992 8.05446 9.25 8.54727 9.25 9.33333L9.25 14.6667C9.25 15.4527 10.0992 15.9455 10.7817 15.5555L15.224 13.0171Z" fill="#000000"/>
+      <path d="M3 12C3 4.5885 4.5885 3 12 3C19.4115 3 21 4.5885 21 12C21 19.4115 19.4115 21 12 21C4.5885 21 3 19.4115 3 12Z" stroke="#ffffff00" stroke-width="2"/>
+      <path d="M10.9 8.8L10.6577 8.66152C10.1418 8.36676 9.5 8.73922 9.5 9.33333L9.5 14.6667C9.5 15.2608 10.1418 15.6332 10.6577 15.3385L10.9 15.2L15.1 12.8C15.719 12.4463 15.719 11.5537 15.1 11.2L10.9 8.8Z" stroke="#ffffff" fill="#ffffff" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
   }
 
   mostrarUno(paraCliente = false) {
@@ -95,7 +79,7 @@ class RubroVista {
     <form id="form-configurar-rubro">
       <h2 id="nombre-articulo-modal">${this.nombre}</h2>
       <button type="button" class="submit-button" id="modificar">Modificar</button>
-      <button type="button" class="submit-button" id="boton-subir-video-rubro">Subir video</button>
+      <button type="button" class="submit-button" id="boton-subir-video-rubro">Subir video/imagen</button>
     </form>`;
 
     modalContenido.innerHTML = htmlContent;
@@ -153,26 +137,82 @@ class RubroVista {
   modalSubirVideoRubro() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
+
     modal.innerHTML = `
     <div class="modal-content-partial">
-      <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
-      <h2>Subir Video o GIF</h2>
-      
+
+      <span
+        class="close-modal-btn"
+        style="
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          cursor: pointer;
+          font-size: 30px;
+        ">
+        &times;
+      </span>
+
+      <h2>Archivo multimedia</h2>
+
       <form id="form-cargar-video">
 
         <div id="dropzone-video" class="dropzone">
           <div class="drop-content">
-            <img src="../../../../Archivos/Iconos/video.svg" alt="Upload Icon" class="icon" height="50" width="50"/>
-            <p>Arrastrá tu video o GIF aquí o hacé click</p>
+
+            <img
+              src="../../../../Archivos/Iconos/video.svg"
+              alt="Upload Icon"
+              class="icon"
+              height="50"
+              width="50"
+            />
+
+            <p>
+              Arrastrá tu archivo aquí o hacé click
+            </p>
+
+            <small>
+              Formatos permitidos:
+              MP4, MOV, AVI, GIF, JPG, PNG, WEBP
+            </small>
+
           </div>
 
-          <input type="file" id="archivo-video" name="archivo"
-            accept="video/mp4,video/quicktime,video/x-msvideo,image/gif,.mp4,.mov,.avi,.gif" hidden required>
+          <input
+            type="file"
+            id="archivo-video"
+            name="archivo"
+            accept="
+              video/mp4,
+              video/quicktime,
+              video/x-msvideo,
+              image/gif,
+              image/jpeg,
+              image/png,
+              image/webp,
+              .mp4,
+              .mov,
+              .avi,
+              .gif,
+              .jpg,
+              .jpeg,
+              .png,
+              .webp
+            "
+            hidden
+            required
+          >
         </div>
 
         <div id="video-preview" class="file-preview hidden"></div>
 
-        <button type="submit" class="submit-button disabled" id="boton-cargar-video">Enviar</button>
+        <button
+          type="submit"
+          class="submit-button disabled"
+          id="boton-cargar-video">
+          Enviar
+        </button>
 
       </form>
     </div>
@@ -183,97 +223,160 @@ class RubroVista {
     const preview = modal.querySelector("#video-preview");
 
     function accionBotonCargar(estado) {
-      const boton = modal.querySelector("#boton-cargar-video"); // Mejor buscar dentro del modal
+      const boton = modal.querySelector("#boton-cargar-video");
+
       if (!boton) return;
 
       boton.disabled = !estado;
+
       if (estado) {
         boton.classList.remove("disabled");
       } else {
         boton.classList.add("disabled");
       }
     }
+
+    // Cerrar modal
     const closeBtn = modal.querySelector(".close-modal-btn");
+
     if (closeBtn) {
       closeBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        e.stopPropagation();
         modal.remove();
       });
     }
 
-    // Eventos de click y arrastre
+    // Click
     dropzone.addEventListener("click", () => input.click());
 
+    // Drag over
     dropzone.addEventListener("dragover", (e) => {
       e.preventDefault();
       dropzone.classList.add("dragover");
     });
 
+    // Drag leave
     dropzone.addEventListener("dragleave", () => {
       dropzone.classList.remove("dragover");
     });
 
+    // Drop
     dropzone.addEventListener("drop", (e) => {
       e.preventDefault();
+
       dropzone.classList.remove("dragover");
 
       const file = e.dataTransfer.files[0];
+
       input.files = e.dataTransfer.files;
+
       mostrarArchivo(file);
     });
 
+    // Input change
     input.addEventListener("change", () => {
       const file = input.files[0];
       mostrarArchivo(file);
     });
 
-    // Validación y vista previa
+    // Preview
     function mostrarArchivo(file) {
       if (!file) return;
 
       const validTypes = [
         "video/mp4",
-        "video/quicktime", // .mov
-        "video/x-msvideo", // .avi
+        "video/quicktime",
+        "video/x-msvideo",
         "image/gif",
+        "image/jpeg",
+        "image/png",
+        "image/webp",
       ];
-      const validExtensions = /\.(mp4|mov|avi|gif)$/i;
+
+      const validExtensions = /\.(mp4|mov|avi|gif|jpg|jpeg|png|webp)$/i;
 
       if (!validTypes.includes(file.type) && !validExtensions.test(file.name)) {
         preview.classList.remove("hidden");
-        preview.innerHTML =
-          "<strong>❌ Archivo inválido. Solo se permiten MP4, MOV, AVI o GIF.</strong>";
+
+        preview.innerHTML = `
+        <strong>
+          ❌ Archivo inválido.
+          Solo se permiten:
+          MP4, MOV, AVI, GIF, JPG, PNG o WEBP.
+        </strong>
+      `;
+
         input.value = "";
+
         accionBotonCargar(false);
+
         return;
       }
 
-      // Generar vista previa del contenido multimedia
       const fileURL = URL.createObjectURL(file);
+
       preview.classList.remove("hidden");
 
       let previewElement = "";
-      if (file.type === "image/gif") {
-        previewElement = `<img src="${fileURL}" alt="Preview GIF" style="max-width: 100%; max-height: 150px; border-radius: 4px; margin-top: 100px;"/>`;
-      } else {
-        previewElement = `<video src="${fileURL}" controls style="max-width: 100%; max-height: 150px; border-radius: 4px; margin-top: 10px;"></video>`;
+
+      // Imágenes
+      if (file.type.startsWith("image/")) {
+        previewElement = `
+        <img
+          src="${fileURL}"
+          alt="Preview Imagen"
+          style="
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+            object-fit: contain;
+          "
+        />
+      `;
+      }
+
+      // Videos
+      else if (file.type.startsWith("video/")) {
+        previewElement = `
+        <video
+          src="${fileURL}"
+          controls
+          style="
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+          ">
+        </video>
+      `;
       }
 
       preview.innerHTML = `
       <div class="file-info">
+
         ${previewElement}
-        <p style="margin-top: 5px;"><strong>${file.name}</strong> (${(file.size / (1024 * 1024)).toFixed(2)} MB)</p>
+
+        <p style="margin-top: 5px;">
+          <strong>${file.name}</strong>
+          (${(file.size / (1024 * 1024)).toFixed(2)} MB)
+        </p>
+
       </div>
     `;
 
       accionBotonCargar(true);
     }
+
+    // Eliminar
     const eliminarBtn = modal.querySelector("#eliminar-video");
+
     if (eliminarBtn) {
       eliminarBtn.addEventListener("click", (e) => {
         e.preventDefault();
-        e.stopPropagation(); // Evita que interfieran otros listeners del modal
+        e.stopPropagation();
+
         this.modalEliminarVideo();
       });
     }
@@ -295,18 +398,28 @@ class RubroVista {
         <h3 id="nombre-video" style="font-size: 21px;width: 75%;margin: auto;">${this.nombre}</h3>
         <div class="reproductor-container">
           ${
-            url.toLowerCase().endsWith(".gif")
-              ? `<img src="${url}" alt="GIF Artículo" style="max-width: 100%; border-radius: 8px;"/>`
-              : `<video 
-                  src="${url}" 
-                  autoplay 
-                  loop 
-                  controls 
-                  playsinline
-                  controlsList="nodownload noplaybackrate"
-                  disablePictureInPicture
-                >
-                </video>`
+            /\.(gif|jpg|jpeg|png|webp)$/i.test(url)
+              ? `
+                <img
+                  src="${url}"
+                  alt="Imagen Rubro"
+                  style="
+                    max-width: 100%;
+                    max-height: 80vh;
+                    border-radius: 8px;
+                    object-fit: contain;
+                  "
+                />
+              `
+              : `
+              <video
+                src="${url}"
+                autoplay
+                loop
+                controls
+                playsinline>
+              </video>
+              `
           }
         </div>
       </div>
@@ -346,12 +459,24 @@ class RubroVista {
         <h3 id="nombre-video" style="font-size: 21px;width: 75%;margin: auto;">${this.nombre}</h3>
         <div class="reproductor-container">
           ${
-            url.toLowerCase().endsWith(".gif")
-              ? `<img src="${url}" alt="GIF Artículo" style="max-width: 100%; border-radius: 8px;"/>`
-              : `<video 
-                  src="${url}" 
-                  autoplay 
-                  loop 
+            /\.(gif|jpg|jpeg|png|webp)$/i.test(url)
+              ? `
+                <img
+                  src="${url}"
+                  alt="Imagen Rubro"
+                  style="
+                    max-width: 100%;
+                    max-height: 80vh;
+                    border-radius: 8px;
+                    object-fit: contain;
+                  "
+                />
+              `
+              : `
+              <video
+                src="${url}"
+                autoplay
+                loop 
                   controls 
                   playsinline
                   controlsList="nodownload noplaybackrate"
