@@ -16,7 +16,7 @@ class RubroVista {
   mostrarUno(paraCliente = false) {
     const divRubro = document.createElement("div");
     divRubro.classList.add("rubro");
-    divRubro.dataset.RubroId = this.id; //🤣😎
+    divRubro.dataset.RubroId = this.id;
     divRubro.style.backgroundImage = `url(${this.logo_url})`;
 
     const pNombre = document.createElement("h3");

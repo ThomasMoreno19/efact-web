@@ -3,12 +3,9 @@
 session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/env.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/env.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorEmpresa.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorAdministrador.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorModerador.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorMesero.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorArticulo.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorRubro.php';
 
@@ -49,11 +46,6 @@ try {
 
     case 'rubro':
       $controlador = new GestorRubro($pdo);
-      $controlador->derivarURL($porcionURL);
-      break;
-
-    case 'mesero':
-      $controlador = new GestorMesero($pdo);
       $controlador->derivarURL($porcionURL);
       break;
 

@@ -1,4 +1,3 @@
-// Scripts/Cliente/Vista/Js/PantallaCliente.js
 class PantallaCliente {
   constructor() {
     // Inicializamos el Gestor y los elementos del DOM
@@ -14,8 +13,6 @@ class PantallaCliente {
     this.contenedorBarraBusqueda = document.getElementById(
       "contenedor-busqueda",
     );
-    this.botonLlamarMesero = document.getElementById("boton-llamar-mesero");
-    this.botonPedirCuenta = document.getElementById("boton-pedir-cuenta");
     this.onBuscarGeneral = this.filtrarArticulos.bind(this);
     this.onBuscarRubro = null;
     this.onClickVolver = this.eventClickVolver.bind(this);
@@ -31,17 +28,19 @@ class PantallaCliente {
     this.horarios = [];
 
     this.listaCentral = document.getElementById("lista-central");
-    this.listaCentral = document.getElementById("lista-central");
 
     this.carrito = new Carrito();
     this.articulo = null;
     this.listaArticulosSeleccionados = [];
-    this.horarios = { horarios: [], noLab: [] };
-    // Almacenamiento de referencias a los elementos del DOM
+    this.horarios = { horarios: [] };
     this.todosLosArticulos = [];
     this.clonesSeleccionados = [];
     this.todosLosRubros = [];
     this.enVistaRubro = false;
+    this.carritoSinPedidos = new URLSearchParams(window.location.search).has(
+      "soloPresupuesto",
+    );
+    this.botonEscaner = document.getElementById("boton-escaner");
 
     this.MINUTOS_DIA = 1440;
 
@@ -51,6 +50,10 @@ class PantallaCliente {
   async init() {
     const data = await this.gestor.conocerEmpresa(this.conocerSlug(2));
     this.empresa = new EmpresaVista(data);
+    if (this.carritoSinPedidos) {
+      this.botonEscaner.classList.remove("hidden");
+      this.escanear();
+    }
     if (this.empresa.tieneCarrito) {
       window.gestorDeArticulosCallback = (articulo) => {
         this.articuloSeleccionado(articulo);
@@ -65,39 +68,12 @@ class PantallaCliente {
         document.head.appendChild(link);
       }
     }
-    if (this.conocerEsMesero()) {
-      const sesionActiva = await this.gestor.validarSesionMesero(
-        this.empresa.id,
-      );
-
-      if (!sesionActiva) {
-        if (this.empresa.tieneContrasenaMesero) {
-          this.solicitarContrasenaMesero();
-        } else {
-          const tieneMeseros = await this.gestor.hayMeserosRegistrados(
-            this.empresa.id,
-          );
-
-          if (tieneMeseros) {
-            await this.modalIniciarSesionMesero();
-          } else {
-            await this.solicitarContrasenaMesero();
-          }
-        }
-      }
-    }
 
     try {
       this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
-      this.espectaculos = await this.gestor.obtenerEspectaculos(
-        this.empresa.id,
-      );
-      this.aplicarCooldown("mesero", this.botonLlamarMesero);
-
-      this.aplicarCooldown("cuenta", this.botonPedirCuenta);
     } catch (error) {
       console.warn("No se pudieron cargar horarios/no laborables:", error);
-      this.horarios = { horarios: [], noLab: [] };
+      this.horarios = { horarios: [] };
     }
 
     const textoAdicional = "- Carta";
@@ -131,54 +107,6 @@ class PantallaCliente {
     this.carrito.vaciarCarrito();
     this.botonCarrito.classList.add("hidden");
 
-    this.esDelivery = this.conocerEsDelivery() && this.empresa.tieneCarrito;
-    if (!this.esDelivery || this.conocerEsMesero()) {
-      this.precioActual = await this.calcularPrecioActual();
-      this.observarPrecioActual();
-      if (!this.conocerEsMesero()) {
-        const numeroMesa = this.conocerSlug(4);
-
-        // =========================
-        // LLAMAR MESERO
-        // =========================
-
-        this.botonLlamarMesero.classList.remove("hidden");
-
-        this.botonLlamarMesero.addEventListener("click", () => {
-          if (numeroMesa) {
-            this.modalConfirmacion("¿Deseás llamar al mesero?", () =>
-              this.llamarMesero(numeroMesa),
-            );
-          } else {
-            this.modalNumeroMesa("mesero", "¿Deseas llamar al mesero?");
-          }
-        });
-
-        // =========================
-        // PEDIR CUENTA
-        // =========================
-
-        if (this.empresa.botonPedirCuenta)
-          this.botonPedirCuenta.classList.remove("hidden");
-        else this.botonPedirCuenta.classList.add("hidden");
-        if (this.empresa.botonLlamarMesero) {
-          this.botonLlamarMesero.classList.remove("hidden");
-        } else this.botonLlamarMesero.classList.add("hidden");
-
-        this.botonPedirCuenta.addEventListener("click", () => {
-          if (numeroMesa) {
-            this.modalConfirmacion("¿Deseás pedir la cuenta?", () =>
-              this.pedirCuenta(numeroMesa),
-            );
-          } else {
-            this.modalNumeroMesa("cuenta", "¿Deseas pedir la cuenta?");
-          }
-        });
-      }
-    } else {
-      this.precioActual = this.empresa.precio_delivery;
-    }
-
     await this.mostrarTodo();
     this.aplicarColoresAlternados(this.listaArticulos);
     this.loader.classList.add("hidden");
@@ -187,6 +115,195 @@ class PantallaCliente {
     this.contenedorBarraBusqueda.classList.remove("hidden");
     this.listaArticulos.classList.remove("hidden");
     this.listaRubros.classList.remove("hidden");
+  }
+
+  async escanear() {
+    if (this._escanerInicializado) return;
+    this._procesandoEscaneo = false;
+    this._escanerInicializado = true;
+
+    let html5QrCode = null;
+    const boton = document.getElementById("boton-escaner");
+    const contenedor = document.getElementById("contenedor-camara");
+    const btnCerrar = document.getElementById("cerrar-camara");
+
+    if (btnCerrar) {
+      btnCerrar.textContent = "✕";
+    }
+
+    const detener = async () => {
+      try {
+        if (html5QrCode?.isScanning) {
+          await html5QrCode.stop();
+          html5QrCode.clear();
+          this._procesandoEscaneo = false;
+        }
+      } catch (err) {
+        console.warn("Error al detener el escáner:", err);
+      } finally {
+        contenedor.style.display = "none";
+      }
+    };
+
+    btnCerrar?.addEventListener("click", detener);
+
+    boton.addEventListener("click", async () => {
+      contenedor.style.display = "block";
+      void contenedor.offsetHeight;
+
+      if (html5QrCode?.isScanning) {
+        await html5QrCode.stop();
+      }
+
+      html5QrCode = new Html5Qrcode("video-escaner");
+
+      const config = {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
+        videoConstraints: {
+          facingMode: "environment",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          advanced: [{ focusMode: "continuous" }],
+        },
+      };
+
+      try {
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          (decodedText) => {
+            if (this._procesandoEscaneo) return;
+
+            this._procesandoEscaneo = true;
+
+            this.manejarResultadoEscaneo(decodedText);
+          },
+          () => {
+            /* Ignorar errores de frame individual */
+          },
+        );
+      } catch (err) {
+        console.error("Error detallado:", err);
+        contenedor.style.display = "none";
+        alert("No se pudo acceder a la cámara: " + err.message);
+      }
+    });
+  }
+
+  manejarResultadoEscaneo(texto) {
+    const codigo = String(texto).trim();
+    const elemento = this.buscarArticuloPorCodigo(codigo);
+    if (elemento) {
+      this.mostrarModalArticuloEscaneado(elemento);
+    } else {
+      this.mostrarModalCodigoNoEncontrado(codigo);
+    }
+  }
+
+  buscarArticuloPorCodigo(codigo) {
+    const codigoBuscado = String(codigo).trim().replace(/\s+/g, "");
+    return (
+      this.todosLosArticulos.find((a) => {
+        const codigoArticulo = String(a.dataset.articuloId || "")
+          .trim()
+          .replace(/\s+/g, "");
+        return codigoArticulo === codigoBuscado;
+      }) || null
+    );
+  }
+
+  mostrarModalArticuloEscaneado(elemento) {
+    // Evitar duplicados
+    const viejo = document.getElementById("modal-articulo-wrapper");
+    if (viejo) viejo.remove();
+
+    const nombre = elemento.dataset.nombre || "Artículo";
+    const precioRaw = elemento.dataset.precio1 || "0";
+    const precioFormateado = this.carrito.insertarPuntoPrecio(
+      Number(String(precioRaw).replace(/\./g, "")) || precioRaw,
+    );
+
+    const logoImg = elemento.querySelector(".articulo-logo img");
+    const imgHTML = logoImg
+      ? `<img src="${logoImg.src}" alt="${nombre}" style="max-width:120px; max-height:120px; object-fit:contain; border-radius:8px;"/>`
+      : "";
+
+    const wrapper = document.createElement("div");
+    wrapper.id = "modal-articulo-wrapper";
+    wrapper.innerHTML = `
+      <div class="modal-articulo-escaneado" style="padding:20px;">
+        <header id="header-modal-articulo" style="display:flex; align-items:center; justify-content:space-between;">
+          <h2 style="margin:0; color:white">${nombre}</h2>
+          <button id="cerrar-modal-articulo" class="boton-cerrar">&times;</button>
+        </header>
+
+        <div style="margin-top:16px; color:white; display:flex; gap:16px; align-items:center;">
+          <div>${imgHTML}</div>
+          <div>
+            <div style="font-size:18px; margin-bottom:8px;">Precio: $${precioFormateado}</div>
+            <button id="boton-agregar-articulo" class="boton" style="padding:10px 16px;">Agregar al carrito</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(wrapper);
+    window.history.pushState({ vista: "modal" }, "", window.location.href);
+
+    const cerrarBtn = wrapper.querySelector("#cerrar-modal-articulo");
+    cerrarBtn?.addEventListener("click", () => {
+      this._procesandoEscaneo = false;
+      wrapper.remove();
+    });
+
+    const agregarBtn = wrapper.querySelector("#boton-agregar-articulo");
+
+    agregarBtn?.addEventListener("click", () => {
+      const id = Number(elemento.dataset.articuloId);
+
+      if (!this.listaArticulosSeleccionados.includes(id)) {
+        this.listaArticulosSeleccionados.push(id);
+        this.carrito.agregarArticulo(elemento, 1);
+        elemento.classList.add("seleccionado");
+      }
+
+      this.cantidadArticulosCarrito.textContent =
+        this.listaArticulosSeleccionados.length;
+
+      this.botonCarrito.classList.remove("hidden");
+
+      wrapper.remove();
+      this._procesandoEscaneo = false;
+
+      this.listaCentral.classList.remove("hidden");
+    });
+  }
+
+  mostrarModalCodigoNoEncontrado(codigo) {
+    const viejo = document.getElementById("modal-articulo-wrapper");
+    if (viejo) viejo.remove();
+
+    const overlay = document.createElement("div");
+    overlay.id = "modal-articulo-wrapper";
+    overlay.className = "modal";
+    overlay.innerHTML = `
+      <div class="modal-box">
+        <p style="padding: 8px 0;">el código ${codigo} escaneado no pertenece a un artículo del local</p>
+        <div class="modal-actions">
+          <button id="cerrar-no-encontrado" class="boton-modal">Cerrar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const btn = overlay.querySelector("#cerrar-no-encontrado");
+    btn?.addEventListener("click", () => {
+      overlay.remove();
+      this._procesandoEscaneo = false;
+    });
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
   }
 
   async mostrarTodo() {
@@ -254,9 +371,14 @@ class PantallaCliente {
           listaArticulosRecibidos.forEach((articulo) => {
             const articuloRecibido = new ArticuloVista(articulo);
             const elementoArticulo = articuloRecibido.mostrarUna(
-              this.precioActual,
+              null,
               true,
+              this.empresa.imagenesEnArticulos,
             );
+
+            // Guardar el código en dataset para búsqueda por scanner
+            elementoArticulo.dataset.codigo =
+              articulo.codigo || articulo.codigo_carta || "";
 
             listaArticulosDiv.appendChild(elementoArticulo);
             this.todosLosArticulos.push(elementoArticulo);
@@ -382,7 +504,7 @@ class PantallaCliente {
           if (!this.listaArticulosSeleccionados.includes(id)) {
             clon.classList.add("seleccionado");
             this.listaArticulosSeleccionados.push(id);
-            this.carrito.agregarArticulo(clon, this.precioActual);
+            this.carrito.agregarArticulo(clon, 1);
             this.seleccionarArticulo(id);
           } else {
             this.clonesSeleccionados = this.clonesSeleccionados.filter(
@@ -492,7 +614,7 @@ class PantallaCliente {
             this.listaArticulosSeleccionados.push(
               Number(clon.dataset.articuloId),
             );
-            this.carrito.agregarArticulo(clon, this.precioActual);
+            this.carrito.agregarArticulo(clon, 1);
             this.seleccionarArticulo(id);
           } else {
             this.clonesSeleccionados = this.clonesSeleccionados.filter(
@@ -581,130 +703,6 @@ class PantallaCliente {
     const url_segmentada = window.location.pathname.split("/");
     const slug = url_segmentada[texto];
     return slug;
-  }
-
-  conocerEsMesero() {
-    const slug = this.conocerSlug(3);
-    return slug === "mesero" && this.empresa.moduloMesero;
-  }
-
-  conocerEsDelivery() {
-    const slug = this.conocerSlug(3);
-    return slug !== "local";
-  }
-
-  async solicitarContrasenaMesero() {
-    const key = `mesero_auth_${this.conocerSlug(2)}`;
-    if (sessionStorage.getItem(key) === "ok") return;
-
-    const wrapper = document.createElement("div");
-    wrapper.id = "modal-contrasena-mesero";
-    wrapper.style.position = "fixed";
-    wrapper.style.inset = "0";
-    wrapper.style.background = "rgba(0,0,0,0.88)";
-    wrapper.style.zIndex = "9999";
-    wrapper.style.display = "flex";
-    wrapper.style.alignItems = "center";
-    wrapper.style.justifyContent = "center";
-
-    wrapper.innerHTML = `
-        <div style="
-          width:min(92vw,420px);
-          background:#1f1f1f;
-          border:1px solid #444;
-          border-radius:12px;
-          padding:22px;
-          color:#fff;
-          display:flex;
-          flex-direction:column;
-          align-items:center;
-          gap:12px;
-        ">
-          <h2 style="margin:0;text-align:center;">Acceso Mesero</h2>
-
-          <p style="margin:0;opacity:.9;text-align:center;">
-            Ingresá la contraseña para continuar.
-          </p>
-
-          <input id="input-contrasena-mesero" type="password" placeholder="Contraseña" style="
-            width:90%;
-            height:44px;
-            border-radius:10px;
-            border:1px solid #555;
-            background:#2c2c2c;
-            color:#fff;
-            padding:0 12px;
-            box-sizing:border-box;
-          ">
-
-          <button id="btn-validar-contrasena-mesero" style="
-            height:44px;
-            border:none;
-            border-radius:10px;
-            background:#e89e13;
-            color:#fff;
-            font-weight:700;
-            cursor:pointer;
-            padding:0 24px;
-          ">Ingresar</button>
-
-          <p id="error-contrasena-mesero" style="
-            min-height:20px;
-            color:#ff7b7b;
-            margin:0;
-            width:100%;
-            text-align:center;
-          " class="hidden"></p>
-        </div>
-      `;
-
-    document.body.appendChild(wrapper);
-
-    const input = wrapper.querySelector("#input-contrasena-mesero");
-    const btn = wrapper.querySelector("#btn-validar-contrasena-mesero");
-    const error = wrapper.querySelector("#error-contrasena-mesero");
-
-    const validar = async () => {
-      const contrasena = input.value.trim();
-
-      btn.disabled = true;
-      btn.textContent = "Validando...";
-
-      try {
-        const resp = await this.gestor.verificarContrasenaMesero(
-          this.empresa.id,
-          contrasena,
-        );
-        if (resp.valida) {
-          error.classList.add("hidden");
-          sessionStorage.setItem(key, "ok");
-          wrapper.remove();
-          return;
-        }
-        error.classList.remove("hidden");
-        error.textContent = "Contraseña incorrecta.";
-      } catch (e) {
-        error.classList.remove("hidden");
-        error.textContent = "No se pudo validar la contraseña.";
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Ingresar";
-      }
-    };
-
-    btn.addEventListener("click", validar);
-    input.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        await validar();
-      }
-    });
-
-    input.focus();
-
-    while (document.body.contains(wrapper)) {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-    }
   }
 
   async mostrarLogoEmpresa() {
@@ -802,7 +800,7 @@ class PantallaCliente {
 
   articuloSeleccionado(articulo) {
     const articuloId = articulo.id;
-    const precioSeleccionado = articulo[`precio${this.precioActual}`];
+    const precioSeleccionado = articulo.precio1;
     articulo.precio = this.carrito.eliminarPuntoPrecio(precioSeleccionado);
 
     // Buscar si ya está seleccionado
@@ -819,7 +817,7 @@ class PantallaCliente {
 
     if (index === -1) {
       // No está seleccionado → agregar
-      this.carrito.agregarArticulo(articulo, this.precioActual);
+      this.carrito.agregarArticulo(articulo, 1);
       this.listaArticulosSeleccionados.push(articulo.id);
       elemento.classList.add("seleccionado");
     } else {
@@ -843,15 +841,13 @@ class PantallaCliente {
     const articulo = this.todosLosArticulos.find(
       (a) => a.dataset.articuloId == idArticulo,
     );
-    articulo[`precio${this.precioActual}`] = this.carrito.eliminarPuntoPrecio(
-      articulo[`precio${this.precioActual}`],
-    );
+    articulo.precio1 = this.carrito.eliminarPuntoPrecio(articulo.precio1);
     const index = this.listaArticulosSeleccionados.findIndex((id) => {
       id === articulo.dataset.id;
     });
 
     if (index === -1) {
-      this.carrito.agregarArticulo(articulo, this.precioActual);
+      this.carrito.agregarArticulo(articulo, 1);
       this.listaArticulosSeleccionados.push(articulo.dataset.articuloId);
       articulo.classList.add("seleccionado");
     } else {
@@ -883,10 +879,10 @@ class PantallaCliente {
         this.cantidadArticulosCarrito.textContent = 0;
         this.botonCarrito.classList.add("hidden");
       },
-      this.conocerEsMesero(),
       this.horarios,
       this.empresa.tieneCarrito,
-      this.esDelivery,
+      this.empresa.incluirHorarios,
+      this.carritoSinPedidos,
     );
     this.listaCentral.classList.add("hidden");
     this.modalCarrito.abrirModalCarrito();
@@ -1074,121 +1070,6 @@ class PantallaCliente {
     );
   }
 
-  async calcularPrecioActual() {
-    if (
-      this.empresa.precio_espectaculo === 1 &&
-      this.empresa.precio_delivery === 1
-    ) {
-      return 1;
-    }
-
-    const now = new Date();
-    // Día de la semana (0-6)
-    const diaIndex = now.getDay();
-
-    // Fecha en formato dd/mm/yyyy
-    const fechaActual = this.formatearFechaCompleta(
-      now.toISOString().slice(0, 10),
-    );
-
-    // Hora en HH:mm
-    const horaActual = now.toTimeString().slice(0, 5);
-
-    const ahoraMin =
-      diaIndex * this.MINUTOS_DIA + this.timeToMinutes(horaActual);
-
-    const semana = 7 * this.MINUTOS_DIA;
-    const ahoraSeg = { start: ahoraMin, end: ahoraMin + 1 };
-
-    // =========================
-    // 1. CANCELADAS
-    // =========================
-    for (const e of this.espectaculos.excepciones) {
-      if (e.fecha === fechaActual && e.cancelada) {
-        return 1;
-      }
-    }
-
-    // =========================
-    // 2. HABILITADAS
-    // =========================
-    for (const e of this.espectaculos.excepciones) {
-      if (e.cancelada) continue;
-      const fechaAyer = this.obtenerFechaAnterior(fechaActual);
-
-      if (e.fecha === fechaActual || e.fecha === fechaAyer) {
-        const diaIndexExcepcion = this.dateToDayIndex(e.fecha);
-
-        for (const r of e.rangos) {
-          const segs = this.toSegments(
-            diaIndexExcepcion,
-            r.horaInicio,
-            r.horaFin,
-          );
-
-          for (const seg of segs) {
-            if (this.overlap(ahoraSeg, seg)) {
-              return this.empresa.precio_espectaculo;
-            }
-
-            const segPlus = {
-              start: seg.start + semana,
-              end: seg.end + semana,
-            };
-
-            if (this.overlap(ahoraSeg, segPlus)) {
-              return this.empresa.precio_espectaculo;
-            }
-          }
-        }
-      }
-    }
-
-    // =========================
-    // 3. HORARIO BASE
-    // =========================
-    for (const h of this.espectaculos.espectaculo) {
-      for (const r of h.rangos) {
-        const segs = this.toSegments(h.diaIndex, r.horaInicio, r.horaFin);
-
-        for (const seg of segs) {
-          if (this.overlap(ahoraSeg, seg)) {
-            return this.empresa.precio_espectaculo;
-          }
-
-          const segPlus = {
-            start: seg.start + semana,
-            end: seg.end + semana,
-          };
-
-          if (this.overlap(ahoraSeg, segPlus)) {
-            return this.empresa.precio_espectaculo;
-          }
-        }
-      }
-    }
-    return 1;
-  }
-
-  dateToDayIndex(fecha) {
-    const [d, m, y] = fecha.split("/").map(Number);
-    const date = new Date(Date.UTC(y, m - 1, d));
-    return date.getUTCDay(); // 0 domingo - 6 sábado
-  }
-
-  obtenerFechaAnterior(fecha) {
-    const [d, m, y] = fecha.split("/").map(Number);
-    const date = new Date(Date.UTC(y, m - 1, d));
-
-    date.setUTCDate(date.getUTCDate() - 1);
-
-    const dia = String(date.getUTCDate()).padStart(2, "0");
-    const mes = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const anio = date.getUTCFullYear();
-
-    return `${dia}/${mes}/${anio}`;
-  }
-
   timeToMinutes(hhmm) {
     const [h, m] = hhmm.split(":").map(Number);
     return h * 60 + m;
@@ -1203,107 +1084,6 @@ class PantallaCliente {
         : `https://web.whatsapp.com/send?phone=${numero}`;
       window.open(url, "_blank");
     });
-  }
-
-  async modalIniciarSesionMesero() {
-    // Evitar duplicados
-    this.listaCentral.classList.add("hidden");
-    if (document.getElementById("modal-mesero")) return;
-
-    const modal = document.createElement("div");
-    modal.id = "modal-mesero";
-    modal.classList.add("modal");
-
-    modal.innerHTML = `
-      <div class="login-container">
-        
-        <h2 id="titulo-modal-mesero">Iniciar sesión Mesero</h2>
-
-        <form id="login-form">
-          
-          <div class="form-group-login">
-            <label for="nombre-mesero">Usuario:</label>
-            <input type="text" id="nombre-mesero" name="nombre">
-          </div>
-          
-          <div class="form-group-login">
-            <label for="contrasena-mesero">Contraseña:</label>
-            <div class="password-container">
-              <input type="password" id="contrasena-mesero" name="contrasena">
-              
-              <button type="button" id="togglePasswordMesero" class="toggle-password">
-                👁
-              </button>
-            </div>
-          </div>
-
-          <button type="submit" class="submit-button-login">Acceder</button>
-        </form>
-
-        <p id="mensaje-error-mesero" class="error-message hidden"></p>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    // Toggle contraseña
-    const toggle = document.getElementById("togglePasswordMesero");
-    const passwordInput = document.getElementById("contrasena-mesero");
-    const error = document.getElementById("mensaje-error-mesero");
-
-    toggle.addEventListener("click", () => {
-      const type = passwordInput.type === "password" ? "text" : "password";
-      passwordInput.type = type;
-    });
-
-    document
-      .getElementById("login-form")
-      .addEventListener("submit", async (e) => {
-        e.preventDefault();
-        error.classList.add("hidden");
-
-        const nombre = document.getElementById("nombre-mesero").value;
-        const contrasena = document.getElementById("contrasena-mesero").value;
-
-        try {
-          const response = await this.gestor.iniciarSesionMesero(
-            this.empresa.id,
-            nombre,
-            contrasena,
-          );
-
-          if (response) {
-            document.body.removeChild(modal);
-            this.listaCentral.classList.remove("hidden");
-            sessionStorage.setItem(`mesero_auth_${this.conocerSlug(2)}`, "ok");
-            return;
-          }
-
-          if (response === false) {
-            error.textContent = "Credenciales incorrectas";
-            error.classList.remove("hidden");
-          }
-        } catch (err) {
-          error.textContent = err.message;
-          error.classList.remove("hidden");
-        }
-      });
-  }
-
-  async observarPrecioActual() {
-    let precio = await this.calcularPrecioActual();
-
-    setInterval(async () => {
-      if (this.conocerEsMesero() || !this.esDelivery) {
-        this.precioActual = await this.calcularPrecioActual();
-
-        if (this.precioActual !== precio) {
-          location.reload();
-        }
-      } else {
-        this.precioActual = this.empresa.precio_delivery;
-      }
-    }, 2000);
   }
 
   modalConfirmacion(texto, callbackConfirmar) {
@@ -1333,126 +1113,6 @@ class PantallaCliente {
       modal.remove();
     });
   }
-
-  llamarMesero(numeroMesa) {
-    this.iniciarCooldown("mesero", this.botonLlamarMesero);
-    const mensaje = `¡Hola! Solicito llamar al mesero para la mesa: ${numeroMesa}`;
-
-    const url = `https://wa.me/${this.empresa.telefono}?text=${encodeURIComponent(mensaje)}`;
-
-    window.open(url, "_blank");
-  }
-
-  modalNumeroMesa(tipo, texto) {
-    const modal = document.createElement("div");
-
-    modal.classList.add("modal");
-
-    modal.innerHTML = `
-      <div class="modal-box">
-        <h3 class="texto-modal-mesa">${texto}</h3>
-
-        <input 
-          type="number"
-          id="numero-mesa"
-          class="input"
-          min="0"
-          max="500"
-          placeholder="Número de mesa"
-        />
-
-        <div class="modal-actions">
-          <button id="cancelar" class="boton-modal">Cancelar</button>
-          <button id="confirmar" class="boton-modal">Confirmar</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    modal.querySelector("#confirmar").addEventListener("click", () => {
-      const numeroMesa = modal.querySelector("#numero-mesa").value;
-
-      if (!numeroMesa) {
-        alert("Ingresá un número de mesa");
-        return;
-      }
-
-      if (tipo === "mesero") {
-        this.llamarMesero(numeroMesa);
-      } else {
-        this.pedirCuenta(numeroMesa);
-      }
-
-      modal.remove();
-    });
-
-    modal.querySelector("#cancelar").addEventListener("click", () => {
-      modal.remove();
-    });
-  }
-
-  pedirCuenta(numeroMesa) {
-    this.iniciarCooldown("cuenta", this.botonPedirCuenta);
-    const mensaje = `¡Hola! Solicito pedir la cuenta para la mesa: ${numeroMesa}`;
-
-    const url = `https://wa.me/${this.empresa.telefono}?text=${encodeURIComponent(mensaje)}`;
-
-    window.open(url, "_blank");
-  }
-
-  iniciarCooldown(tipo, boton) {
-    const DURACION = 60 * 1000; // 1 minuto
-
-    const expiracion = Date.now() + DURACION;
-
-    localStorage.setItem(`cooldown_${tipo}`, expiracion.toString());
-
-    this.aplicarCooldown(tipo, boton);
-  }
-
-  aplicarCooldown(tipo, boton) {
-    const expiracion = localStorage.getItem(`cooldown_${tipo}`);
-
-    if (!expiracion) return;
-
-    const restante = Number(expiracion) - Date.now();
-
-    if (restante <= 0) {
-      localStorage.removeItem(`cooldown_${tipo}`);
-
-      boton.disabled = false;
-      boton.classList.remove("cooldown");
-
-      return;
-    }
-
-    boton.disabled = true;
-    boton.classList.add("cooldown");
-
-    const actualizarTexto = () => {
-      const segundos = Math.ceil((Number(expiracion) - Date.now()) / 1000);
-
-      if (segundos <= 0) {
-        clearInterval(intervalo);
-
-        localStorage.removeItem(`cooldown_${tipo}`);
-
-        boton.disabled = false;
-        boton.classList.remove("cooldown");
-
-        boton.innerText = tipo === "mesero" ? "Mesero" : "Pedir cuenta";
-
-        return;
-      }
-
-      boton.innerText = `\n ${segundos}s \n`;
-    };
-
-    actualizarTexto();
-
-    const intervalo = setInterval(actualizarTexto, 1000);
-  }
 }
 
 // --- Inicialización ---
@@ -1477,16 +1137,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     imagenHeader = document.getElementById("imagen-header");
     infoExtra = document.getElementById("info-extra");
     botonVolver = document.getElementById("boton-volver");
-    botonLlamarMesero = document.getElementById("boton-llamar-mesero");
-    botonPedirCuenta = document.getElementById("boton-pedir-cuenta");
     const posicionActual = window.scrollY;
 
     if (20 > posicionActual) {
       header.classList.remove("minimizado");
       tituloPagina.classList.remove("minimizado");
       imagenHeader.classList.remove("minimizado");
-      botonLlamarMesero.classList.remove("minimizado");
-      botonPedirCuenta.classList.remove("minimizado");
       botonVolver.classList.remove("minimizado");
       infoExtra.classList.remove("minimizado");
       infoExtra.classList.remove("oculto");
@@ -1494,8 +1150,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       header.classList.add("minimizado");
       tituloPagina.classList.add("minimizado");
       imagenHeader.classList.add("minimizado");
-      botonLlamarMesero.classList.add("minimizado");
-      botonPedirCuenta.classList.add("minimizado");
       botonVolver.classList.add("minimizado");
       infoExtra.classList.add("oculto");
     }

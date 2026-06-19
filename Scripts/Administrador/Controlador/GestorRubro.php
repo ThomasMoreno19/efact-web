@@ -141,11 +141,10 @@ class GestorRubro
     $nuevaLista = [];
     foreach ($datos as $item) {
       $nombre_rubro = $item['nombre_rubro'] ?? '';
-      $para_mesero = (int)$item['publica_rub'] ?? 0;
 
       try {
         // Llama al repositorio para crear el rubro, pasando el id_empresa extraído
-        $id_rubro = $this->rubroRepositorio->crearPorCsv($id_empresa, $nombre_rubro, $para_mesero);
+        $id_rubro = $this->rubroRepositorio->crearPorCsv($id_empresa, $nombre_rubro);
         // Crea un nuevo array para el artículo final.
         $articulo_final = $item;
         // Añade el id_rubro al nuevo array.
@@ -154,6 +153,7 @@ class GestorRubro
         // Añade el artículo completo a la nueva lista.
         $nuevaLista[] = $articulo_final;
       } catch (Exception $e) {
+        die($e->getMessage());
       }
     }
     $this->borrarCacheTodos($id_empresa);

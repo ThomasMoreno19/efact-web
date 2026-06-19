@@ -17,6 +17,43 @@
   width: 100%;
 }
 
+#modal-articulo-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  touch-action: none;
+}
+
+.modal-articulo-escaneado {
+  position: relative;
+
+  width: 300px;
+  height: 150px;
+
+  background: #222;
+  border-radius: 12px;
+  padding: 20px;
+
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#header-modal-articulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 #lista-articulos-contenedor {
   overflow-y: visible; /* deja que la lista crezca */
   max-height: none; /* sin límite */
@@ -31,11 +68,13 @@
 
 #header-modal-carrito {
   display: flex;
-  position: relative; /* permite centrar y ubicar el cerrar */
-  padding: 5px 10px;
+  padding: 15px 10px;
   background: #222;
   border-bottom: 2px solid #333;
   text-align: center; /* centra el texto */
+  position: fixed;
+  width: 100%;
+  top: 0;
 }
 
 #titulo-modal-carrito {
@@ -88,7 +127,7 @@
 /* cada fila */
 .fila-articulo {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   flex-direction: column;
   width: 100%;
 }
@@ -135,6 +174,10 @@
   display: flex;
 }
 
+.modal-content {
+  margin-top: 80px;
+}
+
 .nombre-precioUnitario {
   display: flex;
   max-width: fit-content;
@@ -179,15 +222,9 @@
 #borrar-carrito {
   width: 40px;
   height: 40px;
-  margin: 0px 40px;
-  display: flex;
-  align-content: center;
-  justify-content: center;
-  align-items: center;
-
-  position: fixed;
-  bottom: 15px; /* distancia desde abajo */
-  right: -10px; /* distancia desde la derecha */
+  position: absolute;
+  top: 7px;
+  left: 40px;
 }
 
 #borrar-carrito img {
@@ -209,6 +246,9 @@
   cursor: pointer;
   font-size: 28px;
   color: white;
+  position: absolute;
+  top: 2px;
+  right: 30px;
 }
 
 .btn-cant {
@@ -416,4 +456,17 @@
   padding: 10px 20px;
   border-radius: 6px;
   cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  #borrar-carrito {
+    left: 10px;
+    width: 35px;
+    height: 35px;
+    top: 8px;
+  }
+
+  #titulo-modal-carrito {
+    font-size: 18px;
+  }
 }

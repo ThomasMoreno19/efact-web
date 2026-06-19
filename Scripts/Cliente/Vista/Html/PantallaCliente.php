@@ -26,97 +26,45 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
       </svg>
     </button>
+
     <img id="imagen-header" />
-
     <h1 id="titulo-pagina"></h1>
-
     <div id="info-extra"></div>
 
+    <button class="hidden boton-escaner" id="boton-escaner" type="button">
+      <svg width="40px" height="40px" viewBox="0 0 32 32" id="svg5" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
 
+        <defs id="defs2" />
+
+        <g id="layer1" transform="translate(-108,-100)">
+
+          <path d="m 111,106 a 1.0001,1.0001 0 0 0 -1,1 v 3 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -2 h 2 a 1,1 0 0 0 1,-1 1,1 0 0 0 -1,-1 z" id="path11698" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 134,106 a 1,1 0 0 0 -1,1 1,1 0 0 0 1,1 h 2 v 2 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -3 a 1.0001,1.0001 0 0 0 -1,-1 z" id="path11700" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 137,121 a 1,1 0 0 0 -1,1 v 2 h -2 a 1,1 0 0 0 -1,1 1,1 0 0 0 1,1 h 3 a 1.0001,1.0001 0 0 0 1,-1 v -3 a 1,1 0 0 0 -1,-1 z" id="path11702" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 111,121 a 1,1 0 0 0 -1,1 v 3 a 1.0001,1.0001 0 0 0 1,1 h 3 a 1,1 0 0 0 1,-1 1,1 0 0 0 -1,-1 h -2 v -2 a 1,1 0 0 0 -1,-1 z" id="path11704" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 115,110 a 1,1 0 0 0 -1,1 v 10 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -10 a 1,1 0 0 0 -1,-1 z" id="path11706" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 118,110 a 1,1 0 0 0 -1,1 v 10 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -10 a 1,1 0 0 0 -1,-1 z" id="path11708" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 121,110 a 1,1 0 0 0 -1,1 v 10 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -10 a 1,1 0 0 0 -1,-1 z" id="path11710" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 124,110 a 1,1 0 0 0 -1,1 v 10 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -10 a 1,1 0 0 0 -1,-1 z" id="path11712" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 127,110 a 1,1 0 0 0 -1,1 v 10 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -10 a 1,1 0 0 0 -1,-1 z" id="path11714" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 130,110 a 1,1 0 0 0 -1,1 v 10 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 v -10 a 1,1 0 0 0 -1,-1 z" id="path11716" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+          <path d="m 133,110 a 1,1 0 0 0 -1,1 v 5.20703 1.31445 V 121 a 1,1 0 0 0 1,1 1,1 0 0 0 1,-1 V 117.52148 116.20703 111 a 1,1 0 0 0 -1,-1 z" id="path11720" style="color:#f5b73a;fill:#f5b73a;fill-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4.1;-inkscape-stroke:none" />
+
+        </g>
+
+      </svg>
+    </button>
   </header>
-
-  <div class="botones-llamar">
-    <button class="boton-llamar hidden" type="button" id="boton-llamar-mesero">
-      <svg fill="#e9b44c" height="35px" width="35px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-        viewBox="0 0 237.888 237.888" xml:space="preserve">
-        <g>
-          <path d="M197.047,59.153C185.153,23.771,153.764,0,118.938,0C82.628,0,50.816,25.12,39.779,62.506
-		c-2.614,8.849-3.94,18.078-3.94,27.434c0,49.588,37.278,89.931,83.1,89.931c45.827,0,83.11-40.343,83.11-89.931
-		C202.049,79.352,200.365,68.991,197.047,59.153z M118.938,159.87c-34.793,0-63.1-31.371-63.1-69.931
-		c0-6.583,0.827-13.078,2.453-19.346h71.861l9.571-20.909l10.073,20.909h29.791c1.626,6.253,2.461,12.736,2.461,19.346
-		C182.049,128.499,153.737,159.87,118.938,159.87z" />
-          <polygon points="64.61,180.791 64.61,237.888 118.61,221.853 172.61,237.888 172.61,180.791 118.61,196.829 	" />
-        </g>
-      </svg>
-      <span class="texto-boton">
-        Llamar
-      </span>
-    </button>
-
-    <button class="boton-llamar hidden" type="button" id="boton-pedir-cuenta">
-      <svg fill="#e9b44c" height="35px" width="35px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-        viewBox="0 0 512 512" xml:space="preserve">
-        <g>
-          <g>
-            <path d="M189.218,200.348c-27.618,0-50.087,22.469-50.087,50.087c0,27.618,22.469,50.087,50.087,50.087
-			c27.618,0,50.087-22.469,50.087-50.087C239.305,222.817,216.836,200.348,189.218,200.348z M189.218,267.13
-			c-9.206,0-16.696-7.49-16.696-16.696c0-9.206,7.49-16.696,16.696-16.696s16.696,7.49,16.696,16.696
-			C205.913,259.641,198.424,267.13,189.218,267.13z" />
-          </g>
-        </g>
-        <g>
-          <g>
-            <path d="M322.783,333.913c-27.618,0-50.087,22.469-50.087,50.087s22.469,50.087,50.087,50.087S372.87,411.618,372.87,384
-			S350.401,333.913,322.783,333.913z M322.783,400.696c-9.206,0-16.696-7.49-16.696-16.696s7.49-16.696,16.696-16.696
-			c9.206,0,16.696,7.49,16.696,16.696S331.989,400.696,322.783,400.696z" />
-          </g>
-        </g>
-        <g>
-          <g>
-            <path d="M338.635,234.588c-6.519-6.52-17.091-6.52-23.611,0L173.357,376.255c-6.52,6.52-6.52,17.091,0,23.611
-			c3.26,3.26,7.533,4.891,11.805,4.891c4.272,0,8.546-1.629,11.805-4.891l141.667-141.667
-			C345.155,251.679,345.155,241.109,338.635,234.588z" />
-          </g>
-        </g>
-        <g>
-          <g>
-            <path d="M456.348,0H55.652c-9.22,0-16.696,7.475-16.696,16.696v478.609c0,5.787,2.996,11.161,7.918,14.202
-			c4.923,3.043,11.069,3.317,16.244,0.731l59.316-29.658l59.316,29.658c4.7,2.35,10.232,2.35,14.933,0L256,480.58l59.316,29.658
-			c2.35,1.175,4.909,1.762,7.466,1.762c2.558,0,5.117-0.588,7.466-1.762l59.316-29.658l59.316,29.658
-			c5.173,2.587,11.32,2.312,16.244-0.731c4.922-3.042,7.918-8.416,7.918-14.202V16.696C473.044,7.475,465.569,0,456.348,0z
-			 M439.652,468.29l-42.621-21.31c-4.7-2.35-10.232-2.35-14.933,0l-59.316,29.658l-59.316-29.658
-			c-2.35-1.175-4.909-1.762-7.466-1.762s-5.117,0.588-7.466,1.762l-59.316,29.658l-59.316-29.658c-4.7-2.35-10.232-2.35-14.933,0
-			l-42.621,21.31V33.391h367.304V468.29z" />
-          </g>
-        </g>
-        <g>
-          <g>
-            <path d="M389.565,66.783H189.218c-9.22,0-16.696,7.475-16.696,16.696s7.475,16.696,16.696,16.696h200.348
-			c9.22,0,16.696-7.475,16.696-16.696S398.786,66.783,389.565,66.783z" />
-          </g>
-        </g>
-        <g>
-          <g>
-            <path d="M389.565,133.565H189.218c-9.22,0-16.696,7.475-16.696,16.696s7.475,16.696,16.696,16.696h200.348
-			c9.22,0,16.696-7.475,16.696-16.696S398.786,133.565,389.565,133.565z" />
-          </g>
-        </g>
-        <g>
-          <g>
-            <circle cx="122.435" cy="83.478" r="16.696" />
-          </g>
-        </g>
-        <g>
-          <g>
-            <circle cx="122.435" cy="150.261" r="16.696" />
-          </g>
-        </g>
-      </svg>
-      <span class="texto-boton">
-        Cuenta
-      </span>
-    </button>
-  </div>
 
   <button id="boton-carrito" class="hidden" type="button">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" id="icono-carrito">
@@ -126,6 +74,11 @@
       <span id="cantidad-articulos-carrito"></span>
     </div>
   </button>
+
+  <div id="contenedor-camara" style="display:none;">
+    <button id="cerrar-camara">Cerrar</button>
+    <div id="video-escaner"></div>
+  </div>
 
   <div class="lista-central" id="lista-central">
 
@@ -179,6 +132,7 @@
     <p><?php echo date('Y'); ?> - IteraciON</p>
   </div>
 
+  <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="/Scripts/Administrador/Vista/Js/Articulo.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Rubro.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Empresa.js?v=<?php echo APP_VERSION; ?>"></script>

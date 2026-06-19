@@ -38,6 +38,8 @@ class Carrito {
 
     copia.precio = copia.precios[precio_activo];
 
+    if (this.articulos.includes(copia)) return;
+
     this.articulos.push(copia);
   }
 

@@ -8,10 +8,7 @@ class PantallaModerador {
     this.listaCentral = document.getElementById("lista-central");
     this.articuloSeleccionado = null;
     this.horariosGuardados = [];
-    this.espectaculosGuardados = [];
-    this.diasNoLaboralesGuardados = [];
     this.horarios = [];
-    this.espectaculos = [];
     this.MINUTOS_DIA = 1440;
 
     this.botonListaArticulos = document.getElementById(
@@ -52,9 +49,6 @@ class PantallaModerador {
 
     try {
       this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
-      this.espectaculos = await this.gestor.obtenerEspectaculos(
-        this.empresa.id,
-      );
       window.eliminarVideoArticulo = (articulo) => {
         this.eliminarVideoArticulo(articulo);
       };
@@ -64,9 +58,6 @@ class PantallaModerador {
       };
     } catch (error) {
       this.horariosGuardados = [];
-      this.diasNoLaboralesGuardados = [];
-      this.espectaculosGuardados = [];
-      this.excepcionesGuardadas = [];
       console.warn(
         "No se pudieron cargar los horarios o días no laborales previos.",
         error,
@@ -148,8 +139,6 @@ class PantallaModerador {
   }
 
   async habilitarVentanaPrincipal() {
-    // El método se encarga de mostrar los datos en la pantalla
-    this.precioActual = await this.calcularPrecioActual();
     this.loader.classList.remove("hidden");
     await this.mostrarLista(this.listaRubros);
     this.listaRubros.classList.add("hidden");
@@ -232,7 +221,9 @@ class PantallaModerador {
               const articuloRecibido = new ArticuloVista(articulo);
               // ✅ Corregido: Crear el elemento solo una vez
               const elementoArticulo = articuloRecibido.mostrarUna(
-                this.precioActual,
+                null,
+                null,
+                this.empresa.imagenesEnArticulos,
               );
 
               // ✅ Agregarlo al DOM
@@ -386,6 +377,10 @@ class PantallaModerador {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
+      let imagen = formData.get("imagen");
+      if (!imagen || imagen.size === 0) {
+        imagen = null;
+      }
 
       try {
         await this.gestor.modificarArticulo(
@@ -393,11 +388,10 @@ class PantallaModerador {
           articulo.id_rubro,
           this.empresa.id,
           formData.get("nombre"),
-          formData.get("descripcion") || "",
           formData.get("precio1"),
           formData.get("precio2"),
           formData.get("precio3"),
-          formData.get("codigo-carta") || "",
+          imagen,
         );
 
         document.body.removeChild(modal);
@@ -670,23 +664,13 @@ class PantallaModerador {
           document.getElementById("transferencia").value = activo;
         }
 
-        if (btn.id === "btnPedirCuenta") {
-          document.getElementById("pedirCuenta").value = activo;
+        if (btn.id === "btnImagenesEnArticulos") {
+          document.getElementById("imagenesEnArticulos").value = activo;
         }
 
-        if (btn.id === "btnLlamarMesero") {
-          document.getElementById("llamarMesero").value = activo;
+        if (btn.id === "btnIncluirHorarios") {
+          document.getElementById("incluirHorarios").value = activo;
         }
-      });
-    });
-
-    document.querySelectorAll(".toggle-btn-precios").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".toggle-btn-precios").forEach((b) => {
-          b.classList.remove("active");
-        });
-
-        btn.classList.add("active");
       });
     });
 
@@ -708,17 +692,14 @@ class PantallaModerador {
       const efectivo = formData.get("efectivo") === "true";
       const tarjeta = formData.get("tarjeta") === "true";
       const transferencia = formData.get("transferencia") === "true";
-      const precio_delivery = formData.get("precio-delivery");
-      const precio_espectaculo = formData.get("precio-espectaculo");
-      const botonPedirCuenta = formData.get("pedirCuenta") === "true";
-      const botonLlamarMesero = formData.get("llamarMesero") === "true";
+      const imagenesEnArticulos =
+        formData.get("imagenesEnArticulos") === "true";
+      const incluirHorarios = formData.get("incluirHorarios") === "true";
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
-      const contrasenaMesero = formData.get("contrasenaMesero");
       const imagen = formData.get("imagen");
 
       try {
-        // Llamamos al método del gestor con el nombre y el archivo.
         await this.gestor.modificarModerador(moderador.id, usuario, contrasena);
         await this.gestor.modificarEmpresa(
           this.empresa.id,
@@ -728,11 +709,8 @@ class PantallaModerador {
           efectivo,
           tarjeta,
           transferencia,
-          precio_delivery,
-          precio_espectaculo,
-          botonPedirCuenta,
-          botonLlamarMesero,
-          contrasenaMesero,
+          imagenesEnArticulos,
+          incluirHorarios,
         );
         if (imagen && imagen.size > 0) {
           const empresaConNuevoLogo = await this.gestor.cambiarLogoEmpresa(
@@ -751,10 +729,8 @@ class PantallaModerador {
           efectivo,
           tarjeta,
           transferencia,
-          parseInt(precio_delivery),
-          parseInt(precio_espectaculo),
-          botonPedirCuenta,
-          botonLlamarMesero,
+          imagenesEnArticulos,
+          incluirHorarios,
         );
         this.mostrarLista(this.listaArticulos);
         modal.classList.add("hidden");
@@ -779,10 +755,6 @@ class PantallaModerador {
     const botonConfigurarHorarios = document.getElementById(
       "configurar-horarios",
     );
-    const botonConfigurarEspectaculos = document.getElementById(
-      "configurar-espectaculos",
-    );
-    const botonMeseros = document.getElementById("meseros");
 
     this.clickFuera(modal);
     botonSecccionModificar.addEventListener("click", async (event) => {
@@ -796,462 +768,6 @@ class PantallaModerador {
       await this.abrirModalConfigurarHorarios(modal);
       document.body.removeChild(modal);
     });
-
-    botonConfigurarEspectaculos.addEventListener("click", async (event) => {
-      event.preventDefault();
-      await this.abrirModalConfigurarEspectaculos(modal);
-      document.body.removeChild(modal);
-    });
-
-    botonMeseros.addEventListener("click", (event) => {
-      event.preventDefault();
-      this.abrirModalMeseros(modal);
-    });
-  }
-
-  async abrirModalConfigurarEspectaculos() {
-    const modal = this.empresa.modalConfigurarEspectaculos();
-    this.listaCentral.classList.add("hidden");
-
-    document.body.appendChild(modal);
-
-    this.espectaculosGuardados = Array.isArray(this.espectaculos.espectaculo)
-      ? this.espectaculos.espectaculo.map((h) => {
-          const diaIndex = Number(h.diaIndex);
-          return {
-            ...h,
-            dia: DIAS_SEMANA[diaIndex] || "",
-            nombre: NOMBRE_DIAS[diaIndex] || "",
-            rangos: Array.isArray(h.rangos) ? h.rangos : [],
-          };
-        })
-      : [];
-
-    this.renderEspectaculosEnModal(modal);
-
-    const botonFormEspectaculoDiaFijo = document.getElementById(
-      "btnFormEspectaculoDiaFijo",
-    );
-    botonFormEspectaculoDiaFijo.addEventListener("click", async (event) => {
-      event.preventDefault();
-      const hayHorarios =
-        this.espectaculos.espectaculo.length !==
-        this.espectaculosGuardados.length;
-
-      if (hayHorarios) {
-        const seguro = confirm(
-          "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
-        );
-
-        if (!seguro) return;
-      }
-
-      this.listaCentral.classList.remove("hidden");
-      modal.classList.add("hidden");
-      await this.abrirModalConfigurarEspectaculoHabilitarExcepcion(modal);
-      document.body.removeChild(modal);
-    });
-
-    const botonCerrar = document.getElementById("cerrar-wrapper");
-
-    if (botonCerrar) {
-      botonCerrar.addEventListener("click", (e) => {
-        e.preventDefault();
-
-        const hayEspectaculos =
-          this.espectaculos.espectaculo.length !==
-          this.espectaculosGuardados.length;
-
-        if (hayEspectaculos) {
-          const seguro = confirm(
-            "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
-          );
-
-          if (!seguro) return;
-        }
-
-        this.listaCentral.classList.remove("hidden");
-        modal.classList.add("hidden");
-        document.body.removeChild(modal);
-      });
-    }
-
-    const botonesDias = modal.querySelectorAll(".toggle-btn");
-    // Listener para los botones de dias de la semana
-    botonesDias.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        btn.classList.toggle("active");
-      });
-    });
-
-    const form = document.getElementById("formConfigurarEspectaculosEmpresa");
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const horaInicio = document.getElementById("horaInicio").value;
-      const horaFin = document.getElementById("horaFin").value;
-
-      if (!horaInicio || !horaFin) {
-        alert("Tenés que elegir hora de inicio y finalización");
-        return;
-      }
-
-      const botonesActivos = modal.querySelectorAll(".toggle-btn.active");
-
-      if (botonesActivos.length === 0) {
-        alert("Tenés que seleccionar al menos un día");
-        return;
-      }
-
-      // Armamos nuevos espectaculos
-      const nuevosEspectaculos = Array.from(botonesActivos).map((btn) => {
-        const diaNombre = btn.textContent.trim();
-
-        const diaIndex = DIAS_SEMANA.indexOf(diaNombre);
-        const nombreDia = NOMBRE_DIAS[diaIndex];
-
-        return {
-          dia: diaNombre,
-          nombre: nombreDia,
-          diaIndex,
-          inicio: horaInicio,
-          fin: horaFin,
-        };
-      });
-
-      // Validar choque
-      const espectaculosExistentesPlano = this.aplanarEspectaculosGuardados();
-      const error = this.validarNoSuperposicionEspectaculos(
-        nuevosEspectaculos,
-        espectaculosExistentesPlano,
-      );
-
-      if (error) {
-        alert("No se puede guardar: ese horario pisa otro.");
-        return;
-      }
-
-      // Guardar (agrupando por día)
-      nuevosEspectaculos.forEach((nuevo) => {
-        const existente = this.espectaculosGuardados.find(
-          (h) => h.diaIndex === nuevo.diaIndex,
-        );
-
-        if (existente) {
-          // Si ya existe el día, agregamos un rango nuevo
-          existente.rangos.push({
-            horaInicio: nuevo.inicio,
-            horaFin: nuevo.fin,
-          });
-        } else {
-          // Si no existe, creamos el día con su primer rango
-          this.espectaculosGuardados.push({
-            dia: nuevo.dia,
-            nombre: nuevo.nombre,
-            diaIndex: nuevo.diaIndex,
-            rangos: [
-              {
-                horaInicio: nuevo.inicio,
-                horaFin: nuevo.fin,
-              },
-            ],
-          });
-        }
-      });
-
-      // Reset del formulario (para seguir cargando más)
-      botonesActivos.forEach((btn) => btn.classList.remove("active"));
-      document.getElementById("horaInicio").value = "";
-      document.getElementById("horaFin").value = "";
-
-      // Render
-      this.renderEspectaculosEnModal(modal);
-    });
-
-    const btnGuardar = modal.querySelector("#btnGuardarEspectaculos");
-    btnGuardar.addEventListener("click", async () => {
-      if (
-        !this.espectaculosGuardados ||
-        this.espectaculosGuardados.length === 0
-      ) {
-        alert("No hay espectáculos cargados para guardar.");
-        return;
-      }
-
-      // 🔥 Payload recomendado
-      const espectaculos = this.espectaculosGuardados.map((d) => ({
-        diaIndex: d.diaIndex,
-        dia: d.dia,
-        rangos: d.rangos.map((r) => ({
-          inicio: r.horaInicio || r.inicio,
-          fin: r.horaFin || r.fin,
-        })),
-      }));
-
-      try {
-        await this.gestor.guardarEspectaculos(espectaculos, this.empresa.id);
-        alert("Horarios de espectáculos guardados correctamente ✔️");
-        this.espectaculos = await this.gestor.obtenerEspectaculos(
-          this.empresa.id,
-        ); // Actualizamos los espectaculos con lo que se guardó
-        this.espectaculosGuardados = Array.isArray(
-          this.espectaculos.espectaculo,
-        )
-          ? this.espectaculos.espectaculo.map((e) => {
-              const diaIndex = Number(e.diaIndex);
-
-              return {
-                ...e,
-                dia: DIAS_SEMANA[diaIndex] || "",
-                nombre: NOMBRE_DIAS[diaIndex] || "",
-                rangos: Array.isArray(e.rangos) ? e.rangos : [],
-              };
-            })
-          : [];
-        // limpiar progreso
-        this.renderEspectaculosEnModal(modal);
-      } catch (error) {
-        alert(`Error guardando espectaculos: ${error.message}`);
-      }
-    });
-  }
-
-  async renderizarMeseros(modal) {
-    try {
-      const listaContainer = modal.querySelector(".lista-meseros");
-
-      const meseros = await this.gestor.mostrarListaMeseros(this.empresa.id);
-
-      listaContainer.innerHTML = ""; // limpiar
-
-      if (!meseros || meseros.length === 0) {
-        listaContainer.innerHTML = "<p>No hay meseros</p>";
-        return;
-      }
-
-      meseros.forEach((m) => {
-        const item = document.createElement("div");
-        item.classList.add("mesero-item");
-
-        item.innerHTML = `
-          <div class="mesero-info">
-            <span class="mesero-codigo">${m.codigo ?? "-"}</span>
-            <span class="mesero-nombre">${m.nombre}</span>
-            <span class="mesero-abreviatura">${m.abreviaturaNombre ?? "-"}</span>
-          </div>
-
-          <div class="mesero-acciones">
-            <button class="btn-mesero btn-editar" data-id="${m.id}">
-              <img src="../../../../Archivos/Iconos/lapiz.png" alt="Editar">
-            </button>
-            <button class="btn-mesero btn-eliminar" data-id="${m.id}">
-              <img src="../../../../Archivos/Iconos/trash.svg" alt="Eliminar">
-            </button>
-          </div>
-        `;
-
-        listaContainer.appendChild(item);
-      });
-
-      const botonesEditar = modal.querySelectorAll(".btn-editar");
-      botonesEditar.forEach((boton) => {
-        boton.addEventListener("click", async (e) => {
-          e.preventDefault();
-          const id = Number(boton.getAttribute("data-id"));
-          await this.abrirModalModificarMesero(
-            modal,
-            meseros.find((m) => m.id === id),
-          );
-        });
-      });
-
-      const botonesEliminar = modal.querySelectorAll(".btn-eliminar");
-      botonesEliminar.forEach((boton) => {
-        boton.addEventListener("click", async (e) => {
-          e.preventDefault();
-          const id = Number(boton.getAttribute("data-id"));
-          const mesero = meseros.find((m) => m.id === id);
-          await this.pedirConfirmacionEliminarMesero(modal, mesero);
-        });
-      });
-    } catch (error) {
-      console.error("Error cargando lista de meseros:", error);
-    }
-  }
-
-  async abrirModalModificarMesero(modalPadre, mesero) {
-    const modal = this.empresa.modalModificarMesero(mesero);
-    document.body.appendChild(modal);
-
-    this.clickFuera(modal);
-
-    const form = document.getElementById("formModificarMesero");
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const nombre = formData.get("nombre");
-      const abreviaturaNombre = formData.get("abreviaturaNombre");
-      const contrasena = formData.get("contrasena");
-
-      try {
-        // Llamamos al método del gestor con el nombre y el archivo.
-        const response = await this.gestor.modificarMesero(
-          mesero.id,
-          nombre,
-          abreviaturaNombre,
-          contrasena,
-        );
-
-        modal.classList.add("hidden");
-        document.body.removeChild(modal);
-        document.body.appendChild(modalPadre);
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
-    });
-  }
-
-  pedirConfirmacionEliminarMesero(modal, mesero) {
-    return new Promise((resolve) => {
-      const confirmacion = confirm(
-        `¿Estás seguro de eliminar al mesero ${mesero.nombre}?`,
-      );
-      if (confirmacion) {
-        this.gestor.eliminarMesero(mesero.id);
-        this.renderizarMeseros(modal);
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    });
-  }
-
-  abrirModalMeseros() {
-    const html = this.empresa.modalMeseros();
-
-    this.listaCentral.classList.add("hidden");
-    document.body.insertAdjacentHTML("beforeend", html);
-
-    const modal = document.getElementById("modalMeseros");
-
-    const botonCerrar = modal.querySelector("#cerrar-wrapper");
-    botonCerrar.addEventListener("click", () => {
-      modal.remove();
-      this.listaCentral.classList.remove("hidden");
-    });
-
-    const botonRegistrarMesero = modal.querySelector(
-      "#contenedorRegistrarMesero",
-    );
-    botonRegistrarMesero.addEventListener("click", async () => {
-      await this.abrirModalRegistrarMesero(modal);
-    });
-
-    const botonCargarMeseros = modal.querySelector("#btnCargarMeseros");
-    botonCargarMeseros.addEventListener("click", async () => {
-      await this.abrirModalCargarMeseros(modal);
-    });
-
-    const form = document.getElementById("formRegistrarContrasenaCompartida");
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      await this.PedirConfirmacionRegistrarContrasenaCompartida(modal, form);
-    });
-
-    const botonEliminarContrasenaCompartida = modal.querySelector(
-      "#btnEliminarContrasenaCompartida",
-    );
-    botonEliminarContrasenaCompartida.addEventListener("click", async () => {
-      await this.PedirConfirmacionEliminarContrasenaCompartida();
-    });
-
-    this.renderizarMeseros(modal);
-  }
-
-  async abrirModalRegistrarMesero(modalPadre) {
-    const modal = this.empresa.modalRegistrarMesero();
-    document.body.appendChild(modal);
-
-    this.clickFuera(modal);
-
-    const form = document.getElementById("formRegistrarMesero");
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const nombre = formData.get("nombre");
-      const abreviaturaNombre = formData.get("abreviaturaNombre");
-      const contrasena = formData.get("contrasena");
-
-      try {
-        // Llamamos al método del gestor con el nombre y el archivo.
-
-        this.gestor.registrarMesero(
-          nombre,
-          abreviaturaNombre,
-          contrasena,
-          this.empresa.id,
-        );
-        this.renderizarMeseros(modalPadre);
-        modal.classList.add("hidden");
-        document.body.removeChild(modal);
-        document.body.appendChild(modalPadre);
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
-    });
-  }
-
-  async abrirModalCargarMeseros(modalPadre) {
-    const modal = this.empresa.modalCargarMeseros();
-    document.body.appendChild(modal);
-
-    this.clickFuera(modal);
-
-    const form = document.getElementById("formCargarMeseros");
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const archivo = formData.get("archivo");
-
-      try {
-        // Llamamos al método del gestor con el nombre y el archivo.
-        await this.gestor.cargarMeseros(archivo, this.empresa.id);
-        await this.renderizarMeseros(modalPadre);
-        modal.classList.add("hidden");
-        document.body.removeChild(modal);
-        document.body.appendChild(modalPadre);
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
-    });
-  }
-
-  async PedirConfirmacionRegistrarContrasenaCompartida(modal, form) {
-    const formData = new FormData(form);
-    const contrasena = formData.get("contrasenaCompartida");
-
-    const seguro = confirm(
-      `¿Estas seguro de registrar la contraseña compartida? 
-Los meseros registrados no se tomarán en cuenta mientras haya una contraseña compartida`,
-    );
-
-    if (seguro) {
-      await this.gestor.registrarContrasenaCompartida(
-        contrasena,
-        this.empresa.id,
-      );
-    }
-  }
-
-  async PedirConfirmacionEliminarContrasenaCompartida() {
-    const seguro = confirm(
-      `¿Estas seguro de eliminar la contraseña compartida?`,
-    );
-    if (seguro) {
-      this.gestor.eliminarContrasenaCompartida(this.empresa.id);
-    }
   }
 
   async abrirModalConfigurarHorarios() {
@@ -1274,28 +790,6 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
       : [];
 
     this.renderHorariosEnModal(modal);
-
-    const botonFormDiasNoLaborales = document.getElementById(
-      "btnFormDiasNoLaborales",
-    );
-    botonFormDiasNoLaborales.addEventListener("click", async (event) => {
-      event.preventDefault();
-      const hayHorarios =
-        this.horarios.horarios.length !== this.horariosGuardados.length;
-
-      if (hayHorarios) {
-        const seguro = confirm(
-          "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
-        );
-
-        if (!seguro) return;
-      }
-
-      this.listaCentral.classList.remove("hidden");
-      modal.classList.add("hidden");
-      await this.abrirModalConfigurarDiasNoLaborales(modal);
-      document.body.removeChild(modal);
-    });
 
     const botonCerrar = document.getElementById("cerrar-wrapper");
 
@@ -1456,216 +950,6 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
     });
   }
 
-  async abrirModalConfigurarEspectaculoHabilitarExcepcion() {
-    const modal = this.empresa.modalConfigurarEspectaculoHabilitarExcepcion();
-    this.listaCentral.classList.add("hidden");
-
-    document.body.appendChild(modal);
-
-    this.excepcionesGuardadas = Array.isArray(this.espectaculos.excepciones)
-      ? this.espectaculos.excepciones.map((h) => {
-          const diaIndex = Number(h.diaIndex);
-
-          return {
-            ...h,
-            rangos: Array.isArray(h.rangos) ? h.rangos : [],
-          };
-        })
-      : [];
-
-    this.renderExcepcionesHabilitadasEnModal(modal);
-
-    const botonFormEspectaculos = document.getElementById(
-      "btnFormConfigurarEspectaculo",
-    );
-    botonFormEspectaculos.addEventListener("click", async (event) => {
-      event.preventDefault();
-      const hayExcepciones =
-        this.espectaculos.excepciones.length !==
-        this.excepcionesGuardadas.length;
-
-      if (hayExcepciones) {
-        const seguro = confirm(
-          "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
-        );
-
-        if (!seguro) return;
-      }
-
-      modal.classList.add("hidden");
-      await this.abrirModalConfigurarEspectaculos(modal);
-      document.body.removeChild(modal);
-    });
-
-    const botonCerrar = document.getElementById(
-      "cerrar-wrapper-espectaculo-excepcion-habilitada",
-    );
-
-    if (botonCerrar) {
-      botonCerrar.addEventListener("click", (e) => {
-        e.preventDefault();
-
-        const hayExcepciones =
-          this.espectaculos.excepciones.length !==
-          this.excepcionesGuardadas.length;
-
-        if (hayExcepciones) {
-          const seguro = confirm(
-            "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
-          );
-
-          if (!seguro) return;
-        }
-
-        this.listaCentral.classList.remove("hidden");
-        modal.classList.add("hidden");
-        document.body.removeChild(modal);
-      });
-    }
-
-    const form = document.getElementById(
-      "formConfigurarEspectaculoHabilitarExcepcion",
-    );
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const fecha = document.getElementById("fechaExcepcionHabilitada").value;
-      const horaInicio = document.getElementById("horaInicio").value;
-      const horaFin = document.getElementById("horaFin").value;
-      const cancelada = document.getElementById("tipo-excepcion").value;
-
-      const fechaFormateada = this.formatearFechaCompleta(fecha);
-
-      const nuevaExcepcion = {
-        fecha: fechaFormateada,
-        rangos: [{ horaInicio: horaInicio, horaFin: horaFin }],
-        cancelada: cancelada === "1",
-      };
-
-      const haySuperposicion = this.validarNoSuperposicionExcepciones(
-        nuevaExcepcion,
-        this.excepcionesGuardadas,
-      );
-
-      if (haySuperposicion) {
-        alert("Ese horario se superpone con otro existente");
-        return;
-      }
-
-      const canceladaBooleano = cancelada === "1";
-
-      const existente = this.excepcionesGuardadas.find(
-        (h) =>
-          h.fecha === nuevaExcepcion.fecha && h.cancelada === canceladaBooleano,
-      );
-
-      if (existente) {
-        // Si ya existe el día, agregamos un rango nuevo
-        existente.rangos.push({
-          horaInicio: nuevaExcepcion.rangos[0].horaInicio,
-          horaFin: nuevaExcepcion.rangos[0].horaFin,
-        });
-      } else {
-        // Si no existe, creamos el día con su primer rango
-        this.excepcionesGuardadas.push({
-          fecha: nuevaExcepcion.fecha,
-          rangos: [
-            {
-              horaInicio: nuevaExcepcion.rangos[0].horaInicio,
-              horaFin: nuevaExcepcion.rangos[0].horaFin,
-            },
-          ],
-          cancelada: cancelada === "1",
-        });
-      }
-
-      // reset visual
-      document.getElementById("fechaExcepcionHabilitada").value = "";
-      document.getElementById("horaInicio").value = "";
-      document.getElementById("horaFin").value = "";
-
-      this.renderExcepcionesHabilitadasEnModal(modal);
-    });
-
-    const btnGuardar = modal.querySelector("#btnGuardarDiasFijos");
-    btnGuardar.addEventListener("click", async () => {
-      const horariosExcepciones = this.excepcionesGuardadas.map((d) => ({
-        fecha: d.fecha,
-        rangos: d.rangos.map((r) => ({
-          horaInicio: r.horaInicio,
-          horaFin: r.horaFin,
-        })),
-        cancelada: d.cancelada,
-      }));
-
-      try {
-        await this.gestor.guardarExcepcion(
-          horariosExcepciones,
-          this.empresa.id,
-        );
-        alert("Horarios guardados correctamente ✔️");
-        this.espectaculos = await this.gestor.obtenerEspectaculos(
-          this.empresa.id,
-        ); // Actualizamos las excepciones habilitadas con lo que se guardó
-        // limpiar progreso
-        this.renderHorariosEnModal(modal);
-      } catch (error) {
-        alert(`Error guardando horarios: ${error.message}`);
-      }
-    });
-  }
-
-  validarNoSuperposicionExcepciones(nuevaExcepcion, excepcionesExistentes) {
-    const nuevosSeg = [];
-    const existentesSeg = [];
-
-    // =========================
-    // NUEVO (siempre uno, pero puede generar 1 o 2 segmentos)
-    // =========================
-    const r = nuevaExcepcion.rangos[0];
-    const baseNueva = this.dateToIndex(nuevaExcepcion.fecha);
-
-    const segsNuevo = this.toSegments(0, r.horaInicio, r.horaFin);
-
-    for (const s of segsNuevo) {
-      nuevosSeg.push({
-        start: baseNueva + s.start,
-        end: baseNueva + s.end,
-      });
-    }
-
-    // =========================
-    // EXISTENTES
-    // =========================
-    for (const e of excepcionesExistentes) {
-      const base = this.dateToIndex(e.fecha);
-
-      for (const r of e.rangos) {
-        const segs = this.toSegments(0, r.horaInicio, r.horaFin);
-
-        for (const s of segs) {
-          existentesSeg.push({
-            start: base + s.start,
-            end: base + s.end,
-          });
-        }
-      }
-    }
-
-    // =========================
-    // COMPARACIÓN
-    // =========================
-    for (const nuevo of nuevosSeg) {
-      for (const existente of existentesSeg) {
-        if (this.overlap(nuevo, existente)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
   dateToIndex(fecha) {
     if (typeof fecha !== "string") {
       throw new Error(`Fecha inválida: ${fecha}`);
@@ -1689,186 +973,6 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
     const timestamp = Date.UTC(y, m - 1, d);
 
     return Math.floor(timestamp / 60000);
-  }
-
-  async abrirModalConfigurarDiasNoLaborales() {
-    const modal = this.empresa.modalConfigurarDiasNoLaborales();
-    this.listaCentral.classList.add("hidden");
-
-    document.body.appendChild(modal);
-
-    const botonFormHorarios = modal.querySelector("#btnFormConfigurarHorarios");
-    botonFormHorarios.addEventListener("click", async (event) => {
-      event.preventDefault();
-      const hayHorarios =
-        this.horarios.noLab.length !== this.diasNoLaboralesGuardados.length;
-
-      if (hayHorarios) {
-        const seguro = confirm(
-          "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
-        );
-
-        if (!seguro) return;
-      }
-      this.listaCentral.classList.remove("hidden");
-      modal.classList.add("hidden");
-      await this.abrirModalConfigurarHorarios(modal);
-      document.body.removeChild(modal);
-    });
-
-    const botonCerrar = modal.querySelector(
-      "#cerrar-wrapper-dias-no-laborales",
-    );
-    const botonAgregarDia = modal.querySelector("#agregarDiaNoLaboral");
-    const botonAgregarRango = modal.querySelector("#agregarRangoNoLaboral");
-    const form = modal.querySelector("#formConfigurarDiasNoLaborales");
-
-    try {
-      this.diasNoLaboralesGuardados = Array.isArray(this.horarios.noLab)
-        ? [
-            ...new Set(
-              this.horarios.noLab
-                .map((f) => this.normalizarFechaNoLaboralAlCargar(f))
-                .filter(Boolean),
-            ),
-          ]
-        : [];
-    } catch (error) {
-      this.diasNoLaboralesGuardados = [];
-      console.warn(
-        "No se pudieron cargar los días no laborales previos.",
-        error,
-      );
-    }
-
-    this.renderDiasNoLaboralesEnModal(modal);
-
-    botonCerrar.addEventListener("click", (e) => {
-      const hayHorarios =
-        this.horarios.noLab.length !== this.diasNoLaboralesGuardados.length;
-
-      if (hayHorarios) {
-        const seguro = confirm(
-          "¿Estás seguro de que querés salir?\nSe borrará tu progreso.",
-        );
-
-        if (!seguro) return;
-      }
-
-      e.preventDefault();
-      this.listaCentral.classList.remove("hidden");
-      modal.classList.add("hidden");
-      document.body.removeChild(modal);
-    });
-
-    botonAgregarDia.addEventListener("click", () => {
-      const inputFecha = modal.querySelector("#fechaNoLaboral");
-      const fecha = inputFecha.value;
-
-      if (!fecha) {
-        alert("Seleccioná una fecha para agregar.");
-        return;
-      }
-
-      this.agregarFechaNoLaboral(fecha);
-      inputFecha.value = "";
-      this.renderDiasNoLaboralesEnModal(modal);
-    });
-
-    botonAgregarRango.addEventListener("click", () => {
-      const desde = modal.querySelector("#fechaNoLaboralInicio").value;
-      const hasta = modal.querySelector("#fechaNoLaboralFin").value;
-
-      if (!desde || !hasta) {
-        alert("Tenés que seleccionar fecha de inicio y fecha de fin.");
-        return;
-      }
-
-      const fechaInicio = this.parsearFechaNoLaboral(desde);
-      const fechaFin = this.parsearFechaNoLaboral(hasta);
-
-      if (!fechaInicio || !fechaFin) {
-        alert("Las fechas deben tener formato DD/MM/YYYY.");
-        return;
-      }
-
-      if (fechaInicio > fechaFin) {
-        alert("La fecha de inicio no puede ser mayor a la fecha de fin.");
-        return;
-      }
-
-      if (!this.confirmarAnioSiCorresponde([desde, hasta])) {
-        return;
-      }
-
-      this.agregarRangoNoLaboral(desde, hasta);
-      modal.querySelector("#fechaNoLaboralInicio").value = "";
-      modal.querySelector("#fechaNoLaboralFin").value = "";
-      this.renderDiasNoLaboralesEnModal(modal);
-    });
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      if (!this.diasNoLaboralesGuardados.length) {
-        alert("No hay días no laborales cargados para guardar.");
-        return;
-      }
-
-      try {
-        await this.gestor.guardarDiasNoLaborales(
-          this.diasNoLaboralesGuardados,
-          this.empresa.id,
-        );
-        this.horarios = await this.gestor.obtenerHorarios(this.empresa.id); // Actualizamos los horarios con lo que se guardó
-        this.diasNoLaboralesGuardados = Array.isArray(this.horarios.noLab)
-          ? [
-              ...new Set(
-                this.horarios.noLab
-                  .map((f) => this.normalizarFechaNoLaboralAlCargar(f))
-                  .filter(Boolean),
-              ),
-            ]
-          : [];
-        alert("Días no laborales guardados correctamente ✔️");
-      } catch (error) {
-        alert(`Error guardando días no laborales: ${error.message}`);
-      }
-    });
-  }
-
-  agregarFechaNoLaboral(fechaInput, validarAnio = true) {
-    const fechaFormateada = this.formatearFechaCompleta(fechaInput);
-
-    if (!fechaFormateada) {
-      alert("La fecha seleccionada no es válida.");
-      return;
-    }
-
-    if (validarAnio && !this.confirmarAnioSiCorresponde([fechaFormateada])) {
-      return;
-    }
-
-    if (!this.diasNoLaboralesGuardados.includes(fechaFormateada)) {
-      this.diasNoLaboralesGuardados.push(fechaFormateada);
-    }
-  }
-
-  agregarRangoNoLaboral(inicioInput, finInput) {
-    let cursor = this.parsearFechaNoLaboral(inicioInput);
-    const fin = this.parsearFechaNoLaboral(finInput);
-
-    if (!cursor || !fin) {
-      return;
-    }
-
-    while (cursor <= fin) {
-      const yyyy = cursor.getFullYear();
-      const mm = String(cursor.getMonth() + 1).padStart(2, "0");
-      const dd = String(cursor.getDate()).padStart(2, "0");
-      this.agregarFechaNoLaboral(`${dd}/${mm}/${yyyy}`, false);
-      cursor.setDate(cursor.getDate() + 1);
-    }
   }
 
   formatearFechaCompleta(fechaISO) {
@@ -1911,38 +1015,6 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
     return null;
   }
 
-  normalizarFechaNoLaboralAlCargar(fechaInput) {
-    const completa = this.formatearFechaCompleta(fechaInput);
-    if (completa) return completa;
-
-    const fecha = String(fechaInput || "").trim();
-    const partes = fecha.match(/\d+/g) || [];
-    if (partes.length !== 2) return null;
-
-    const dd = String(parseInt(partes[0], 10)).padStart(2, "0");
-    const mm = String(parseInt(partes[1], 10)).padStart(2, "0");
-    const yyyy = String(new Date().getFullYear());
-    if (!this.esFechaCompletaValida(dd, mm, yyyy)) return null;
-    return `${dd}/${mm}/${yyyy}`;
-  }
-
-  parsearFechaNoLaboral(fechaInput) {
-    const fechaNormalizada = this.formatearFechaCompleta(fechaInput);
-    if (!fechaNormalizada) return null;
-
-    const [dia, mes, anio] = fechaNormalizada.split("/").map(Number);
-    const fecha = new Date(anio, mes - 1, dia);
-    if (
-      fecha.getFullYear() !== anio ||
-      fecha.getMonth() + 1 !== mes ||
-      fecha.getDate() !== dia
-    ) {
-      return null;
-    }
-
-    return fecha;
-  }
-
   esFechaCompletaValida(dia, mes, anio) {
     const dd = Number(dia);
     const mm = Number(mes);
@@ -1978,140 +1050,6 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
     return confirm(
       `La fecha que quiere registrar pertenece al año ${anio}, está seguro que desea registrarlo?`,
     );
-  }
-
-  renderDiasNoLaboralesEnModal(modal) {
-    const contenedor = modal.querySelector("#listaDiasNoLaborales");
-    const btnGuardar = modal.querySelector("#btnGuardarDiasNoLaborales");
-
-    contenedor.innerHTML = "";
-
-    if (
-      !this.diasNoLaboralesGuardados ||
-      this.diasNoLaboralesGuardados.length === 0
-    ) {
-      contenedor.innerHTML = `<p style="opacity:0.6; text-align:center;">
-        Todavía no cargaste días no laborales.
-      </p>`;
-
-      if (btnGuardar) btnGuardar.classList.add("disabled");
-      return;
-    }
-
-    if (btnGuardar) btnGuardar.classList.remove("disabled");
-
-    const ordenados = [...this.diasNoLaboralesGuardados].sort((a, b) => {
-      const fechaA = this.parsearFechaNoLaboral(a);
-      const fechaB = this.parsearFechaNoLaboral(b);
-      return (fechaA?.getTime() || 0) - (fechaB?.getTime() || 0);
-    });
-
-    ordenados.forEach((fecha) => {
-      const card = document.createElement("div");
-      card.classList.add("horario-card");
-
-      card.innerHTML = `
-        <button type="button" class="btn-eliminar-horario" data-fecha="${fecha}">
-          ✖
-        </button>
-        <div class="horario-dia">${fecha}</div>
-      `;
-
-      contenedor.appendChild(card);
-    });
-
-    contenedor.querySelectorAll(".btn-eliminar-horario").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const fecha = btn.dataset.fecha;
-        this.diasNoLaboralesGuardados = this.diasNoLaboralesGuardados.filter(
-          (d) => d !== fecha,
-        );
-        this.renderDiasNoLaboralesEnModal(modal);
-      });
-    });
-  }
-
-  renderExcepcionesHabilitadasEnModal(modal) {
-    const contenedor = modal.querySelector("#listaExcepcionesHabilitadas");
-    if (!contenedor) return;
-
-    contenedor.innerHTML = "";
-
-    const btnGuardar = modal.querySelector("#btnGuardarDiasFijos");
-
-    if (
-      !Array.isArray(this.excepcionesGuardadas) ||
-      this.excepcionesGuardadas.length === 0
-    ) {
-      contenedor.innerHTML = `<p style="opacity:0.6; text-align:center;">
-        Todavía no cargaste excepciones habilitadas.
-      </p>`;
-      return;
-    }
-
-    if (btnGuardar) btnGuardar.classList.remove("disabled");
-
-    const ordenados = [...this.excepcionesGuardadas].sort((a, b) => {
-      const fechaCmp = (a.fecha || "").localeCompare(b.fecha || "");
-      if (fechaCmp !== 0) return fechaCmp;
-      // cancelados al final dentro del mismo día
-      return Number(a.cancelada) - Number(b.cancelada);
-    });
-
-    for (const dia of ordenados) {
-      const card = document.createElement("div");
-      card.classList.add("horario-card");
-      if (dia.cancelada) card.classList.add("cancelado");
-      else card.classList.add("habilitado");
-
-      const rangos = Array.isArray(dia.rangos) ? dia.rangos : [];
-
-      const rangosOrdenados = [...rangos].sort((a, b) =>
-        (a.inicio || "").localeCompare(b.inicio || ""),
-      );
-
-      const rangosHTML = rangosOrdenados
-        .map(
-          (r) => `
-            <div class="horario-linea">Inicio: ${r.horaInicio}</div>
-            <div class="horario-linea cierre">Fin: ${r.horaFin}</div>
-          `,
-        )
-        .join("");
-
-      // Clave compuesta fecha+cancelado para identificar unívocamente el elemento
-      const claveUnica = `${dia.fecha}__${dia.cancelada ? "1" : "0"}`;
-
-      card.innerHTML = `
-        <button type="button" class="btn-eliminar-espectaculo" data-clave="${claveUnica}">
-          ✖
-        </button>
-
-        <div class="horario-dia">
-          <div class="texto-cancelada">
-            ${dia.cancelada ? "Cancelado" : "Habilitado"}
-          </div>
-          ${dia.fecha}
-
-        </div>
-        ${rangosHTML}
-      `;
-
-      contenedor.appendChild(card);
-    }
-
-    contenedor.querySelectorAll(".btn-eliminar-espectaculo").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const [fecha, canceladaFlag] = btn.dataset.clave.split("__");
-        const cancelada = canceladaFlag === "1";
-
-        this.excepcionesGuardadas = this.excepcionesGuardadas.filter(
-          (h) => !(h.fecha === fecha && Boolean(h.cancelada) === cancelada),
-        );
-
-        this.renderExcepcionesHabilitadasEnModal(modal);
-      });
-    });
   }
 
   filtrarArticulos() {
@@ -2276,81 +1214,6 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
       });
     });
   }
-
-  renderEspectaculosEnModal(modal) {
-    const contenedor = modal.querySelector("#listaEspectaculosRegistrados");
-    if (!contenedor) return;
-
-    contenedor.innerHTML = "";
-
-    const btnGuardar = modal.querySelector("#btnGuardarEspectaculos");
-
-    // Si no hay horarios
-    if (
-      !Array.isArray(this.espectaculosGuardados) ||
-      this.espectaculosGuardados.length === 0
-    ) {
-      contenedor.innerHTML = `<p style="opacity:0.6; text-align:center;">
-        Todavía no cargaste horarios.
-      </p>`;
-
-      if (btnGuardar) btnGuardar.classList.add("disabled");
-      return;
-    }
-
-    if (btnGuardar) btnGuardar.classList.remove("disabled");
-
-    // Ordenar por día
-    const ordenados = [...this.espectaculosGuardados].sort(
-      (a, b) => Number(a.diaIndex) - Number(b.diaIndex),
-    );
-
-    for (const dia of ordenados) {
-      const card = document.createElement("div");
-      card.classList.add("horario-card");
-
-      // 👇 por si rangos viene null o undefined
-      const rangos = Array.isArray(dia.rangos) ? dia.rangos : [];
-
-      const rangosOrdenados = [...rangos].sort((a, b) =>
-        (a.inicio || "").localeCompare(b.inicio || ""),
-      );
-
-      const rangosHTML = rangosOrdenados
-        .map(
-          (r) => `
-            <div class="horario-linea">Inicio: ${r.horaInicio}</div>
-            <div class="horario-linea cierre">Fin: ${r.horaFin}</div>
-          `,
-        )
-        .join("");
-
-      card.innerHTML = `
-        <button type="button" class="btn-eliminar-espectaculo" data-diaindex="${dia.diaIndex}">
-          ✖
-        </button>
-
-        <div class="horario-dia">${dia.nombre || dia.dia || `Día ${dia.diaIndex}`}</div>
-        ${rangosHTML}
-      `;
-
-      contenedor.appendChild(card);
-    }
-
-    // Listener eliminar
-    contenedor.querySelectorAll(".btn-eliminar-espectaculo").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const diaIndex = Number(btn.dataset.diaindex);
-
-        this.espectaculosGuardados = this.espectaculosGuardados.filter(
-          (h) => Number(h.diaIndex) !== diaIndex,
-        );
-
-        this.renderEspectaculosEnModal(modal);
-      });
-    });
-  }
-
   timeToMinutes(hhmm) {
     const [h, m] = hhmm.split(":").map(Number);
     return h * 60 + m;
@@ -2441,74 +1304,6 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
 
     return null;
   }
-
-  validarNoSuperposicionEspectaculos(nuevosHorarios, horariosExistentes) {
-    const existentesSeg = [];
-    const nuevosSeg = [];
-
-    // EXISTENTES -> segmentos
-    for (const h of horariosExistentes) {
-      const segs = this.toSegments(h.diaIndex, h.inicio, h.fin);
-
-      for (const s of segs) {
-        existentesSeg.push({
-          dia: h.dia,
-          start: s.start,
-          end: s.end,
-        });
-      }
-    }
-
-    // NUEVOS -> segmentos
-    for (const h of nuevosHorarios) {
-      const segs = this.toSegments(h.diaIndex, h.inicio, h.fin);
-
-      for (const s of segs) {
-        nuevosSeg.push({
-          dia: h.dia,
-          start: s.start,
-          end: s.end,
-        });
-      }
-    }
-
-    // Comparar nuevos contra existentes
-    for (const nuevo of nuevosSeg) {
-      for (const existente of existentesSeg) {
-        if (this.overlap(nuevo, existente)) {
-          return `El horario de ${nuevo.dia} pisa otro horario existente.`;
-        }
-
-        const semana = 7 * this.MINUTOS_DIA;
-
-        const nuevoPlus = {
-          start: nuevo.start + semana,
-          end: nuevo.end + semana,
-        };
-        const existentePlus = {
-          start: existente.start + semana,
-          end: existente.end + semana,
-        };
-
-        if (this.overlap(nuevoPlus, existente))
-          return `Hay choque de horarios (por cruce semanal).`;
-        if (this.overlap(nuevo, existentePlus))
-          return `Hay choque de horarios (por cruce semanal).`;
-      }
-    }
-
-    // Comparar nuevos entre sí
-    for (let i = 0; i < nuevosSeg.length; i++) {
-      for (let j = i + 1; j < nuevosSeg.length; j++) {
-        if (this.overlap(nuevosSeg[i], nuevosSeg[j])) {
-          return `Los nuevos horarios se pisan entre sí (${nuevosSeg[i].dia} con ${nuevosSeg[j].dia}).`;
-        }
-      }
-    }
-
-    return null;
-  }
-
   aplanarHorariosGuardados() {
     return this.horariosGuardados.flatMap((dia) =>
       dia.rangos.map((r) => ({
@@ -2519,129 +1314,6 @@ Los meseros registrados no se tomarán en cuenta mientras haya una contraseña c
         cierre: r.cierre,
       })),
     );
-  }
-
-  aplanarEspectaculosGuardados() {
-    return this.espectaculosGuardados.flatMap((dia) =>
-      dia.rangos.map((r) => ({
-        dia: dia.dia,
-        diaIndex: dia.diaIndex,
-        inicio: r.horaInicio,
-        fin: r.horaFin,
-      })),
-    );
-  }
-
-  async calcularPrecioActual() {
-    if (this.empresa.precio_espectaculo === 1) {
-      return 1;
-    }
-    const now = new Date();
-    // Día de la semana (0-6)
-    const diaIndex = now.getDay();
-
-    // Fecha en formato dd/mm/yyyy
-    const fechaActual = this.formatearFechaCompleta(
-      now.toISOString().slice(0, 10),
-    );
-
-    // Hora en HH:mm
-    const horaActual = now.toTimeString().slice(0, 5);
-
-    const ahoraMin =
-      diaIndex * this.MINUTOS_DIA + this.timeToMinutes(horaActual);
-
-    const semana = 7 * this.MINUTOS_DIA;
-    const ahoraSeg = { start: ahoraMin, end: ahoraMin + 1 };
-
-    // =========================
-    // 1. CANCELADAS
-    // =========================
-    for (const e of this.espectaculos.excepciones) {
-      if (e.fecha === fechaActual && e.cancelada) {
-        console.log("❌ Día cancelado");
-        return 1;
-      }
-    }
-
-    // =========================
-    // 2. HABILITADAS
-    // =========================
-    for (const e of this.espectaculos.excepciones) {
-      if (e.cancelada) continue;
-      const fechaAyer = this.obtenerFechaAnterior(fechaActual);
-
-      if (e.fecha === fechaActual || e.fecha === fechaAyer) {
-        const diaIndexExcepcion = this.dateToDayIndex(e.fecha);
-
-        for (const r of e.rangos) {
-          const segs = this.toSegments(
-            diaIndexExcepcion,
-            r.horaInicio,
-            r.horaFin,
-          );
-
-          for (const seg of segs) {
-            if (this.overlap(ahoraSeg, seg)) {
-              return this.empresa.precio_espectaculo;
-            }
-
-            const segPlus = {
-              start: seg.start + semana,
-              end: seg.end + semana,
-            };
-
-            if (this.overlap(ahoraSeg, segPlus)) {
-              return this.empresa.precio_espectaculo;
-            }
-          }
-        }
-      }
-    }
-
-    // =========================
-    // 3. HORARIO BASE
-    // =========================
-    for (const h of this.espectaculos.espectaculo) {
-      for (const r of h.rangos) {
-        const segs = this.toSegments(h.diaIndex, r.horaInicio, r.horaFin);
-
-        for (const seg of segs) {
-          if (this.overlap(ahoraSeg, seg)) {
-            return this.empresa.precio_espectaculo;
-          }
-
-          const segPlus = {
-            start: seg.start + semana,
-            end: seg.end + semana,
-          };
-
-          if (this.overlap(ahoraSeg, segPlus)) {
-            return this.empresa.precio_espectaculo;
-          }
-        }
-      }
-    }
-    return 1;
-  }
-
-  dateToDayIndex(fecha) {
-    const [d, m, y] = fecha.split("/").map(Number);
-    const date = new Date(Date.UTC(y, m - 1, d));
-    return date.getUTCDay(); // 0 domingo - 6 sábado
-  }
-
-  obtenerFechaAnterior(fecha) {
-    const [d, m, y] = fecha.split("/").map(Number);
-    const date = new Date(Date.UTC(y, m - 1, d));
-
-    date.setUTCDate(date.getUTCDate() - 1);
-
-    const dia = String(date.getUTCDate()).padStart(2, "0");
-    const mes = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const anio = date.getUTCFullYear();
-
-    return `${dia}/${mes}/${anio}`;
   }
 
   async eliminarVideoArticulo(articulo) {

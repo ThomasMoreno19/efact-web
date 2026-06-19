@@ -43,26 +43,6 @@ class GestorModerador {
     );
   }
 
-  async asignarImagen(id, id_empresa, nombre, archivoImagen, logo_url = "") {
-    try {
-      // Subir la imagen y obtener la URL del logo.
-      const urlLogoEmpresa = await this.subirImagen(archivoImagen, logo_url);
-
-      // Subir los datos de la empresa con la URL que obtuvimos.
-      const rubro = await this.modificarRubro(
-        id,
-        id_empresa,
-        nombre,
-        urlLogoEmpresa,
-      );
-
-      return rubro;
-    } catch (error) {
-      console.error("Error en el proceso de creación de la empresa:", error);
-      throw error;
-    }
-  }
-
   async subirImagen(archivoImagen, logo_url) {
     if (!archivoImagen) {
       return logo_url;
@@ -73,6 +53,40 @@ class GestorModerador {
     try {
       // 3. Enviar la solicitud POST con FormData en el body
       const response = await fetch(`/rubro/subir-logo`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido" }));
+        throw new Error(
+          errorData.message || `Error al subir la imagen: ${response.status}`,
+        );
+      }
+
+      // 4. El backend debería responder con un JSON que contenga la URL del logo
+      const data = await response.json();
+
+      // 5. Retornar solo la URL del logo
+      return data.url;
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      throw error;
+    }
+  }
+
+  async subirImagenArticulo(archivoImagen, logo_url) {
+    if (!archivoImagen) {
+      return logo_url;
+    }
+    const formData = new FormData();
+    formData.append("imagen", archivoImagen);
+
+    try {
+      // 3. Enviar la solicitud POST con FormData en el body
+      const response = await fetch(`/articulo/subir-logo`, {
         method: "POST",
         body: formData,
       });
@@ -137,59 +151,25 @@ class GestorModerador {
         try {
           const listaObjetos = [];
 
-          if (archivo.type === "text/csv") {
-            const contenido = event.target.result;
-            const lineas = contenido.split("\n");
-            const lineasSinCabecera = lineas.slice(2);
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-            lineasSinCabecera.forEach((linea) => {
-              const columnas = linea.split(";");
-              if (columnas.length >= 4) {
-                listaObjetos.push({
-                  id_articulo: columnas[0],
-                  nombre_articulo: columnas[1].trim(),
-                  descripcion: this.limpiarDescripcion(
-                    columnas[6]?.toString().trim() || "",
-                  ),
-                  precio1: parseFloat(columnas[2].trim()),
-                  precio2: parseFloat(columnas[3].trim()),
-                  precio3: parseFloat(columnas[4].trim()),
-                  codigo_carta_articulo: "",
-                  nombre_rubro: columnas[5].trim(),
-                  publica_art: columnas[7].trim(),
-                  publica_rub: columnas[8].trim(),
-                  no_procesado: columnas[9].trim(),
-                });
-              }
+          const lineasSinCabecera = jsonData.slice(2);
+
+          lineasSinCabecera.forEach((columnas) => {
+            if (!columnas || columnas.length === 0) return;
+            listaObjetos.push({
+              id_articulo: columnas[0],
+              nombre_articulo: columnas[1].trim(),
+              precio1: parseFloat(columnas[2]),
+              precio2: parseFloat(columnas[3]),
+              precio3: parseFloat(columnas[4]),
+              nombre_rubro: columnas[5].trim(),
+              no_procesado: columnas[6],
             });
-          } else {
-            const data = new Uint8Array(event.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-            const lineasSinCabecera = jsonData.slice(2);
-
-            lineasSinCabecera.forEach((columnas) => {
-              if (!columnas || columnas.length === 0) return;
-
-              listaObjetos.push({
-                id_articulo: columnas[0],
-                nombre_articulo: columnas[1].trim(),
-                descripcion: this.limpiarDescripcion(
-                  columnas[6]?.toString().trim() || "",
-                ),
-                precio1: parseFloat(columnas[2]),
-                precio2: parseFloat(columnas[3]),
-                precio3: parseFloat(columnas[4]),
-                codigo_carta_articulo: "",
-                nombre_rubro: columnas[5].trim(),
-                publica_art: columnas[7],
-                publica_rub: columnas[8],
-                no_procesado: columnas[9],
-              });
-            });
-          }
+          });
 
           await this.setearEn0(id_empresa);
 
@@ -350,22 +330,28 @@ class GestorModerador {
     id_rubro,
     id_empresa,
     nombre,
-    descripcion,
     precio1,
     precio2,
     precio3,
-    codigo_carta = "",
+    imagen,
+    logo_url = "",
   ) {
+    let urlLogo = logo_url;
+
+    // Solo subir imagen si se proporcionó una nueva
+    if (imagen) {
+      urlLogo = await this.subirImagenArticulo(imagen, logo_url);
+    }
+
     const bodyData = {
       id: id,
       id_rubro: id_rubro,
       id_empresa: id_empresa,
-      descripcion: descripcion,
       nombre: nombre,
       precio1: precio1,
       precio2: precio2,
       precio3: precio3,
-      codigo_carta: codigo_carta,
+      logo_url: urlLogo,
     };
 
     try {
@@ -490,11 +476,8 @@ class GestorModerador {
     efectivo,
     tarjeta,
     transferencia,
-    precio_delivery,
-    precio_espectaculo,
-    botonPedirCuenta,
-    botonLlamarMesero,
-    contrasenaMesero,
+    imagenesEnArticulos,
+    incluirHorarios,
   ) {
     const bodyData = {
       id: id,
@@ -504,11 +487,8 @@ class GestorModerador {
       efectivo: efectivo,
       tarjeta: tarjeta,
       transferencia: transferencia,
-      precio_delivery: precio_delivery,
-      precio_espectaculo: precio_espectaculo,
-      botonPedirCuenta: botonPedirCuenta,
-      botonLlamarMesero: botonLlamarMesero,
-      contrasenaMesero: contrasenaMesero,
+      imagenesEnArticulos: imagenesEnArticulos,
+      incluirHorarios: incluirHorarios,
     };
 
     try {
@@ -720,72 +700,6 @@ class GestorModerador {
     return await response.json();
   }
 
-  async guardarDiasNoLaborales(dias_no_laborales, id_empresa) {
-    const bodyData = {
-      id_empresa,
-      dias_no_laborales,
-    };
-
-    const response = await fetch(`/empresa/guardar-dias-no-laborales`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bodyData),
-    });
-
-    if (!response.ok) {
-      const err = await response
-        .json()
-        .catch(() => ({ error: "Error guardando días no laborales" }));
-      throw new Error(err.error || "Error guardando días no laborales");
-    }
-
-    return await response.json();
-  }
-
-  async guardarEspectaculos(espectaculos, id_empresa) {
-    const bodyData = {
-      id_empresa,
-      espectaculos,
-    };
-
-    const response = await fetch(`/empresa/guardar-espectaculos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bodyData),
-    });
-
-    if (!response.ok) {
-      const err = await response
-        .json()
-        .catch(() => ({ error: "Error guardando espectáculos" }));
-      throw new Error(err.error || "Error guardando espectáculos");
-    }
-
-    return await response.json();
-  }
-
-  async guardarExcepcion(excepciones, id_empresa) {
-    const bodyData = {
-      id_empresa,
-      excepciones: excepciones,
-    };
-
-    const response = await fetch(`/empresa/guardar-excepciones-espectaculos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bodyData),
-    });
-
-    if (!response.ok) {
-      const err = await response
-        .json()
-        .catch(() => ({ error: "Error guardando excepciones" }));
-      throw new Error(err.error || "Error guardando excepciones");
-    }
-
-    return await response.json();
-  }
-
   async obtenerHorarios(id_empresa) {
     const bodyData = { id_empresa };
 
@@ -803,233 +717,6 @@ class GestorModerador {
     }
 
     return await response.json();
-  }
-
-  async obtenerEspectaculos(id_empresa) {
-    const bodyData = { id_empresa };
-
-    const response = await fetch(`/empresa/mostrar-espectaculos`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bodyData),
-    });
-
-    if (!response.ok) {
-      const err = await response
-        .json()
-        .catch(() => ({ error: "Error obteniendo espectáculos" }));
-      throw new Error(err.error || "Error obteniendo espectáculos");
-    }
-
-    return await response.json();
-  }
-
-  async mostrarListaMeseros(id_empresa) {
-    const bodyData = { id_empresa };
-
-    const response = await fetch(`/mesero/mostrar`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bodyData),
-    });
-
-    if (!response.ok) {
-      const err = await response
-        .json()
-        .catch(() => ({ error: "Error obteniendo meseros" }));
-      throw new Error(err.error || "Error obteniendo meseros");
-    }
-
-    return await response.json();
-  }
-
-  async registrarMesero(nombre, abreviaturaNombre, contrasena, id_empresa) {
-    const bodyData = {
-      nombre: nombre,
-      abreviaturaNombre: abreviaturaNombre,
-      contrasena: contrasena,
-      id_empresa: id_empresa,
-    };
-
-    const response = await fetch(`/mesero/crear`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bodyData),
-    });
-
-    if (!response.ok) {
-      const err = await response
-        .json()
-        .catch(() => ({ error: "Error registrando mesero" }));
-      throw new Error(err.error || "Error registrando mesero");
-    }
-
-    return await response.json();
-  }
-
-  async cargarMeseros(archivo, id_empresa) {
-    try {
-      const data = await archivo.arrayBuffer(); // ← clave para Excel
-
-      const workbook = XLSX.read(data, { type: "array" });
-      const hoja = workbook.Sheets[workbook.SheetNames[0]];
-
-      const filas = XLSX.utils.sheet_to_json(hoja, {
-        header: 1,
-        raw: false,
-      });
-      // header:1 → devuelve array de arrays (más control)
-
-      const meseros = [];
-
-      // Saltar las primeras 2 filas → empezamos en índice 2
-      for (let i = 2; i < filas.length; i++) {
-        const fila = filas[i];
-
-        if (!fila || fila.length === 0) continue; // evitar filas vacías
-
-        const mesero = {
-          codigo: fila[0]?.toString().trim(),
-          nombre: fila[1]?.toString().trim(),
-          abreviaturaNombre: fila[2]?.toString().trim(),
-          contrasena: fila[3]?.toString().trim(),
-        };
-
-        // evitar filas incompletas
-        if (!mesero.codigo || !mesero.nombre) continue;
-
-        meseros.push(mesero);
-      }
-
-      const bodyData = {
-        meseros,
-        id_empresa,
-      };
-
-      const response = await fetch(`/mesero/cargar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyData),
-      });
-
-      if (!response.ok) {
-        const err = await response
-          .json()
-          .catch(() => ({ error: "Error cargando meseros" }));
-        throw new Error(err.error || "Error cargando meseros");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error cargando meseros:", error);
-      throw error;
-    }
-  }
-
-  async eliminarMesero(id) {
-    try {
-      const bodyData = { id };
-
-      const response = await fetch(`/mesero/eliminar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyData),
-      });
-
-      if (!response.ok) {
-        const err = await response
-          .json()
-          .catch(() => ({ error: "Error eliminando mesero" }));
-        throw new Error(err.error || "Error eliminando mesero");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error eliminando mesero:", error);
-      throw error;
-    }
-  }
-
-  async modificarMesero(id, nombre, abreviaturaNombre, contrasena) {
-    try {
-      const bodyData = {
-        id: id,
-        nombre: nombre,
-        abreviaturaNombre: abreviaturaNombre,
-        contrasena: contrasena,
-      };
-
-      const response = await fetch(`/mesero/modificar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyData),
-      });
-
-      if (!response.ok) {
-        const err = await response
-          .json()
-          .catch(() => ({ error: "Error modificando mesero" }));
-        throw new Error(err.error || "Error modificando mesero");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error modificando mesero:", error);
-      throw error;
-    }
-  }
-
-  async registrarContrasenaCompartida(contrasena, id_empresa) {
-    try {
-      const bodyData = {
-        contrasena: contrasena,
-        id_empresa: id_empresa,
-      };
-
-      const response = await fetch(`/empresa/registrar-contrasena-compartida`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyData),
-      });
-
-      if (!response.ok) {
-        const err = await response
-          .json()
-          .catch(() => ({ error: "Error registrando contrasena compartida" }));
-        throw new Error(err.error || "Error registrando contrasena compartida");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error registrando contrasena compartida:", error);
-      throw error;
-    }
-  }
-
-  async eliminarContrasenaCompartida(id_empresa) {
-    try {
-      const bodyData = {
-        id_empresa: id_empresa,
-      };
-
-      const response = await fetch(`/empresa/eliminar-contrasena-compartida`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bodyData),
-      });
-
-      if (!response.ok) {
-        const err = await response
-          .json()
-          .catch(() => ({ error: "Error eliminando contrasena compartida" }));
-        throw new Error(err.error || "Error eliminando contrasena compartida");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("Error eliminando contrasena compartida:", error);
-      throw error;
-    }
   }
 
   async loguearModerador(nombre, contrasena, id_empresa) {

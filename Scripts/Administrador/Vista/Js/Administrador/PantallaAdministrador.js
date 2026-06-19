@@ -7,8 +7,6 @@ class PantallaAdministrador {
     this.botonNuevaEmpresa = document.getElementById("alta-empresa");
     window.gestorDeEmpresasCallback = (empresa) =>
       this.modalEmpresaSeleccionada(empresa);
-    window.gestorDeModeradoresCallback = (moderador) =>
-      this.modalModeradorSeleccionado(moderador);
 
     this.botonNuevaEmpresa = document.getElementById("alta-empresa");
     window.gestorDeEmpresasCallback = (empresa) =>
@@ -65,14 +63,6 @@ class PantallaAdministrador {
     const BOTON_ELIMINAR_EMPRESA = document.getElementById(
       "btn-eliminar-empresa",
     );
-    const BOTON_CONFIGURAR_ESPECTACULOS = document.getElementById(
-      "configurar-espectaculos",
-    );
-
-    BOTON_CONFIGURAR_ESPECTACULOS.classList.add("hidden");
-
-    const BOTON_CONFIGURAR_MESEROS = document.getElementById("meseros");
-    BOTON_CONFIGURAR_MESEROS.classList.add("hidden");
 
     // Se cierra el modal si se clickea afuera
     MODAL.addEventListener("click", (event) => {
@@ -117,9 +107,6 @@ class PantallaAdministrador {
         btn.classList.toggle("active");
         const activo = btn.classList.contains("active");
 
-        if (btn.id === "btnMesero") {
-          document.getElementById("moduloMesero").value = activo;
-        }
         if (btn.id === "btnCarrito") {
           document.getElementById("tieneCarrito").value = activo;
         }
@@ -154,15 +141,12 @@ class PantallaAdministrador {
       const TELEFONO = FORMDATA.get("telefono");
       const UBICACION = FORMDATA.get("ubicacion");
       const TIENE_CARRITO = FORMDATA.get("tieneCarrito") === "true";
-      const MODULO_MESERO = FORMDATA.get("moduloMesero") === "true";
       const DESHABILITAR_EXCEL = FORMDATA.get("deshabilitarExcel") === "true";
-      const GESTION_MESERO = FORMDATA.get("gestionMesero") === "true";
       const EFECTIVO = FORMDATA.get("efectivo") === "true";
       const TARJETA = FORMDATA.get("tarjeta") === "true";
       const TRANSFERENCIA = FORMDATA.get("transferencia") === "true";
       const USUARIO = FORMDATA.get("usuario");
       const CONTRASENA = FORMDATA.get("contrasena");
-      const CONTRASENA_MESERO = FORMDATA.get("contrasenaMesero");
 
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
@@ -171,17 +155,13 @@ class PantallaAdministrador {
           TELEFONO,
           UBICACION,
           TIENE_CARRITO,
-          MODULO_MESERO,
           DESHABILITAR_EXCEL,
-          GESTION_MESERO,
           EFECTIVO,
           TARJETA,
           TRANSFERENCIA,
-          CONTRASENA_MESERO,
           IMAGEN,
         );
         await this.gestor.crearModerador(USUARIO, EMPRESA.id, CONTRASENA);
-        MODAL.classList.add("hidden");
         MODAL.classList.add("hidden");
         document.body.removeChild(MODAL);
         await this.mostrarLista();
@@ -200,9 +180,7 @@ class PantallaAdministrador {
     MODAL.addEventListener("click", (event) => {
       if (event.target === MODAL) {
         MODAL.classList.add("hidden");
-        MODAL.classList.add("hidden");
         document.body.appendChild(modalPadre);
-        document.body.removeChild(MODAL);
         document.body.removeChild(MODAL);
       }
     });
@@ -212,9 +190,6 @@ class PantallaAdministrador {
         btn.classList.toggle("active");
         const activo = btn.classList.contains("active");
 
-        if (btn.id === "btnMesero") {
-          document.getElementById("moduloMesero").value = activo;
-        }
         if (btn.id === "btnCarrito") {
           document.getElementById("tieneCarrito").value = activo;
         }
@@ -250,7 +225,6 @@ class PantallaAdministrador {
       const TELEFONO = FORMDATA.get("telefono");
       const UBICACION = FORMDATA.get("ubicacion");
       const TIENE_CARRITO = FORMDATA.get("tieneCarrito") === "true";
-      const MODULO_MESERO = FORMDATA.get("moduloMesero") === "true";
       const DESHABILITAR_EXCEL = FORMDATA.get("deshabilitarExcel") === "true";
       const EFECTIVO = FORMDATA.get("efectivo") === "true";
       const TARJETA = FORMDATA.get("tarjeta") === "true";
@@ -258,7 +232,6 @@ class PantallaAdministrador {
       const IMAGEN = document.getElementById("imagen").files[0] || null;
       const USUARIO = FORMDATA.get("usuario");
       const CONTRASENA = FORMDATA.get("contrasena");
-      const CONTRASENA_MESERO = FORMDATA.get("contrasenaMesero");
 
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
@@ -269,12 +242,10 @@ class PantallaAdministrador {
           TELEFONO,
           UBICACION,
           TIENE_CARRITO,
-          MODULO_MESERO,
           DESHABILITAR_EXCEL,
           EFECTIVO,
           TARJETA,
           TRANSFERENCIA,
-          CONTRASENA_MESERO,
           IMAGEN,
         );
         MODAL.classList.add("hidden");

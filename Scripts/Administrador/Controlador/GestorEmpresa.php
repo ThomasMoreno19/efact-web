@@ -58,36 +58,8 @@ class GestorEmpresa
         $this->guardarHorarios();
         break;
 
-      case 'guardar-dias-no-laborales':
-        $this->guardarDiasNoLaborales();
-        break;
-
-      case 'guardar-espectaculos':
-        $this->guardarEspectaculos();
-        break;
-
       case 'mostrar-horarios':
         $this->mostrarHorarios();
-        break;
-
-      case 'mostrar-espectaculos':
-        $this->mostrarEspectaculos();
-        break;
-
-      case 'verificar-contrasena-mesero':
-        $this->verificarContrasenaMesero();
-        break;
-
-      case 'registrar-contrasena-compartida':
-        $this->registrarContrasenaCompartida();
-        break;
-
-      case 'eliminar-contrasena-compartida':
-        $this->eliminarContrasenaCompartida();
-        break;
-
-      case 'guardar-excepciones-espectaculos':
-        $this->guardarExcepcionesEspectaculos();
         break;
 
       default:
@@ -143,12 +115,10 @@ class GestorEmpresa
     $telefono = $_POST['telefono'];
     $ubicacion = $_POST['ubicacion'];
     $tieneCarrito   = filter_var($_POST['tieneCarrito'], FILTER_VALIDATE_BOOLEAN);
-    $moduloMesero   = filter_var($_POST['moduloMesero'], FILTER_VALIDATE_BOOLEAN);
     $deshabilitar_excel = filter_var($_POST['deshabilitarExcel'], FILTER_VALIDATE_BOOLEAN);
     $efectivo       = filter_var($_POST['efectivo'], FILTER_VALIDATE_BOOLEAN);
     $tarjeta        = filter_var($_POST['tarjeta'], FILTER_VALIDATE_BOOLEAN);
     $transferencia  = filter_var($_POST['transferencia'], FILTER_VALIDATE_BOOLEAN);
-    $contrasenaMesero = trim($_POST['contrasenaMesero']);
     $imagen = null;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -170,7 +140,7 @@ class GestorEmpresa
       }
 
       // 4️⃣ Crear la empresa en la base de datos
-      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $moduloMesero, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia, $contrasenaMesero);
+      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia);
 
       // 5️⃣ Devolver respuesta
       http_response_code(200);
@@ -180,14 +150,12 @@ class GestorEmpresa
         'telefono' => $empresa['telefono'],
         'ubicacion' => $empresa['ubicacion'],
         'tieneCarrito' => $empresa['tieneCarrito'],
-        'moduloMesero' => $empresa['moduloMesero'],
         'deshabilitar_excel' => $empresa['deshabilitar_excel'],
         'efectivo' => $empresa['efectivo'],
         'tarjeta' => $empresa['tarjeta'],
         'transferencia' => $empresa['transferencia'],
         'fecha_creacion' => $empresa['fecha_creacion'],
         'logo_url' => $empresa['logo_url'],
-        'contrasenaMesero' => $empresa['contrasenaMesero']
       ]);
     } catch (Exception $e) {
       http_response_code(500);
@@ -206,12 +174,10 @@ class GestorEmpresa
     $ubicacion = $_POST['ubicacion'] ?? '';
     $telefono = $_POST['telefono'] ?? '';
     $tieneCarrito = filter_var($_POST['tieneCarrito'] ?? false, FILTER_VALIDATE_BOOLEAN);
-    $moduloMesero = filter_var($_POST['moduloMesero'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $deshabilitar_excel = filter_var($_POST['deshabilitarExcel'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $efectivo = filter_var($_POST['efectivo'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $tarjeta = filter_var($_POST['tarjeta'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $transferencia = filter_var($_POST['transferencia'] ?? false, FILTER_VALIDATE_BOOLEAN);
-    $contrasenaMesero = trim($_POST['contrasenaMesero']);
     $imagen = null;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -234,7 +200,7 @@ class GestorEmpresa
         $logo_url = $this->subirLogo($nombre, $imagen);
       }
 
-      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $moduloMesero, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia, $contrasenaMesero, $logo_url);
+      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia, $logo_url);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
@@ -258,11 +224,8 @@ class GestorEmpresa
     $efectivo = $datos['efectivo'];
     $tarjeta = $datos['tarjeta'];
     $transferencia = $datos['transferencia'];
-    $precio_delivery = $datos['precio_delivery'];
-    $precio_espectaculo = $datos['precio_espectaculo'];
-    $botonPedirCuenta = $datos['botonPedirCuenta'];
-    $botonLlamarMesero = $datos['botonLlamarMesero'];
-    $contrasenaMesero = trim($datos['contrasenaMesero'] ?? '');
+    $imagenesEnArticulos = $datos['imagenesEnArticulos'];
+    $incluirHorarios = $datos['incluirHorarios'];
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -272,7 +235,7 @@ class GestorEmpresa
 
 
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $precio_delivery, $precio_espectaculo, $botonPedirCuenta, $botonLlamarMesero, $contrasenaMesero);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $imagenesEnArticulos, $incluirHorarios);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
@@ -376,91 +339,6 @@ class GestorEmpresa
       echo json_encode(['error' => 'Error al guardar los horarios: ' . $e->getMessage()]);
     }
   }
-
-
-
-  private function guardarDiasNoLaborales(): void
-  {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-    $dias_no_laborales = $datos['dias_no_laborales'] ?? null;
-
-    if (empty($id_empresa) || !is_array($dias_no_laborales)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para guardar los días no laborales.']);
-      return;
-    }
-
-    try {
-      $diasGuardados = $this->empresaRepositorio->guardarDiasNoLaborales($id_empresa, $dias_no_laborales);
-      $this->borrarCacheEmpresa($id_empresa);
-      http_response_code(200);
-      echo json_encode([
-        'message' => 'Días no laborales guardados correctamente.',
-        'dias_no_laborales' => $diasGuardados
-      ]);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al guardar los días no laborales: ' . $e->getMessage()]);
-    }
-  }
-
-
-  private function guardarEspectaculos(): void
-  {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-    $espectaculos = $datos['espectaculos'] ?? null;
-
-    if (empty($id_empresa) || !is_array($espectaculos)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para guardar los espectáculos.']);
-      return;
-    }
-
-    try {
-      $espectaculosGuardados = $this->empresaRepositorio->guardarEspectaculos($id_empresa, $espectaculos);
-      $this->borrarCacheEmpresa($id_empresa);
-      http_response_code(200);
-      echo json_encode([
-        'message' => 'Espectaculos guardados correctamente.',
-        'espectaculos' => $espectaculosGuardados
-      ]);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al guardar los espectaculos: ' . $e->getMessage()]);
-    }
-  }
-
-  private function guardarExcepcionesEspectaculos(): void
-  {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-    $excepciones = $datos['excepciones'] ?? [];
-
-    if (empty($id_empresa)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para guardar las excepciones habilitadas de espectáculos.']);
-      return;
-    }
-
-    try {
-      $excepcionesGuardadas = $this->empresaRepositorio->guardarExcepcionesEspectaculos($id_empresa, $excepciones);
-      $this->borrarCacheEmpresa($id_empresa);
-      http_response_code(200);
-      echo json_encode([
-        'message' => 'Excepciones habilitadas de espectáculos guardadas correctamente.',
-        'excepciones_habilitadas' => $excepcionesGuardadas
-      ]);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al guardar las excepciones habilitadas de espectáculos: ' . $e->getMessage()]);
-    }
-  }
-
   private function mostrarHorarios(): void
   {
     $datos = json_decode(file_get_contents('php://input'), true);
@@ -474,104 +352,12 @@ class GestorEmpresa
     }
 
     try {
-      $diasNoLaborales = $this->empresaRepositorio->obtenerHorariosYDiasNoLaborales($id_empresa);
+      $diasNoLaborales = $this->empresaRepositorio->obtenerHorarios($id_empresa);
       http_response_code(200);
       echo json_encode($diasNoLaborales);
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al mostrar el horario: ' . $e->getMessage()]);
-    }
-  }
-
-  private function mostrarEspectaculos(): void
-  {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-
-    if (empty($id_empresa)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Falta id_empresa para mostrar los espectaculos de la empresa.']);
-      return;
-    }
-
-    try {
-      $espectaculos = $this->empresaRepositorio->obtenerEspectaculosYExcepciones($id_empresa);
-      http_response_code(200);
-      echo json_encode($espectaculos);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar los espectaculos: ' . $e->getMessage()]);
-    }
-  }
-
-  private function verificarContrasenaMesero(): void
-  {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-    $contrasena = (string)($datos['contrasena'] ?? '');
-
-    if (empty($id_empresa)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para validar contraseña de mesero.']);
-      return;
-    }
-
-    try {
-      $esValida = $this->empresaRepositorio->verificarContrasenaMesero($id_empresa, $contrasena);
-      http_response_code(200);
-      echo json_encode(['valida' => $esValida]);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al verificar contraseña de mesero: ' . $e->getMessage()]);
-    }
-  }
-
-  private function registrarContrasenaCompartida(): void
-  {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-    $contrasena = (string)($datos['contrasena'] ?? '');
-
-    if (empty($id_empresa)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos para registrar contraseña compartida.']);
-      return;
-    }
-
-    try {
-      $this->empresaRepositorio->registrarContrasenaCompartida($id_empresa, $contrasena);
-      $this->borrarCacheEmpresa($id_empresa);
-      http_response_code(200);
-      echo json_encode(['message' => 'Contraseña compartida registrada correctamente.']);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al registrar contraseña compartida: ' . $e->getMessage()]);
-    }
-  }
-
-  private function eliminarContrasenaCompartida(): void
-  {
-    $datos = json_decode(file_get_contents('php://input'), true);
-
-    $id_empresa = (int)($datos['id_empresa'] ?? 0);
-
-    if (empty($id_empresa)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'Falta id_empresa para eliminar la contrasena compartida.']);
-      return;
-    }
-
-    try {
-      $this->empresaRepositorio->eliminarContrasenaCompartida($id_empresa);
-      $this->borrarCacheEmpresa($id_empresa);
-      http_response_code(200);
-      echo json_encode(['message' => 'Contraseña compartida eliminada correctamente.']);
-    } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al eliminar la contrasena compartida: ' . $e->getMessage()]);
     }
   }
 

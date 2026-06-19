@@ -64,6 +64,11 @@
   height: auto;
 }
 
+#boton-volver-carrito svg {
+  width: 25px;
+  height: 25px;
+}
+
 #boton-siguiente-paso svg {
   transition: transform 0.4s ease;
 }

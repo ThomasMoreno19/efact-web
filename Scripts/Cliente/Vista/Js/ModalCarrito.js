@@ -4,17 +4,15 @@ class ModalCarrito {
     empresa,
     onEliminarArticulo,
     onFinalizarCompra,
-    esMesero,
     horarios,
     moduloCarrito,
-    esDelivery,
+    incluirHorario,
+    carritoSinPedidos,
   ) {
     this.carrito = carrito;
     this.empresa = empresa;
     this.onEliminarArticulo = onEliminarArticulo;
     this.onFinalizarCompra = onFinalizarCompra;
-    this.esMesero = esMesero;
-    this.esDelivery = esDelivery;
     this.moduloCarrito = moduloCarrito;
     this.horarios = horarios || { horarios: [], noLab: [] };
     this.listaCentral = document.getElementById("lista-central");
@@ -28,6 +26,8 @@ class ModalCarrito {
       referencia: "",
       numeroMesa: null,
     };
+    this.incluirHorario = incluirHorario;
+    this.carritoSinPedidos = carritoSinPedidos;
     this.horarios = horarios || [];
     this.handleEnviarClick = this.enviarPedidoWhatsApp.bind(this);
 
@@ -49,6 +49,8 @@ class ModalCarrito {
         this.listaCentral.classList.remove("hidden"); // Muestra la lista central nuevamente
       }
     });
+
+    this.trashSVG = `<svg fill="#ffffff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 7H5v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7H6zm10.618-3L15 2H9L7.382 4H3v2h18V4z"/></svg>`;
   }
 
   abrirModalCarrito() {
@@ -68,6 +70,9 @@ class ModalCarrito {
     this.wrapper.innerHTML = `
     <div class="modal-carrito">
       <header id="header-modal-carrito">
+        <button id="borrar-carrito" class="btn-eliminar">
+          ${this.trashSVG}
+        </button>
         <button class="hidden boton-volver" id="boton-volver-carrito" type="button" >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
@@ -119,13 +124,8 @@ class ModalCarrito {
               <polyline points="12 5 19 12 12 19"></polyline>
             </svg>
           </button>
-          
-        <button id="borrar-carrito" class="btn-eliminar">
-          <img src="../../../../Archivos/Iconos/trash4.svg" alt="Eliminar" width="25" height="25"></img>
-        </button>
 
         </div>
-        
 
       </div>
       
@@ -197,19 +197,8 @@ class ModalCarrito {
     return mapa[diaIndex] || `Día ${diaIndex}`;
   }
 
-  esDiaNoLaboralHoy() {
-    const ahora = new Date();
-    const dd = String(ahora.getDate()).padStart(2, "0");
-    const mm = String(ahora.getMonth() + 1).padStart(2, "0");
-    const yyyy = String(ahora.getFullYear());
-    const hoyDm = `${dd}/${mm}`;
-    const hoyCompleta = `${dd}/${mm}/${yyyy}`;
-
-    const noLab = this.horarios.noLab || [];
-    return noLab.includes(hoyCompleta) || noLab.includes(hoyDm);
-  }
-
   estaAbiertoPorHorarioAhora() {
+    if (!this.incluirHorario) return true;
     const ahora = new Date();
 
     const jsDay = ahora.getDay(); // 0 domingo..6 sábado
@@ -280,23 +269,12 @@ class ModalCarrito {
     if (!mensaje) return;
 
     const abierto =
-      (this.estaAbiertoPorHorarioAhora() &&
-        !this.esDiaNoLaboralHoy() &&
-        this.moduloCarrito) ||
-      this.esMesero;
+      this.estaAbiertoPorHorarioAhora() &&
+      this.moduloCarrito &&
+      !this.carritoSinPedidos;
 
-    if (this.esMesero) {
-      this.botonEnviar.desactivado = !abierto;
-      this.botonEnviar.classList.toggle("desactivado", !abierto);
-    } else {
-      if (!this.esDelivery) {
-        this.botonEnviar.desactivado = !abierto;
-        this.botonEnviar.classList.toggle("desactivado", !abierto);
-      } else {
-        this.botonSigPaso.desactivado = !abierto;
-        this.botonSigPaso.classList.toggle("desactivado", !abierto);
-      }
-    }
+    this.botonSigPaso.desactivado = !abierto;
+    this.botonSigPaso.classList.toggle("desactivado", !abierto);
 
     if (abierto) {
       mensaje.classList.add("hidden");
@@ -304,14 +282,16 @@ class ModalCarrito {
       return;
     }
 
-    mensaje.classList.remove("hidden");
-    mensaje.innerHTML =
-      'No se pueden realizar pedidos fuera de horario <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
-    if (this.esDiaNoLaboralHoy())
+    if (this.incluirHorario && !this.carritoSinPedidos) {
+      mensaje.classList.remove("hidden");
       mensaje.innerHTML =
-        'Hoy es día no laboral <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
-    const btn = mensaje.querySelector("#btn-consultar-horarios");
-    btn?.addEventListener("click", () => this.mostrarModalHorarios());
+        'No se pueden realizar pedidos fuera de horario <button type="button" id="btn-consultar-horarios" class="btn-consultar-horarios">consultar horarios</button>';
+
+      const btn = mensaje.querySelector("#btn-consultar-horarios");
+      btn?.addEventListener("click", () => this.mostrarModalHorarios());
+
+      this.botonSigPaso.classList.remove("hidden");
+    }
   }
 
   mostrarModalHorarios() {
@@ -478,11 +458,7 @@ class ModalCarrito {
     } else {
       this.botonSigPaso?.classList.remove("desactivado");
     }
-    if (this.esMesero || !this.esDelivery) {
-      this.botonEnviar.classList.remove("hidden");
-      this.botonSigPaso.classList.add("hidden");
-    } else {
-      this.botonEnviar.classList.add("hidden");
+    if (!this.carritoSinPedidos) {
       this.botonSigPaso.classList.remove("hidden");
     }
 
@@ -505,17 +481,22 @@ class ModalCarrito {
 
       bloque.innerHTML = `
         <div class="fila-articulo">
-          <div class="nombre-precioUnitario">
+          <div class="nombre-precioUnitario"  ${
+            this.carritoSinPedidos ? ` style="flex-direction: column; >"` : ">"
+          }
             <div class="col-nombre">${articulo.nombre}</div>
             <div class="col-precio">$${precioFormateado} c/u</div>
           </div>
 
+          ${
+            !this.carritoSinPedidos
+              ? `
           <div class="observacion-wrapper">
             <textarea class="observacion-textarea"
               data-id="${articulo.id}"
               data-index="0"
               maxlength="50"
-              placeholder="Observaciones del platillo">
+              placeholder="Observaciones">
             </textarea>
 
             <textarea class="observacion-textarea hidden"
@@ -532,13 +513,16 @@ class ModalCarrito {
               placeholder="Más observaciones">
             </textarea>
           </div>
+          `
+              : ""
+          }
         </div>
 
         <div class="info-extra">
           <div class="subtotal-eliminar">
             <div class="celda col-subtotal">$${subtotalFormateado}</div>
             <button class="btn-eliminar" data-id="${articulo.id}">
-              <img src="../../../../Archivos/Iconos/trash4.svg" alt="Eliminar Icon" height="20" width="20"/>
+              ${this.trashSVG}
             </button>
           </div>
 
@@ -790,19 +774,7 @@ class ModalCarrito {
     this.botonEnviar?.addEventListener("click", () => {
       if (this.botonEnviar.desactivado) return;
 
-      // Si el botón enviar SOLO existe para mesero:
-      if (!this.esDelivery) {
-        if (this.esNumeroMesa()) {
-          this.datosPersonales.numeroMesa = this.conocerNumeroMesa();
-          this.enviarPedidoWhatsApp();
-          return;
-        }
-        this.pedirMesa();
-      }
-
-      if (this.esMesero) {
-        this.pedirMesa();
-      }
+      this.enviarPedidoWhatsApp();
     });
 
     this.botonSigPaso?.addEventListener("click", () => {

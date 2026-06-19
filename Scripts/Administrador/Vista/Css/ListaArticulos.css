@@ -26,6 +26,7 @@
 .container {
   display: flex;
   flex-direction: row-reverse;
+  align-items: center;
 }
 
 .btn-ver-video {
@@ -53,20 +54,57 @@
 }
 
 .articulo {
-  background-color: transparent; /* Fondo semitransparente */
+  background-color: transparent;
   border-radius: 8px;
   display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
+  flex-direction: row;
+  align-items: stretch; /* ← era center */
+  gap: 10px;
   transition: transform 0.2s ease-in-out;
-  text-align: center; /* Para centrar el texto del nombre de la empresa */
-  padding: 10px 5px;
   cursor: pointer;
   margin-bottom: 10px;
 }
 
+.articulo-logo {
+  flex-shrink: 0;
+  width: 90px; /* el ancho que quieras */
+  height: 70px; /* altura fija para mantener proporción cuadrada */
+  align-self: stretch; /* abarca toda la altura */
+  display: flex;
+  align-items: stretch;
+  border-radius: 8px 0 0 8px;
+  overflow: hidden;
+  background-color: #424242; /* color de fondo para el SVG */
+}
+
+.articulo-logo svg {
+  width: 100%;
+  height: 100%;
+}
+
+.articulo-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.articulo-content {
+  padding: 10px 5px;
+  flex: 1;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+}
+
+.articulo-info {
+  display: flex;
+  width: 100%;
+  padding: 0 5px;
+  flex-direction: column;
+}
+
 .articulo:hover {
-  transform: translateY(-4px); /* Efecto hover de levantamiento */
+  transform: translateY(-4px);
 }
 
 .articulo p {
@@ -76,13 +114,6 @@
   color: #fff;
   word-wrap: break-word;
   overflow-wrap: break-word;
-}
-
-.articulo-info {
-  display: flex;
-  width: 100%;
-  padding: 0 5px;
-  flex-direction: column;
 }
 
 #nombre-articulo-modal {

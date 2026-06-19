@@ -3,20 +3,17 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/ArticuloRepositorio.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/RubroRepositorio.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/Config.php';
 
 class GestorArticulo
 {
   private PDO $pdo;
   private ArticuloRepositorio $articuloRepositorio;
-  private RubroRepositorio $rubroRepositorio;
 
   public function __construct(PDO $pdo)
   {
     $this->pdo = $pdo;
     $this->articuloRepositorio = new ArticuloRepositorio($pdo);
-    $this->rubroRepositorio = new RubroRepositorio($pdo);
   }
 
 
@@ -52,6 +49,10 @@ class GestorArticulo
 
       case 'cargar-lista':
         $this->cargarLista();
+        break;
+
+      case 'subir-logo':
+        $this->subirLogo();
         break;
 
       case 'subir-video':
@@ -214,12 +215,9 @@ class GestorArticulo
         'id_rubro' => $articulo['nombre_rubro'],
         'id_empresa' => $id_empresa,
         'nombre' => $articulo['nombre_articulo'],
-        'descripcion' => $articulo['descripcion'] ?? '',
         'precio1' => $articulo['precio1'],
         'precio2' => $articulo['precio2'],
         'precio3' => $articulo['precio3'],
-        'codigo_carta' => $articulo['codigo_carta_articulo'] ?? '',
-        'solo_mesero' => $articulo['publica_art'] ?? 0,
         'no_procesado' => $articulo['no_procesado'] ?? 0,
       ];
     }
@@ -230,8 +228,7 @@ class GestorArticulo
       $this->borrarCacheTodos($id_empresa);
       echo json_encode($resultado);
     } catch (Exception $e) {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al crear los artículos: ' . $e->getMessage()]);
+      die($e->getMessage());
     }
   }
 
@@ -256,6 +253,31 @@ class GestorArticulo
     }
     if (file_exists($cacheCliente)) {
       @unlink($cacheCliente);
+    }
+  }
+
+  private function subirLogo(): void
+  {
+
+    if (empty($_FILES['imagen']['tmp_name'])) {
+      http_response_code(400);
+      echo json_encode(['error' => 'No se ha enviado ningún archivo.']);
+      return;
+    }
+
+    $directorioDestino = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/Articulo/';
+    $nombreOriginal = basename($_FILES['imagen']['name']);
+    $nombreSinEspacios = str_replace(' ', '-', $nombreOriginal); // Reemplaza espacios por guiones
+    $nombreArchivo = uniqid() . '-' . $nombreSinEspacios;
+    $rutaDestino = $directorioDestino . $nombreArchivo;
+
+    if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
+      //Devuelve la ruta donde se guardó la imagen, para que la guarden en la BD
+      $url = '/Archivos/Logos/Articulo/' . $nombreArchivo;
+      echo json_encode(['url' => $url]);
+    } else {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al mover el archivo subido.']);
     }
   }
 
@@ -393,11 +415,10 @@ class GestorArticulo
     $id_rubro = $datos['id_rubro'];
     $id_empresa = $datos['id_empresa'];
     $nombre = $datos['nombre'];
-    $descripcion = $datos['descripcion'];
     $precio1 = $datos['precio1'];
     $precio2 = $datos['precio2'];
     $precio3 = $datos['precio3'];
-    $codigo_carta = $datos['codigo_carta'];
+    $logo_url = $datos['logo_url'] ?? null;
 
 
     $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/cache/articulos_empresa_{$id_empresa}.json";
@@ -412,7 +433,7 @@ class GestorArticulo
     }
 
     try {
-      $articuloModificado = $this->articuloRepositorio->modificar($id, $id_rubro, $nombre, $descripcion, $precio1, $precio2, $precio3, $codigo_carta);
+      $articuloModificado = $this->articuloRepositorio->modificar($id, $id_rubro, $nombre, $precio1, $precio2, $precio3, $logo_url);
       $this->borrarCacheTodos($id_empresa);
       echo json_encode($articuloModificado);
     } catch (Exception $e) {

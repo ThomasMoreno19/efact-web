@@ -5,16 +5,12 @@ class EmpresaVista {
     this.telefono = empresa.telefono;
     this.ubicacion = empresa.ubicacion;
     this.tieneCarrito = empresa.tieneCarrito ?? false;
-    this.moduloMesero = empresa.moduloMesero ?? false;
     this.deshabilitarExcel = empresa.deshabilitarExcel ?? false;
     this.efectivo = empresa.efectivo ?? false;
     this.tarjeta = empresa.tarjeta ?? false;
     this.transferencia = empresa.transferencia ?? false;
-    this.precio_delivery = empresa.precio_delivery ?? 1;
-    this.precio_espectaculo = empresa.precio_espectaculo ?? 1;
-    this.botonPedirCuenta = empresa.botonPedirCuenta ?? false;
-    this.botonLlamarMesero = empresa.botonLlamarMesero ?? false;
-    this.tieneContrasenaMesero = empresa.tieneContrasenaMesero;
+    this.imagenesEnArticulos = empresa.imagenesEnArticulos ?? true;
+    this.incluirHorarios = empresa.incluirHorarios ?? false;
     this.logo_url = empresa.logo_url;
   }
 
@@ -25,10 +21,8 @@ class EmpresaVista {
     efectivo,
     tarjeta,
     transferencia,
-    precio_delivery,
-    precio_espectaculo,
-    botonPedirCuenta,
-    botonLlamarMesero,
+    imagenesEnArticulos,
+    incluirHorarios,
   ) {
     this.nombre = nombre;
     this.telefono = telefono;
@@ -36,10 +30,8 @@ class EmpresaVista {
     this.efectivo = efectivo;
     this.tarjeta = tarjeta;
     this.transferencia = transferencia;
-    this.precio_delivery = precio_delivery;
-    this.precio_espectaculo = precio_espectaculo;
-    this.botonPedirCuenta = botonPedirCuenta;
-    this.botonLlamarMesero = botonLlamarMesero;
+    this.imagenesEnArticulos = imagenesEnArticulos;
+    this.incluirHorarios = incluirHorarios;
   }
 
   mostrarUna() {
@@ -60,16 +52,13 @@ class EmpresaVista {
           empresaTelefono: this.telefono,
           empresaUbicacion: this.ubicacion,
           empresaTieneCarrito: this.tieneCarrito,
-          empresaModuloMesero: this.moduloMesero,
           empresaDeshabilitarExcel: this.deshabilitarExcel,
           empresaEfectivo: this.efectivo,
           empresaTarjeta: this.tarjeta,
           empresaTransferencia: this.transferencia,
-          empresaPrecio_delivery: this.precio_delivery,
-          empresaPrecio_espectaculo: this.precio_espectaculo,
-          empresaBotonPedirCuenta: this.botonPedirCuenta,
-          empresaTieneContrasenaMesero: this.tieneContrasenaMesero,
           empresaLogoUrl: this.logo_url,
+          empresaImagenesEnArticulos: this.imagenesEnArticulos ?? true,
+          empresaIncluirHorarios: this.incluirHorarios ?? false,
         },
       });
       document.dispatchEvent(event);
@@ -136,12 +125,6 @@ class EmpresaVista {
           </button>
 
           <button type="button"
-              id="btnMesero"
-              class="toggle-btn ${this.moduloMesero ? "active" : ""}">
-            Módulo Mesero
-          </button>
-
-          <button type="button"
               id="btnDeshabilitarExcel"
               class="toggle-btn ${this.deshabilitarExcel ? "active" : ""}">
             Deshabilitar Excel
@@ -168,7 +151,6 @@ class EmpresaVista {
           </button>
         </div>
         <input type="hidden" name="tieneCarrito" id="tieneCarrito" value="${!!this.tieneCarrito}">
-        <input type="hidden" name="moduloMesero" id="moduloMesero" value="${!!this.moduloMesero}">
         <input type="hidden" name="deshabilitarExcel" id="deshabilitarExcel" value="${!!this.deshabilitarExcel}">
         <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
@@ -195,158 +177,6 @@ class EmpresaVista {
     modalNuevaEmpresa.appendChild(modalNuevaEmpresaContenido);
 
     return modalNuevaEmpresa;
-  }
-
-  modalConfigurarEspectaculos() {
-    const modalEspectaculos = document.createElement("div");
-    modalEspectaculos.classList.add("wrapper");
-    modalEspectaculos.id = "modalConfigurarEspectaculos";
-
-    const modalEspectaculosContenido = document.createElement("div");
-    modalEspectaculosContenido.classList.add("wrapper-content");
-
-    const dias = DIAS_SEMANA.map((nombre) => ({
-      nombre,
-      abierto: false,
-      horaApertura: "",
-      horaCierre: "",
-    }));
-
-    const botonesDiasHTML = dias
-      .map(
-        (dia, index) => `
-      <button type="button"
-          id="btnDia${index}"
-          class="toggle-btn ${dia.abierto ? "active" : ""}">
-        ${dia.nombre}
-      </button>
-    `,
-      )
-      .join("");
-
-    const htmlContent = `
-      <form id="formConfigurarEspectaculosEmpresa">
-        <header id="header-wrapper">
-          <h2 id="titulo-wrapper" class="titulo">Configuración de Espectáculos</h2>
-          <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
-        </header>
-
-        <div class="modulos">
-          <text id="titulo-modulos" class="required"> Seleccione los días de espectáculos </text>
-
-          <div class="lista-botones">
-            ${botonesDiasHTML}
-          </div>
-
-          <div class="form-group">
-            <label for="horaInicio" class="required">Hora de Inicio</label>
-            <input type="time" id="horaInicio" name="horaInicio" required>
-          </div>
-
-          <div class="form-group">
-            <label for="horaFin" class="required">Hora de Fin</label>
-            <input type="time" id="horaFin" name="horaFin" required>
-          </div>
-
-          <!-- ESTE submit es para REGISTRAR en el array -->
-          <button type="submit" class="boton" id="boton-registrar-espectaculos">
-            + Registrar
-          </button>
-          
-        </div>
-
-        <div class="lista-espectaculos"></div>
-          <h3 class="subtitulo-espectaculos">Vista previa de Horarios de Espectáculos</h3>
-          <div id="listaEspectaculosRegistrados" class="espectaculos-grid"></div>
-        </div>
-
-
-        <!-- BOTÓN FINAL -->
-        <div class="boton-final-container">
-
-          <button type="button" class="botonCambiarForm" id="btnFormEspectaculoDiaFijo">
-            Configurar Excepciones
-          </button>
-
-          <button type="button" class="boton boton-final disabled" id="btnGuardarEspectaculos">
-            Guardar
-          </button>
-        </div>
-      </form>
-
-    `;
-
-    modalEspectaculosContenido.innerHTML = htmlContent;
-    modalEspectaculos.appendChild(modalEspectaculosContenido);
-
-    return modalEspectaculos;
-  }
-
-  modalConfigurarEspectaculoHabilitarExcepcion() {
-    const modalDiasFijos = document.createElement("div");
-    modalDiasFijos.classList.add("wrapper");
-    modalDiasFijos.id = "modalConfigurarEspectaculoHabilitarExcepcion";
-
-    const modalContenido = document.createElement("div");
-    modalContenido.classList.add("wrapper-content");
-
-    const htmlContent = `
-      <form id="formConfigurarEspectaculoHabilitarExcepcion">
-        <header id="header-wrapper">
-          <h2 id="titulo-wrapper" class="titulo">Excepciones Habilitadas</h2>
-          <button type="button" id="cerrar-wrapper-espectaculo-excepcion-habilitada" class="boton-cerrar">&times;</button>
-        </header>
-
-        <div class="modulos">
-
-          <div class="form-group">
-            <label for="fechaExcepcionHabilitada" class="required">Fecha:</label>
-            <input type="date" class="fecha-input" id="fechaExcepcionHabilitada" name="fechaExcepcionHabilitada" title="Seleccioná una fecha" required>
-
-            <div class="form-group">
-              <label for="horaInicio" class="required">Hora de Inicio</label>
-              <input type="time" id="horaInicio" name="horaInicio" required>
-            </div>
-
-            <div class="form-group">
-              <label for="horaFin" class="required">Hora de Fin</label>
-              <input type="time" id="horaFin" name="horaFin" required>
-            </div>
-
-            <div class="lista-botones form-group precios">
-              <label for="tipo-excepcion" class="required">Tipo de excepción</label>
-              <select id="tipo-excepcion" name="tipo-excepcion" required>
-                <option value="" selected disabled>Seleccionar</option>
-                <option value="0" > Habilitar </option>
-                <option value="1" > Cancelar </option>
-              </select>
-            </div>
-          </div>
-
-          <button type="submit" class="boton" id="habilitarExcepcion">
-            + Agregar fecha
-          </button>
-
-        </div>
-
-        <h3 class="subtitulo-horarios">Vista previa de Excepciones</h3>
-        <div id="listaExcepcionesHabilitadas" class="horarios-grid"></div>
-
-        <div class="boton-final-container">
-          <button type="button" class="botonCambiarForm" id="btnFormConfigurarEspectaculo">
-            Configurar espectáculos
-          </button>
-          <button type="button" class="boton boton-final disabled" id="btnGuardarDiasFijos">
-            Guardar
-          </button>
-        </div>
-      </form>
-    `;
-
-    modalContenido.innerHTML = htmlContent;
-    modalDiasFijos.appendChild(modalContenido);
-
-    return modalDiasFijos;
   }
 
   modalConfigurarHorarios() {
@@ -416,10 +246,6 @@ class EmpresaVista {
 
         <!-- BOTÓN FINAL -->
         <div class="boton-final-container">
-          <button type="button" class="botonCambiarForm" id="btnFormDiasNoLaborales">
-            Configurar días no laborales
-          </button>
-
           <button type="button" class="boton boton-final disabled" id="btnGuardarHorarios">
             Guardar
           </button>
@@ -431,231 +257,6 @@ class EmpresaVista {
     modalHorarios.appendChild(modalHorarioContenido);
 
     return modalHorarios;
-  }
-
-  modalConfigurarDiasNoLaborales() {
-    const modalDiasNoLaborales = document.createElement("div");
-    modalDiasNoLaborales.classList.add("wrapper");
-    modalDiasNoLaborales.id = "modalConfigurarDiasNoLaborales";
-
-    const modalContenido = document.createElement("div");
-    modalContenido.classList.add("wrapper-content");
-
-    const htmlContent = `
-      <form id="formConfigurarDiasNoLaborales">
-        <header id="header-wrapper">
-          <h2 id="titulo-wrapper" class="titulo">Configuración de días no laborales</h2>
-          <button type="button" id="cerrar-wrapper-dias-no-laborales" class="boton-cerrar">&times;</button>
-        </header>
-
-        <div class="modulos">
-          <text id="titulo-modulos-dia"> Agregar día individual </text>
-
-          <div class="form-group">
-            <label for="fechaNoLaboral">Fecha:</label>
-            <input type="date" class="fecha-no-laboral-input" id="fechaNoLaboral" name="fechaNoLaboral" title="Seleccioná una fecha">
-          </div>
-
-          <button type="button" class="boton" id="agregarDiaNoLaboral">
-            + Agregar día
-          </button>
-
-          <text id="titulo-modulos-rango"> Agregar rango de fechas </text>
-
-          <div class="form-group">
-            <label for="fechaNoLaboralInicio">Desde:</label>
-            <input type="date" class="fecha-no-laboral-input" id="fechaNoLaboralInicio" name="fechaNoLaboralInicio" title="Seleccioná una fecha">
-          </div>
-
-          <div class="form-group">
-            <label for="fechaNoLaboralFin">Hasta:</label>
-            <input type="date" class="fecha-no-laboral-input" id="fechaNoLaboralFin" name="fechaNoLaboralFin" title="Seleccioná una fecha">
-          </div>
-
-          <button type="button" class="boton" id="agregarRangoNoLaboral">
-            + Agregar rango
-          </button>
-        </div>
-
-        <h3 class="subtitulo-horarios">Vista previa de Días no laborales </h3>
-        <div id="listaDiasNoLaborales" class="horarios-grid"></div>
-
-        <div class="boton-final-container">
-          <button type="button" class="botonCambiarForm" id="btnFormConfigurarHorarios">
-            Configurar horarios
-          </button>
-          <button type="submit" class="boton boton-final disabled" id="btnGuardarDiasNoLaborales">
-            Guardar
-          </button>
-        </div>
-      </form>
-    `;
-
-    modalContenido.innerHTML = htmlContent;
-    modalDiasNoLaborales.appendChild(modalContenido);
-
-    return modalDiasNoLaborales;
-  }
-
-  modalMeseros() {
-    return `
-      <div class="wrapper" id="modalMeseros">
-        <div class="wrapper-content" id="lista-meseros-contenido">
-          <form id="formConfigurarHorariosEmpresa">
-            <header id="header-wrapper">
-              <h2 id="titulo-wrapper" class="titulo">Configuración de Meseros</h2>
-              <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
-            </header>
-
-            <div class="modulos">
-              <div class="lista-meseros">
-              </div>
-              <div class="mesero-item" id="contenedorRegistrarMesero">
-                <button type="button" class="boton-mesero" id="btnRegistrarMesero">
-                  + Registrar Mesero
-                </button>
-              </div>
-            </div>
-          </form>
-          
-
-          <div class="contrasena-compartida-meseros">
-            <form class="form-group" id="formRegistrarContrasenaCompartida">
-              <label for="contrasenaCompartida">Contraseña compartida:</label>
-              
-              <input 
-                type="password" 
-                id="contrasenaCompartida" 
-                name="contrasenaCompartida" 
-                maxlength="20"
-              >
-
-              <button 
-                type="button"
-                class="btn-mesero btn-eliminar" 
-                id="btnEliminarContrasenaCompartida"
-              >
-                <img src="../../../../Archivos/Iconos/trash.svg" alt="Eliminar">
-              </button>
-
-              <button 
-                type="submit" 
-                class="mesero-item" 
-                id="btnGuardarContrasenaCompartida"
-              >
-                Enviar
-              </button>
-            </form>
-          </div>
-        </div>
-
-        <div class="boton-final-container-meseros">
-          <button type="button" class="boton-mesero" id="btnCargarMeseros">
-            + Cargar Meseros
-          </button>
-        </div>
-      </div>
-    `;
-  }
-
-  modalCargarMeseros() {
-    const modalCargarMeseros = document.createElement("div");
-    modalCargarMeseros.classList.add("modal-configurar");
-    modalCargarMeseros.id = "modalCargarMeseros";
-
-    const modalCargarMeserosContenido = document.createElement("div");
-    modalCargarMeserosContenido.classList.add("modal-content-partial");
-
-    const htmlContent = `
-      <form id="formCargarMeseros">
-        <h2 id="titulo-modal">Cargar Meseros</h2>
-        <div class="form-group">
-          <label for="archivo">Seleccionar archivo Excel:</label>
-          <input type="file" id="archivo" name="archivo"
-            accept=".csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
-            required>
-        </div>
-        <div >
-          <button type="submit" class="submit-button">Cargar</button>
-        </div>
-      </form>
-    `;
-
-    modalCargarMeserosContenido.innerHTML = htmlContent;
-    modalCargarMeseros.appendChild(modalCargarMeserosContenido);
-
-    return modalCargarMeseros;
-  }
-
-  modalRegistrarMesero() {
-    const modalRegistrarMesero = document.createElement("div");
-    modalRegistrarMesero.classList.add("modal-configurar");
-    modalRegistrarMesero.id = "modalRegistrarMesero";
-
-    const modalRegistrarMeseroContenido = document.createElement("div");
-    modalRegistrarMeseroContenido.classList.add("modal-content-partial");
-
-    const htmlContent = `
-      <form id="formRegistrarMesero">
-        <h2 id="titulo-modal">Registrar Mesero</h2>
-        <div class="form-group">
-          <label for="nombre" class="required">Nombre</label>
-          <input type="text" id="nombre" name="nombre" required>
-        </div>
-        <div class="form-group">
-          <label for="abreviaturaNombre">Abreviatura</label>
-          <input type="text" id="abreviaturaNombre" name="abreviaturaNombre" maxlength="10">
-        </div>
-        <div class="form-group">
-          <label for="contrasena">Contraseña</label>
-          <input type="password" id="contrasena" name="contrasena" maxlength="20">
-        </div>
-        <button type="submit" class="boton" id="btnGuardarMesero">
-          Guardar
-        </button>
-        
-      </form>
-    `;
-
-    modalRegistrarMeseroContenido.innerHTML = htmlContent;
-    modalRegistrarMesero.appendChild(modalRegistrarMeseroContenido);
-
-    return modalRegistrarMesero;
-  }
-
-  modalModificarMesero(mesero) {
-    const modalModificarMesero = document.createElement("div");
-    modalModificarMesero.classList.add("modal-configurar");
-    modalModificarMesero.id = "modalModificarMesero";
-
-    const modalModificarMeseroContenido = document.createElement("div");
-    modalModificarMeseroContenido.classList.add("modal-content-partial");
-
-    const htmlContent = `
-      <form id="formModificarMesero">
-        <h2 id="titulo-modal">Modificar Mesero</h2>
-        <div class="form-group">
-          <label for="nombre" class="required">Nombre</label>
-          <input type="text" id="nombre" name="nombre" value="${mesero.nombre}" required>
-        </div>
-        <div class="form-group">
-          <label for="abreviaturaNombre">Abreviatura</label>
-          <input type="text" id="abreviaturaNombre" name="abreviaturaNombre" value="${mesero.abreviaturaNombre}" maxlength="10" required>
-        </div>
-        <div class="form-group">
-          <label for="contrasena">Contraseña</label>
-          <input type="password" id="contrasena" name="contrasena" placeholder="Dejar en blanco para no cambiar" maxlength="20">
-        </div>
-        <button type="submit" class="boton" id="btnGuardarMesero">
-          Guardar
-        </button>
-      </form>
-    `;
-
-    modalModificarMeseroContenido.innerHTML = htmlContent;
-    modalModificarMesero.appendChild(modalModificarMeseroContenido);
-
-    return modalModificarMesero;
   }
 
   modalModificar(moderador) {
@@ -693,12 +294,6 @@ class EmpresaVista {
           </button>
 
           <button type="button"
-              id="btnMesero"
-              class="toggle-btn ${this.moduloMesero ? "active" : ""}">
-            Módulo Mesero
-          </button>
-
-          <button type="button"
               id="btnDeshabilitarExcel"
               class="toggle-btn ${this.deshabilitarExcel ? "active" : ""}">
             Deshabilitar Excel
@@ -725,7 +320,6 @@ class EmpresaVista {
           </button>
         </div>
         <input type="hidden" name="tieneCarrito" id="tieneCarrito" value="${!!this.tieneCarrito}">
-        <input type="hidden" name="moduloMesero" id="moduloMesero" value="${!!this.moduloMesero}">
         <input type="hidden" name="deshabilitarExcel" id="deshabilitarExcel" value="${!!this.deshabilitarExcel}">
         <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
@@ -781,8 +375,6 @@ class EmpresaVista {
         </div>
         <h3 id = "id-empresa"> ID ${this.id} </h3>
         <button type = "button" class = "submit-button" id = "configurar-horarios" >Horarios</button>
-        <button type = "button" class = "submit-button" id = "configurar-espectaculos" >Espectáculos</button>
-        <button type = "button" class = "submit-button" id = "meseros" >Meseros</button>
         <button type = "button" class = "submit-button" id = "qr-configuracion" >QR</button>
       </form>
     `;
@@ -851,52 +443,35 @@ class EmpresaVista {
         <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
         <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
 
-        <div class="lista-botones form-group precios">
-          <label for="precio-delivery">Precio de delivery</label>
-          <select id="precio-delivery" name="precio-delivery">
-            <option value="1" ${this.precio_delivery === 1 ? "selected" : ""}>Sin determinar</option>
-            <option value="2" ${this.precio_delivery === 2 ? "selected" : ""}>Precio 2</option>
-            <option value="3" ${this.precio_delivery === 3 ? "selected" : ""}>Precio 3</option>
-          </select>
+        <text id="titulo-modulos-config">Módulos</text>
 
-          <label for="precio-espectaculo">Precio de espectáculo</label>
-          <select id="precio-espectaculo" name="precio-espectaculo">
-            <option value="1" ${this.precio_espectaculo === 1 ? "selected" : ""}>Sin determinar</option>
-            <option value="2" ${this.precio_espectaculo === 2 ? "selected" : ""}>Precio 2</option>
-            <option value="3" ${this.precio_espectaculo === 3 ? "selected" : ""}>Precio 3</option>
-          </select>
-        </div>
-
-        <text id="titulo-modulos"> Funcionalidades </text>
-
-        <div class="lista-botones funcionalidades">
+        <div class="lista-botones" id="lista-modulos">
           <button
-            type="button"
-            id="btnPedirCuenta"
-            class="toggle-btn ${this.botonPedirCuenta ? "active" : ""}">
-            Pedir cuenta
+              type="button"
+              id="btnImagenesEnArticulos"
+              class="toggle-btn ${this.imagenesEnArticulos ? "active" : ""}">
+            Imágenes en artículos
           </button>
-
           <button
-            type="button"
-            id="btnLlamarMesero"
-            class="toggle-btn ${this.botonLlamarMesero ? "active" : ""}">
-            Llamar mesero
+              type="button"
+              id="btnIncluirHorarios"
+              class="toggle-btn ${this.incluirHorarios ? "active" : ""}">
+            Incluir Horarios
           </button>
         </div>
 
         <input
           type="hidden"
-          name="pedirCuenta"
-          id="pedirCuenta"
-          value="${!!this.botonPedirCuenta}">
+          name="imagenesEnArticulos"
+          id="imagenesEnArticulos"
+          value="${!!this.imagenesEnArticulos}">
 
         <input
           type="hidden"
-          name="llamarMesero"
-          id="llamarMesero"
-          value="${!!this.botonLlamarMesero}">
-        
+          name="incluirHorarios"
+          id="incluirHorarios"
+          value="${!!this.incluirHorarios}">
+
         <div class="form-group">
           <label for="imagen">Imagen</label>
           <input type="file" id="imagen" name="imagen" accept="image/*">
@@ -955,12 +530,9 @@ class EmpresaVista {
     <div class="engrupador">
 
       <div class="qr-options">
-        <button id="qr-pagina-cafeteria" class="qr-button">Página de la cafetería (Configuraciones)</button>
+        <button id="qr-pagina-configuracion" class="qr-button">Página de configuraciones</button>
 
-        <button id="qr-carta-local" class="qr-button">Carta como cliente en el local</button>
-
-        <button id="qr-carta-fuera" class="qr-button">Carta como cliente fuera del local (Delivery)</button>
-        <button id="qr-carta-mesero" class="qr-button">Carta como mesero (Registración de pedidos)</button>
+        <button id="qr-catalogo-fuera" class="qr-button">Catálogo</button>
       </div>
 
       <div id="qr-resultado" style="margin-top:20px; text-align:center;"></div>
@@ -974,23 +546,19 @@ class EmpresaVista {
 
     // Eventos
     modalQR
-      .querySelector("#qr-pagina-cafeteria")
+      .querySelector("#qr-pagina-configuracion")
       .addEventListener("click", () => {
-        this.generarQR(`${baseURL}/moderador/${this.id}`, "pagina-cafeteria");
+        this.generarQR(
+          `${baseURL}/moderador/${this.id}`,
+          "pagina-configuracion",
+        );
       });
 
-    modalQR.querySelector("#qr-carta-local").addEventListener("click", () => {
-      const subModal = this.modalSeleccionMesa();
-      document.body.appendChild(subModal);
-    });
-
-    modalQR.querySelector("#qr-carta-fuera").addEventListener("click", () => {
-      this.generarQR(`${baseURL}/carta/${this.id}`, "carta-delivery");
-    });
-
-    modalQR.querySelector("#qr-carta-mesero").addEventListener("click", () => {
-      this.generarQR(`${baseURL}/carta/${this.id}/mesero`, "carta-mesero");
-    });
+    modalQR
+      .querySelector("#qr-catalogo-fuera")
+      .addEventListener("click", () => {
+        this.generarQR(`${baseURL}/carta/${this.id}`, "carta-delivery");
+      });
 
     modalQR.querySelector("#cerrar-qr-modal").addEventListener("click", () => {
       modalQR.remove();

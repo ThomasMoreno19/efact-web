@@ -32,7 +32,6 @@ class RubroRepositorio
           'id_empresa' => $data['id_empresa'],
           'logo_url' => $data['logo_url'],
           'video_url' => $data['video_url'],
-          'fecha_eliminado' => $data['fecha_eliminado'],
           'aparece_en_csv' => $data['aparece_en_csv'],
           'creado_en_pagina' => $data['creado_en_pagina']
         ];
@@ -55,7 +54,7 @@ class RubroRepositorio
                     logo_url,
                     video_url
                 FROM Rubro
-                WHERE id_empresa= :id_empresa AND solo_mesero = 0
+                WHERE id_empresa= :id_empresa
                 ORDER BY nombre ASC;
                 ");
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
@@ -76,53 +75,53 @@ class RubroRepositorio
   }
 
 
-  public function crearPorCsv(int $id_empresa, string $nombre_rubro, int $publica_rub): ?int
+  public function crearPorCsv(int $id_empresa, string $nombre_rubro): ?int
   {
     $id_rubro = $this->obtenerPorNombreEIdEmpresa($id_empresa, $nombre_rubro);
-    if ($id_rubro === null) {
-      try {
-        $stmt = $this->pdo->prepare(
-          "INSERT INTO Rubro (nombre, id_empresa, logo_url, solo_mesero ,fecha_eliminado, aparece_en_csv, creado_en_pagina)
-                    VALUES (:nombre, :id_empresa, :logo_url, :solo_mesero, :fecha_eliminado, :aparece_en_csv, :creado_en_pagina)"
-        );
+    error_log("Rubro recibido: " . $nombre_rubro);
+    error_log("ID encontrado: " . var_export($id_rubro, true));
 
-        $stmt->bindParam(':nombre', $nombre_rubro, PDO::PARAM_STR);
-        $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-        $stmt->bindParam(':solo_mesero', $publica_rub, PDO::PARAM_INT);
-        $stmt->bindValue(':logo_url', '/Archivos/Logos/Vacio.png', PDO::PARAM_STR);
-        $stmt->bindValue(':fecha_eliminado', '', PDO::PARAM_STR);
-        $stmt->bindValue(':aparece_en_csv', 1, PDO::PARAM_STR);
-        $stmt->bindValue(':creado_en_pagina', 0, PDO::PARAM_STR);
-
-        if ($stmt->execute()) {
-          $id = $this->pdo->lastInsertId();
-          return $id;
-        }
-        return null;
-      } catch (PDOException $e) {
-        error_log("Error al guardar nueva rubro: " . $e->getMessage());
-      }
-      return null;
-    } else {
-      try {
-        $stmt = $this->pdo->prepare(
-          "UPDATE Rubro
-                    SET solo_mesero = :solo_mesero
-                    WHERE id = :id AND id_empresa = :id_empresa;"
-        );
-
-        $stmt->bindParam(':id', $id_rubro, PDO::PARAM_INT);
-        $stmt->bindParam(':solo_mesero', $publica_rub, PDO::PARAM_INT);
-        $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-
-        if ($stmt->execute()) {
-          return $id_rubro;
-        }
-      } catch (PDOException $e) {
-        error_log("Error al guardar nuevo rubro: " . $e->getMessage());
-      };
+    if ($id_rubro !== null) {
+      error_log("DEVUELVO ID EXISTENTE: " . $id_rubro);
+      return $id_rubro;
     }
-    return null;
+
+    try {
+      $stmt = $this->pdo->prepare(
+        "INSERT INTO Rubro (
+                nombre,
+                id_empresa,
+                logo_url,
+                aparece_en_csv,
+                creado_en_pagina,
+                video_url
+            ) VALUES (
+                :nombre,
+                :id_empresa,
+                :logo_url,
+                :aparece_en_csv,
+                :creado_en_pagina,
+                ''
+            )"
+      );
+
+      $stmt->bindParam(':nombre', $nombre_rubro);
+      $stmt->bindParam(':id_empresa', $id_empresa);
+      $stmt->bindValue(':logo_url', '/Archivos/Logos/Vacio.png');
+      $stmt->bindValue(':aparece_en_csv', 1);
+      $stmt->bindValue(':creado_en_pagina', 0);
+
+      if ($stmt->execute()) {
+        $id = (int)$this->pdo->lastInsertId();
+        error_log("DEVUELVO ID NUEVO: " . $id);
+        return $id;
+      }
+
+      return null;
+    } catch (PDOException $e) {
+      error_log($e->getMessage());
+      throw $e;
+    }
   }
 
 
