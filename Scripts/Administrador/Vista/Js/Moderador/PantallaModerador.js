@@ -1108,7 +1108,7 @@ class PantallaModerador {
   async asignarTituloPagina(texto) {
     try {
       this.tituloPagina.innerHTML = `${texto} ${this.empresa.nombre}`;
-      document.title = `WinCoffe - ${this.empresa.nombre}`;
+      document.title = `E-Fact - ${this.empresa.nombre}`;
     } catch (error) {
       console.error("Error al asignar el título de la página:", error);
       this.tituloPagina.innerHTML = `<p>Error al cargar el título.</p>`;

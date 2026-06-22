@@ -333,7 +333,7 @@ class ModalCarrito {
 
     modal.innerHTML = `
       <div class="modal-horarios-contenido">
-        <h3 class="titulo-horarios-cafeteria">Horarios de la cafetería</h3>
+        <h3 class="titulo-horarios-cafeteria">Horarios del local</h3>
 
         <ul class="horarios-cafeteria">
           ${items || "<li>No hay horarios configurados</li>"}

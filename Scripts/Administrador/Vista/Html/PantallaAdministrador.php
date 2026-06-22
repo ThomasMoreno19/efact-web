@@ -14,9 +14,9 @@
 </head>
 
 <body>
-  <h1 class="page-title"> Administración Wincoffe</h1>
+  <h1 class="page-title">Administración E-Fact</h1>
   <div class="botonesAlta">
-    <button class="boton-alta" type="button" id="alta-empresa">+ Alta Cafetería</button>
+    <button class="boton-alta" type="button" id="alta-empresa">+ Alta Empresa</button>
   </div>
   <div class="lista-central">
 

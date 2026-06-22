@@ -101,7 +101,7 @@ class EmpresaVista {
     const htmlContent = `
       <form id="formNuevaEmpresa">
       <div id="header-wrapper">
-        <h2 id ="titulo-modal">Nueva Cafetería</h2>
+        <h2 id ="titulo-modal">Nueva Empresa</h2>
         <button type="button" id="cerrar-wrapper" class="boton-cerrar">&times;</button>
       </div>
         <div class="form-group">
