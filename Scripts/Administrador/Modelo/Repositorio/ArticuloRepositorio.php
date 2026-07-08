@@ -45,8 +45,9 @@ class ArticuloRepositorio
       $stmt = $this->pdo->prepare("
                 SELECT 
                     id, 
-                    id_rubro, 
-                    id_empresa,
+                    id_rubro,
+                    id_marca,
+                    id_proveedor,
                     nombre, 
                     precio1, 
                     precio2, 
@@ -73,11 +74,13 @@ class ArticuloRepositorio
   public function obtenerTodosPorEmpresa(int $id_empresa): array
   {
     try {
-      $stmt = $this->pdo->prepare(" 
+      $stmt = $this->pdo->prepare("
                 SELECT
                     id,
                     id_rubro,
-                    id_empresa,
+                    id_marca,
+                    id_proveedor,
+                    codigo_interno,
                     nombre,
                     precio1,
                     precio2,
@@ -103,22 +106,34 @@ class ArticuloRepositorio
   public function obtenerParaCliente(int $id_empresa): array
   {
     try {
-      $stmt = $this->pdo->prepare(" 
-                SELECT
-                    id,
-                    id_rubro,
-                    id_empresa,
-                    nombre,
-                    precio1,
-                    precio2,
-                    precio3,
-                    no_procesado,
-                    video_url,
-                    logo_url
-                FROM Articulo
-                WHERE id_empresa = :id_empresa
-                ORDER BY id_rubro ASC, nombre ASC
-            ");
+      $stmt = $this->pdo->prepare("
+            SELECT
+                a.id,
+                a.id_rubro,
+                a.id_marca,
+                m.nombre AS nombre_marca,
+                a.id_proveedor,
+                p.nombre AS nombre_proveedor,
+                a.codigo_proveedor,
+                a.existencia,
+                a.codigo_interno,
+                a.nombre,
+                a.precio1,
+                a.precio2,
+                a.precio3,
+                a.no_procesado,
+                a.video_url,
+                a.logo_url
+            FROM Articulo a
+            LEFT JOIN Marca m
+                ON a.id_marca = m.id
+                AND a.id_empresa = m.id_empresa
+            LEFT JOIN Proveedor p
+                ON a.id_proveedor = p.id
+                AND a.id_empresa = p.id_empresa
+            WHERE a.id_empresa = :id_empresa
+            ORDER BY a.id_rubro ASC, a.nombre ASC
+        ");
 
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
@@ -130,43 +145,107 @@ class ArticuloRepositorio
     }
   }
 
-  public function crearListaCsv(array $articulos): array
+  public function crearListaCsv(array $articulos, int $id_empresa): array
   {
+    if (empty($articulos)) {
+      return [];
+    }
+
     $values = [];
     $params = [];
+
     foreach ($articulos as $i => $a) {
-      $values[] = "(:id$i, :id_rubro$i, :id_empresa$i,:nombre$i, :precio1$i, :precio2$i, :precio3$i, :no_procesado$i, 1, :logo_url$i, :video_url$i)";
-      $params[":id$i"] = $a['id'];
+
+      $values[] = "(
+            :id$i,
+            :id_rubro$i,
+            :id_marca$i,
+            :id_proveedor$i,
+            :id_empresa$i,
+            :nombre$i,
+            :precio1$i,
+            :precio2$i,
+            :precio3$i,
+            :existencia$i,
+            :no_procesado$i,
+            :codigo_interno$i,
+            :codigo_barra$i,
+            :codigo_proveedor$i,
+            1,
+            :logo_url$i,
+            :video_url$i
+        )";
+
+      $params[":id$i"] = $a['id_articulo'];
       $params[":id_rubro$i"] = $a['id_rubro'];
-      $params[":id_empresa$i"] = $a['id_empresa'];
-      $params[":nombre$i"] = $a['nombre'];
-      $params[":precio1$i"] = (string)$a['precio1'];
-      $params[":precio2$i"] = (string)$a['precio2'];
-      $params[":precio3$i"] = (string)$a['precio3'];
+      $params[":id_marca$i"] = $a['id_marca'] ?: null;
+      $params[":id_proveedor$i"] = $a['id_proveedor'] ?: null;
+      $params[":id_empresa$i"] = $id_empresa;
+
+      $params[":nombre$i"] = $a['nombre_articulo'];
+
+      $params[":precio1$i"] = (string) $a['precio1'];
+      $params[":precio2$i"] = (string) $a['precio2'];
+      $params[":precio3$i"] = (string) $a['precio3'];
+
+      $params[":existencia$i"] = (string) $a['existencia'];
       $params[":no_procesado$i"] = $a['no_procesado'] ?? 0;
+
+      $params[":codigo_interno$i"] = $a['codigo_interno'];
+      $params[":codigo_barra$i"] = $a['codigo_barra'] ?: null;
+      $params[":codigo_proveedor$i"] = $a['codigo_proveedor'] ?: null;
+
       $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
       $params[":video_url$i"] = '';
     }
 
-    $sql = "INSERT INTO Articulo (id, id_rubro, id_empresa, nombre, precio1, precio2, precio3, no_procesado, aparece_en_csv, logo_url, video_url)
-                VALUES " . implode(', ', $values) . "
-                ON DUPLICATE KEY UPDATE
-                    id_rubro = VALUES(id_rubro),
-                    id_empresa = VALUES(id_empresa),
-                    nombre = VALUES(nombre),
-                    precio1 = VALUES(precio1),
-                    precio2 = VALUES(precio2),
-                    precio3 = VALUES(precio3),
-                    no_procesado = VALUES(no_procesado),
-                    aparece_en_csv = 1;";
+    $sql = "
+        INSERT INTO Articulo (
+            id,
+            id_rubro,
+            id_marca,
+            id_proveedor,
+            id_empresa,
+            nombre,
+            precio1,
+            precio2,
+            precio3,
+            existencia,
+            no_procesado,
+            codigo_interno,
+            codigo_barra,
+            codigo_proveedor,
+            aparece_en_csv,
+            logo_url,
+            video_url
+        )
+        VALUES " . implode(',', $values) . "
+        ON DUPLICATE KEY UPDATE
+            id_rubro = VALUES(id_rubro),
+            id_marca = VALUES(id_marca),
+            id_proveedor = VALUES(id_proveedor),
+            nombre = VALUES(nombre),
+            precio1 = VALUES(precio1),
+            precio2 = VALUES(precio2),
+            precio3 = VALUES(precio3),
+            existencia = VALUES(existencia),
+            no_procesado = VALUES(no_procesado),
+            codigo_interno = VALUES(codigo_interno),
+            codigo_barra = VALUES(codigo_barra),
+            codigo_proveedor = VALUES(codigo_proveedor),
+            aparece_en_csv = 1;
+    ";
 
     try {
       $stmt = $this->pdo->prepare($sql);
-      foreach ($params as $k => $v) {
-        $stmt->bindValue($k, $v);
+
+      foreach ($params as $clave => $valor) {
+        $stmt->bindValue($clave, $valor);
       }
+
       $stmt->execute();
-      return $articulos; // devolvemos la lista guardada
+
+      return $articulos;
     } catch (PDOException $e) {
       throw $e;
     }
@@ -202,32 +281,14 @@ class ArticuloRepositorio
     return false;
   }
 
-  public function eliminarNoUtilizados(int $id_rubro): bool
+  public function eliminarNoUtilizados(int $id_empresa): bool
   {
     try {
       $stmt = $this->pdo->prepare(
-        "DELETE FROM Articulo
-                 WHERE aparece_en_csv = 0 AND id_rubro = :id_rubro;"
+        "DELETE FROM Articulo 
+            WHERE aparece_en_csv = 0 AND id_empresa = :id_empresa;"
       );
-
-      $stmt->bindParam(':id_rubro', $id_rubro, PDO::PARAM_INT);
-
-      return $stmt->execute();
-    } catch (PDOException $e) {
-      error_log("Error al eliminar articulo: " . $e->getMessage());
-      return false;
-    }
-  }
-
-  public function setearCSVEn0(int $id_rubro): bool
-  {
-    try {
-      $stmt = $this->pdo->prepare(
-        "UPDATE Articulo
-             SET aparece_en_csv = 0
-             WHERE id_rubro = :id_rubro;"
-      );
-      $stmt->bindParam(':id_rubro', $id_rubro, PDO::PARAM_INT);
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
 
       $exito = $stmt->execute();
 
@@ -239,12 +300,30 @@ class ArticuloRepositorio
           return false;
         }
       } else {
-        // Esto se ejecuta si execute() falla, aunque es raro con PDO
-        error_log("La ejecución del UPDATE falló para el rubro con ID: " . $id_rubro);
+        // Esto solo se ejecuta si execute() devuelve false, lo cual es raro con PDO.
+        error_log("La ejecución del DELETE falló. Puede que el statement no sea válido.");
         return false;
       }
     } catch (PDOException $e) {
-      error_log("Error al setear CSV en 0: " . $e->getMessage());
+      // Esto captura la mayoría de los errores, como problemas de conexión o permisos.
+      error_log("Error al eliminar articulo (PDOException): " . $e->getMessage());
+      return false;
+    }
+  }
+
+  public function setearCSVEn0(int $id_empresa): bool
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Articulo
+                 SET aparece_en_csv = 0
+                 WHERE id_empresa = :id_empresa;"
+      );
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+
+      return $stmt->execute();
+    } catch (PDOException $e) {
+      error_log("Error al setear el articulo a 0: " . $e->getMessage());
       return false;
     }
   }

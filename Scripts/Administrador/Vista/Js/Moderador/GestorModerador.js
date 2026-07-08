@@ -1,6 +1,4 @@
-// Scripts/Administrador/Vista/Js/GestorAdministrador.js
 class GestorModerador {
-  // El método mostrarListaEmpresas ahora solo devuelve los datos, sin manipular el DOM
   async llamadaAlBackend(url, body, id_empresa) {
     const requestBody = { ...body, id_empresa };
 
@@ -43,6 +41,22 @@ class GestorModerador {
     );
   }
 
+  async mostrarListaMarcas(id_empresa) {
+    return await this.llamadaAlBackend(
+      `/marca/mostrar`,
+      { id_empresa },
+      id_empresa,
+    );
+  }
+
+  async mostrarListaProveedores(id_empresa) {
+    return await this.llamadaAlBackend(
+      `/proveedor/mostrar`,
+      { id_empresa },
+      id_empresa,
+    );
+  }
+
   async subirImagen(archivoImagen, logo_url) {
     if (!archivoImagen) {
       return logo_url;
@@ -51,7 +65,6 @@ class GestorModerador {
     formData.append("imagen", archivoImagen);
 
     try {
-      // 3. Enviar la solicitud POST con FormData en el body
       const response = await fetch(`/rubro/subir-logo`, {
         method: "POST",
         body: formData,
@@ -85,7 +98,6 @@ class GestorModerador {
     formData.append("imagen", archivoImagen);
 
     try {
-      // 3. Enviar la solicitud POST con FormData en el body
       const response = await fetch(`/articulo/subir-logo`, {
         method: "POST",
         body: formData,
@@ -143,55 +155,138 @@ class GestorModerador {
     }
   }
 
-  async cargarArticulosYRubros(archivo, id_empresa) {
+  async cargarListaArticulos(archivo, id_empresa) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
       reader.onload = async (event) => {
         try {
-          const listaObjetos = [];
-
           const data = new Uint8Array(event.target.result);
           const workbook = XLSX.read(data, { type: "array" });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-          const lineasSinCabecera = jsonData.slice(2);
+          // ==========================
+          // Obtener hojas
+          // ==========================
+          const hojaArticulos = workbook.Sheets["Articulo"];
+          const hojaProveedores = workbook.Sheets["Proveedor"];
+          const hojaRubros = workbook.Sheets["Rubro"];
+          const hojaMarcas = workbook.Sheets["Marca"];
 
-          lineasSinCabecera.forEach((columnas) => {
-            if (!columnas || columnas.length === 0) return;
-            listaObjetos.push({
-              id_articulo: columnas[0],
-              nombre_articulo: columnas[1].trim(),
-              precio1: parseFloat(columnas[2]),
-              precio2: parseFloat(columnas[3]),
-              precio3: parseFloat(columnas[4]),
-              nombre_rubro: columnas[5].trim(),
-              no_procesado: columnas[6],
+          if (!hojaArticulos) {
+            throw new Error("No existe la hoja 'Articulo'.");
+          }
+
+          const datosArticulos = XLSX.utils.sheet_to_json(hojaArticulos, {
+            header: 1,
+          });
+          const datosProveedores = hojaProveedores
+            ? XLSX.utils.sheet_to_json(hojaProveedores, { header: 1 })
+            : [];
+          const datosRubros = hojaRubros
+            ? XLSX.utils.sheet_to_json(hojaRubros, { header: 1 })
+            : [];
+          const datosMarcas = hojaMarcas
+            ? XLSX.utils.sheet_to_json(hojaMarcas, { header: 1 })
+            : [];
+
+          // Si hay dos filas de encabezado usar slice(2)
+          // Si hay una sola usar slice(1)
+          const articulos = [];
+          const proveedores = [];
+          const rubros = [];
+          const marcas = [];
+
+          // ==========================
+          // Artículos
+          // ==========================
+          datosArticulos.slice(1).forEach((fila) => {
+            if (!fila || fila.length === 0) return;
+
+            const noProcesado =
+              fila[13] === true ||
+              fila[13] === 1 ||
+              fila[13] === "1" ||
+              String(fila[13]).toUpperCase() === "VERDADERO"
+                ? 1
+                : 0;
+
+            articulos.push({
+              id_articulo: fila[0],
+              codigo_interno: fila[1],
+              nombre_articulo: fila[2]?.trim() ?? "",
+              codigo_barra: fila[3] ?? "",
+              codigo_proveedor: fila[4]?.trim() ?? "",
+              id_proveedor: fila[5] ?? null,
+              id_rubro: fila[6],
+              id_marca: fila[7] ?? null,
+              precio1: parseFloat(fila[8]) || 0,
+              precio2: parseFloat(fila[9]) || 0,
+              precio3: parseFloat(fila[10]) || 0,
+              existencia: parseFloat(fila[12]) || 0,
+              no_procesado: noProcesado,
+            });
+          });
+
+          // ==========================
+          // Proveedores
+          // ==========================
+          datosProveedores.slice(1).forEach((fila) => {
+            if (!fila || fila.length === 0) return;
+
+            proveedores.push({
+              id_proveedor: fila[0],
+              nombre_proveedor: fila[1]?.trim() ?? "",
+            });
+          });
+
+          // ==========================
+          // Rubros
+          // ==========================
+          datosRubros.slice(1).forEach((fila) => {
+            if (!fila || fila.length === 0) return;
+
+            rubros.push({
+              id_rubro: fila[0],
+              nombre_rubro: fila[1]?.trim() ?? "",
+            });
+          });
+
+          // ==========================
+          // Marcas
+          // ==========================
+          datosMarcas.slice(1).forEach((fila) => {
+            if (!fila || fila.length === 0) return;
+
+            marcas.push({
+              id_marca: fila[0],
+              nombre_marca: fila[1]?.trim() ?? "",
             });
           });
 
           await this.setearEn0(id_empresa);
 
-          const listaRubros = await this.cargarRubros(listaObjetos, id_empresa);
-          const booleanoArticulos = await this.cargarArticulos(
-            listaRubros,
+          const resultadoCarga = await this.cargarArticulos(
+            {
+              articulos,
+              proveedores,
+              rubros,
+              marcas,
+            },
             id_empresa,
           );
 
-          if (!booleanoArticulos) {
-            return reject(new Error("Error al cargar los artículos"));
+          if (!resultadoCarga) {
+            return reject(new Error("Error al cargar la información."));
           }
 
           const resultado = await this.borrarRubrosYArtNoUtilizados(id_empresa);
 
-          // ✅ ESTE es el retorno correcto
           resolve({
-            rubros: listaRubros,
-            articulos: booleanoArticulos,
-            resultado: resultado,
+            articulos: resultadoCarga,
+            resultado,
           });
         } catch (error) {
+          console.error(error);
           reject(new Error(`Error al procesar el archivo: ${error.message}`));
         }
       };
@@ -200,48 +295,18 @@ class GestorModerador {
         reject(new Error("Error al leer el archivo."));
       };
 
-      if (archivo.type === "text/csv") {
-        reader.readAsText(archivo);
-      } else {
-        reader.readAsArrayBuffer(archivo);
-      }
+      reader.readAsArrayBuffer(archivo);
     });
   }
 
-  async cargarRubros(lista, id_empresa) {
+  async cargarArticulos(datos, id_empresa) {
     try {
       const bodyData = {
-        id_empresa: id_empresa,
-        lista: lista,
-      };
-      const response = await fetch("/rubro/cargar-lista", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Stringify the combined object
-        body: JSON.stringify(bodyData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error || `Error en el servidor: ${response.status}`,
-        );
-      }
-
-      const resultado = await response.json();
-      return resultado;
-    } catch (error) {
-      console.error("Error al enviar la lista:", error);
-    }
-  }
-
-  async cargarArticulos(lista, id_empresa) {
-    try {
-      const bodyData = {
-        id_empresa: id_empresa,
-        lista: lista,
+        id_empresa,
+        articulos: datos.articulos,
+        proveedores: datos.proveedores,
+        rubros: datos.rubros,
+        marcas: datos.marcas,
       };
 
       const response = await fetch("/articulo/cargar-lista", {
@@ -252,10 +317,8 @@ class GestorModerador {
         body: JSON.stringify(bodyData),
       });
 
-      // ⚠️ Leer primero como texto para ver qué llega
       const rawText = await response.text();
 
-      // Intentar parsear solo si parece JSON
       let resultado;
       try {
         resultado = JSON.parse(rawText);
@@ -272,7 +335,7 @@ class GestorModerador {
       return resultado;
     } catch (error) {
       console.error("Error al enviar la lista:", error);
-      throw error; // importante para que se propague arriba
+      throw error;
     }
   }
 
@@ -296,6 +359,7 @@ class GestorModerador {
           errorData.error || `Error en el servidor: ${response.status}`,
         );
       }
+      return response;
     } catch (error) {
       console.error("Error al enviar la lista:", error);
     }

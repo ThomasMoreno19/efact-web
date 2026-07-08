@@ -3,6 +3,8 @@
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/RubroRepositorio.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/ArticuloRepositorio.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/ProveedorRepositorio.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/MarcaRepositorio.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/Config.php';
 
 class GestorRubro
@@ -10,12 +12,16 @@ class GestorRubro
   private PDO $pdo;
   private rubroRepositorio $rubroRepositorio;
   private articuloRepositorio $articuloRepositorio;
+  private proveedorRepositorio $proveedorRepositorio;
+  private marcaRepositorio $marcaRepositorio;
 
   public function __construct(PDO $pdo)
   {
     $this->pdo = $pdo;
     $this->rubroRepositorio = new RubroRepositorio($pdo);
     $this->articuloRepositorio = new ArticuloRepositorio($pdo);
+    $this->proveedorRepositorio = new ProveedorRepositorio($pdo);
+    $this->marcaRepositorio = new MarcaRepositorio($pdo);
   }
 
   public function derivarURL(string $porcionURL): void
@@ -25,7 +31,6 @@ class GestorRubro
     $primer_segmento = $url_segmentada[0]; //mostrar || modificar || crear
 
     switch (strtolower($primer_segmento)) {
-
 
       case 'mostrar':
 
@@ -43,10 +48,6 @@ class GestorRubro
 
       case 'modificar':
         $this->modificar();
-        break;
-
-      case 'cargar-lista':
-        $this->cargarLista();
         break;
 
       case 'subir-logo':
@@ -108,56 +109,75 @@ class GestorRubro
   private function mostrarParaCliente(): void
   {
     $datos = json_decode(file_get_contents('php://input'), true);
-    $id_empresa = $datos['id_empresa'] ?? 0;
 
-    // === CACHE EN ARCHIVO ===
-    $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/rubros_empresa_{$id_empresa}_cliente.json";
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
 
+    if ($id_empresa <= 0) {
+      http_response_code(400);
+      echo json_encode([
+        'error' => 'Falta id_empresa para mostrar los datos.'
+      ]);
+      return;
+    }
+
+    $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache";
+
+    if (!is_dir($cacheDir)) {
+      mkdir($cacheDir, 0777, true);
+    }
+
+    $cacheFile = "{$cacheDir}/catalogos_empresa_{$id_empresa}_cliente.json";
+
+    // Cache válido
     if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
       http_response_code(200);
-      echo file_get_contents($cacheFile);
+      readfile($cacheFile);
       return;
     }
 
     try {
-      $listaRubros = $this->rubroRepositorio->obtenerParaCliente($id_empresa);
 
-      $json = json_encode($listaRubros);
-      file_put_contents($cacheFile, $json); // Guarda cache
+      $listas = [
+        'rubros'       => $this->rubroRepositorio->obtenerParaCliente($id_empresa),
+        'marcas'       => $this->marcaRepositorio->obtenerPorEmpresa($id_empresa),
+        'proveedores'  => $this->proveedorRepositorio->obtenerPorEmpresa($id_empresa)
+      ];
+
+      $json = json_encode(
+        $listas,
+        JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR
+      );
+
+      file_put_contents($cacheFile, $json, LOCK_EX);
 
       http_response_code(200);
       echo $json;
-    } catch (Exception $e) {
+    } catch (Throwable $e) {
+
       http_response_code(500);
-      echo json_encode(['error' => 'Error al mostrar los rubros entre los valores recibidos' . $e->getMessage()]);
+      echo json_encode([
+        'error' => 'Error al mostrar los catálogos.',
+        'detalle' => $e->getMessage()
+      ]);
     }
   }
 
-  private function cargarLista(): void
+  public function cargarLista(array $lista, int $id_empresa): bool
   {
-    $input = json_decode(file_get_contents('php://input'), true);
-    $id_empresa = (int)$input['id_empresa'];
-    $datos = $input['lista'];
-    $nuevaLista = [];
-    foreach ($datos as $item) {
-      $nombre_rubro = $item['nombre_rubro'] ?? '';
+    if (empty($lista)) return true;
 
-      try {
-        // Llama al repositorio para crear el rubro, pasando el id_empresa extraído
-        $id_rubro = $this->rubroRepositorio->crearPorCsv($id_empresa, $nombre_rubro);
-        // Crea un nuevo array para el artículo final.
-        $articulo_final = $item;
-        // Añade el id_rubro al nuevo array.
-        $articulo_final['nombre_rubro'] = $id_rubro;
+    try {
+      $this->rubroRepositorio->crearListaCsv($lista, $id_empresa);
 
-        // Añade el artículo completo a la nueva lista.
-        $nuevaLista[] = $articulo_final;
-      } catch (Exception $e) {
-        die($e->getMessage());
+      if ($id_empresa) {
+        $this->borrarCacheTodos($id_empresa);
       }
+
+      return true;
+    } catch (Exception $e) {
+      // Lanzamos la excepción para que la capture el gestorArticulo principal
+      throw $e;
     }
-    $this->borrarCacheTodos($id_empresa);
-    echo json_encode($nuevaLista);
   }
 
   private function borrarCacheTodos(int $id_empresa): bool
@@ -180,16 +200,14 @@ class GestorRubro
   {
     $input = json_decode(file_get_contents('php://input'), true);
     $id_empresa = (int)$input['id_empresa'];
-    $listaRubros = $this->rubroRepositorio->obtenerTodos($id_empresa);
-    foreach ($listaRubros as $rubro) {
-      $id_rubro = $rubro['id'];
-      try {
-        // Llama al repositorio para crear el rubro, pasando el id_empresa extraído
-        $this->rubroRepositorio->setearCSVEn0($id_empresa);
-        $this->articuloRepositorio->setearCSVEn0($id_rubro);
-      } catch (Exception $e) {
-        error_log("Hubo un error en setearEn0() (GestorRubro)");
-      }
+    try {
+      // Llama al repositorio para crear el rubro, pasando el id_empresa extraído
+      $this->rubroRepositorio->setearCSVEn0($id_empresa);
+      $this->articuloRepositorio->setearCSVEn0($id_empresa);
+      $this->proveedorRepositorio->setearCSVEn0($id_empresa);
+      $this->marcaRepositorio->setearCSVEn0($id_empresa);
+    } catch (Exception $e) {
+      error_log("Hubo un error en setearEn0()");
     }
   }
 
@@ -197,16 +215,14 @@ class GestorRubro
   {
     $input = json_decode(file_get_contents('php://input'), true);
     $id_empresa = (int)$input['id_empresa'];
-    $listaRubros = $this->rubroRepositorio->obtenerTodos($id_empresa);
-    foreach ($listaRubros as $rubro) {
-      $id_rubro = $rubro['id'];
-      try {
-        // Llama al repositorio para crear el rubro, pasando el id_empresa extraído
-        $this->articuloRepositorio->eliminarNoUtilizados($id_rubro);
-        $this->rubroRepositorio->eliminarNoUtilizados($id_empresa);
-      } catch (Exception $e) {
-        error_log("Hubo un error en eliminarRubrosYArtNoUtilizados() (GestorRubro)");
-      }
+    try {
+      // Llama al repositorio para crear el rubro, pasando el id_empresa extraído
+      $this->articuloRepositorio->eliminarNoUtilizados($id_empresa);
+      $this->rubroRepositorio->eliminarNoUtilizados($id_empresa);
+      $this->marcaRepositorio->eliminarNoUtilizados($id_empresa);
+      $this->proveedorRepositorio->eliminarNoUtilizados($id_empresa);
+    } catch (Exception $e) {
+      error_log("Hubo un error en eliminarRubrosYArtNoUtilizados() (GestorRubro)");
     }
   }
 

@@ -1,5 +1,5 @@
 /* Estilos para la barra de búsqueda */
-#barra-busqueda {
+.barra {
   font-size: 16px;
   border: none; /* Borde gris claro */
   padding: 9px 5px;
@@ -19,7 +19,7 @@
   display: flex;
   padding: 0px 5px;
   max-width: 300px;
-  margin: 35px auto;
+  margin: 15px auto;
   flex-direction: row;
   background-color: #181818;
 }
@@ -31,7 +31,7 @@
 }
 
 /* Estilos para el texto de ejemplo (placeholder) */
-#barra-busqueda::placeholder {
+.barra::placeholder {
   color: #777; /* Color de texto gris más claro */
   font-style: italic; /* Texto en cursiva */
 }

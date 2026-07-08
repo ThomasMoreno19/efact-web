@@ -3,6 +3,12 @@ class ArticuloVista {
     const {
       id,
       id_rubro,
+      id_marca,
+      nombre_marca,
+      id_proveedor,
+      nombre_proveedor,
+      codigo_proveedor,
+      existencia,
       nombre,
       precio1,
       precio2,
@@ -14,6 +20,12 @@ class ArticuloVista {
     } = articulo;
     this.id = id;
     this.id_rubro = id_rubro;
+    this.id_marca = id_marca;
+    this.id_proveedor = id_proveedor;
+    this.marca = nombre_marca;
+    this.proveedor = nombre_proveedor;
+    this.codigo_proveedor = codigo_proveedor;
+    this.existencia = existencia;
     this.nombre = nombre;
     this.precio1 = precio1;
     this.precio2 = precio2;
@@ -53,10 +65,25 @@ class ArticuloVista {
     const infoContainer = document.createElement("div");
     infoContainer.classList.add("articulo-info");
 
+    const infoMarcaProv = document.createElement("div");
+    infoMarcaProv.classList.add("info-marca-prov");
+
     const pNombre = document.createElement("p");
     pNombre.id = "nombre-articulo";
     pNombre.textContent = this.nombre;
+
+    const pMarca = document.createElement("p");
+    pMarca.id = "marca-articulo";
+    pMarca.textContent = this.marca;
+
+    const pProveedor = document.createElement("p");
+    pProveedor.id = "proveedor-articulo";
+    pProveedor.textContent = this.proveedor;
+
+    infoMarcaProv.appendChild(pMarca);
+    infoMarcaProv.appendChild(pProveedor);
     infoContainer.appendChild(pNombre);
+    infoContainer.appendChild(infoMarcaProv);
 
     const precioActual = this[`precio${precio_activo}`] ?? this.precio1;
     const pPrecio = document.createElement("p");
@@ -659,102 +686,5 @@ class ArticuloVista {
         modal.remove();
       });
     }
-  }
-
-  mostrarUna(
-    precio_activo = 1,
-    paraClientes = false,
-    imagenesEnArticulos = true,
-  ) {
-    const divArticulo = document.createElement("div");
-    divArticulo.classList.add("articulo");
-    divArticulo.dataset.articuloId = this.id;
-    divArticulo.dataset.nombre = this.nombre;
-    divArticulo.dataset.precio1 = this.precio1;
-    divArticulo.dataset.precio2 = this.precio2;
-    divArticulo.dataset.precio3 = this.precio3;
-    divArticulo.dataset.no_procesado = this.no_procesado;
-
-    const infoContainer = document.createElement("div");
-    infoContainer.classList.add("articulo-info");
-
-    const pNombre = document.createElement("p");
-    pNombre.id = "nombre-articulo";
-    pNombre.textContent = this.nombre;
-    infoContainer.appendChild(pNombre);
-
-    const precioActual = this[`precio${precio_activo}`] ?? this.precio1;
-    const pPrecio = document.createElement("p");
-    pPrecio.id = "id-articulo";
-    pPrecio.textContent = "$" + precioActual;
-
-    const container2 = document.createElement("div");
-    container2.classList.add("container");
-    container2.appendChild(pPrecio);
-
-    if (this.video_url) {
-      const botonVideo = document.createElement("button");
-      botonVideo.classList.add("btn-ver-video");
-      botonVideo.innerHTML = this.videoSVG;
-      botonVideo.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (paraClientes)
-          this.mostrarModalReproductorParaCliente(this.video_url);
-        else this.mostrarModalReproductor(this.video_url);
-      });
-      container2.appendChild(botonVideo);
-    }
-
-    const logoContainer = document.createElement("div");
-    logoContainer.classList.add("articulo-logo");
-
-    const tieneImagenValida =
-      this.logo_url && this.logo_url !== "Archivos/Logos/Vacio.png";
-
-    if (tieneImagenValida) {
-      const img = document.createElement("img");
-      img.src = this.logo_url;
-      img.alt = this.nombre;
-      logoContainer.appendChild(img);
-    } else {
-      logoContainer.innerHTML = this.imagenSVG;
-    }
-
-    // Evento click para enviar la URL asignada o el SVG por defecto
-    logoContainer.style.cursor = "pointer";
-    logoContainer.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const imagenAEnviar = tieneImagenValida ? this.logo_url : this.imagenSVG;
-      this.mostrarModalImagen(imagenAEnviar);
-    });
-
-    const contentGroup = document.createElement("div");
-    contentGroup.classList.add("articulo-content");
-    contentGroup.appendChild(container2);
-
-    if (!this.no_procesado) {
-      divArticulo.addEventListener("click", () => {
-        const event = new CustomEvent("articuloSeleccionado", { detail: this });
-        document.dispatchEvent(event);
-        divArticulo.classList.toggle("seleccionado");
-        divArticulo.classList.remove("pulse");
-        void divArticulo.offsetWidth;
-        divArticulo.classList.add("pulse");
-        if (typeof window.gestorDeArticulosCallback === "function") {
-          window.gestorDeArticulosCallback(this);
-        }
-      });
-      contentGroup.appendChild(infoContainer);
-    } else {
-      divArticulo.classList.add("no-procesado");
-      contentGroup.appendChild(infoContainer);
-    }
-
-    if (imagenesEnArticulos) {
-      divArticulo.appendChild(logoContainer);
-    }
-    divArticulo.appendChild(contentGroup);
-
-    return divArticulo;
   }
 }

@@ -532,7 +532,9 @@ class EmpresaVista {
       <div class="qr-options">
         <button id="qr-pagina-configuracion" class="qr-button">Página de configuraciones</button>
 
-        <button id="qr-catalogo-fuera" class="qr-button">Catálogo</button>
+        <button id="qr-catalogo-local" class="qr-button">Catálogo</button>
+
+        <button id="qr-catalogo-fuera" class="qr-button">Catálogo (sin Escáner)</button>
       </div>
 
       <div id="qr-resultado" style="margin-top:20px; text-align:center;"></div>
@@ -557,7 +559,16 @@ class EmpresaVista {
     modalQR
       .querySelector("#qr-catalogo-fuera")
       .addEventListener("click", () => {
-        this.generarQR(`${baseURL}/carta/${this.id}`, "carta-delivery");
+        this.generarQR(`${baseURL}/catalogo/${this.id}`, "carta-delivery");
+      });
+
+    modalQR
+      .querySelector("#qr-catalogo-local")
+      .addEventListener("click", () => {
+        this.generarQR(
+          `${baseURL}/catalogo/${this.id}?soloPresupuesto`,
+          "carta-local",
+        );
       });
 
     modalQR.querySelector("#cerrar-qr-modal").addEventListener("click", () => {
@@ -606,55 +617,5 @@ class EmpresaVista {
 
       contenedor.appendChild(link);
     });
-  }
-
-  modalSeleccionMesa() {
-    const modal = document.createElement("div");
-    modal.classList.add("modal-backdrop");
-
-    const contenido = document.createElement("div");
-    contenido.classList.add("modal-content");
-    contenido.style.maxWidth = "300px";
-
-    contenido.innerHTML = `
-    <div class="header-configurar">
-      <h3>Ingresar número de mesa (opcional)</h3>
-      <button class="boton-cerrar" id="cerrar-submodal">&times;</button>
-    </div>
-
-    <div style="padding:15px; display:flex; flex-direction:column; gap:10px;">
-      <input type="number" id="input-mesa" min="1" max="500" placeholder="Ej: 12">
-
-      <button id="confirmar-mesa" class="submit-button">Generar QR</button>
-    </div>
-  `;
-
-    modal.appendChild(contenido);
-
-    // Cerrar
-    contenido
-      .querySelector("#cerrar-submodal")
-      .addEventListener("click", () => modal.remove());
-
-    const baseURL = window.location.origin;
-
-    // Confirmar
-    contenido.querySelector("#confirmar-mesa").addEventListener("click", () => {
-      const valor = contenido.querySelector("#input-mesa").value;
-
-      let url;
-
-      if (valor && valor >= 1 && valor <= 500) {
-        url = `${baseURL}/carta/${this.id}/local/${valor}`;
-      } else {
-        // slug opcional → sin mesa
-        url = `${baseURL}/carta/${this.id}/local`;
-      }
-
-      this.generarQR(url, "carta-local" + valor);
-      modal.remove();
-    });
-
-    return modal;
   }
 }

@@ -32,8 +32,6 @@ class RubroRepositorio
           'id_empresa' => $data['id_empresa'],
           'logo_url' => $data['logo_url'],
           'video_url' => $data['video_url'],
-          'aparece_en_csv' => $data['aparece_en_csv'],
-          'creado_en_pagina' => $data['creado_en_pagina']
         ];
       }
     } catch (PDOException $e) {
@@ -75,55 +73,52 @@ class RubroRepositorio
   }
 
 
-  public function crearPorCsv(int $id_empresa, string $nombre_rubro): ?int
+  public function crearListaCsv(array $articulos, int $id_empresa): bool
   {
-    $id_rubro = $this->obtenerPorNombreEIdEmpresa($id_empresa, $nombre_rubro);
-    error_log("Rubro recibido: " . $nombre_rubro);
-    error_log("ID encontrado: " . var_export($id_rubro, true));
+    $unicos = [];
+    foreach ($articulos as $a) {
+      if (empty($a['id_rubro'])) continue;
 
-    if ($id_rubro !== null) {
-      error_log("DEVUELVO ID EXISTENTE: " . $id_rubro);
-      return $id_rubro;
+      // Al usar el id_rubro como key, evitamos duplicados en el lote SQL
+      $unicos[$a['id_rubro']] = [
+        'id' => $a['id_rubro'],
+        'nombre' => $a['nombre_rubro'],
+        'id_empresa' => $id_empresa
+      ];
     }
 
+    if (empty($unicos)) return true;
+
+    $values = [];
+    $params = [];
+    $i = 0;
+    foreach ($unicos as $r) {
+      $values[] = "(:id$i, :id_empresa$i, :nombre$i, 1, :logo_url$i, :video_url$i)";
+      $params[":id$i"] = $r['id'];
+      $params[":id_empresa$i"] = $id_empresa;
+      $params[":nombre$i"] = $r['nombre'];
+      $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
+      $params[":video_url$i"] = '';
+      $i++;
+    }
+
+    $sql = "INSERT INTO Rubro (id, id_empresa, nombre, aparece_en_csv, logo_url, video_url)
+          VALUES " . implode(', ', $values) . "
+          ON DUPLICATE KEY UPDATE
+              nombre = VALUES(nombre),
+              id_empresa = VALUES(id_empresa),
+              aparece_en_csv = 1;";
+
     try {
-      $stmt = $this->pdo->prepare(
-        "INSERT INTO Rubro (
-                nombre,
-                id_empresa,
-                logo_url,
-                aparece_en_csv,
-                creado_en_pagina,
-                video_url
-            ) VALUES (
-                :nombre,
-                :id_empresa,
-                :logo_url,
-                :aparece_en_csv,
-                :creado_en_pagina,
-                ''
-            )"
-      );
-
-      $stmt->bindParam(':nombre', $nombre_rubro);
-      $stmt->bindParam(':id_empresa', $id_empresa);
-      $stmt->bindValue(':logo_url', '/Archivos/Logos/Vacio.png');
-      $stmt->bindValue(':aparece_en_csv', 1);
-      $stmt->bindValue(':creado_en_pagina', 0);
-
-      if ($stmt->execute()) {
-        $id = (int)$this->pdo->lastInsertId();
-        error_log("DEVUELVO ID NUEVO: " . $id);
-        return $id;
+      $stmt = $this->pdo->prepare($sql);
+      foreach ($params as $k => $v) {
+        $stmt->bindValue($k, $v);
       }
-
-      return null;
+      return $stmt->execute();
     } catch (PDOException $e) {
-      error_log($e->getMessage());
       throw $e;
     }
   }
-
 
   public function modificar(int $id, int $id_empresa, string $nombre, string $logo_url): bool
   {
@@ -184,7 +179,7 @@ class RubroRepositorio
     try {
       $stmt = $this->pdo->prepare(
         "DELETE FROM Rubro 
-            WHERE aparece_en_csv = 0 AND creado_en_pagina = 0 AND id_empresa = :id_empresa;"
+            WHERE aparece_en_csv = 0 AND id_empresa = :id_empresa;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
 

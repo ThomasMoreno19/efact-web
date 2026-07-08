@@ -173,6 +173,12 @@ class PantallaModerador {
 
       if (esArticulo) {
         // 1. Obtener la lista de todos los rubros
+        const marcasRecibidas = await this.gestor.mostrarListaMarcas(
+          this.empresa.id,
+        );
+        const proveedoresRecibidos = await this.gestor.mostrarListaProveedores(
+          this.empresa.id,
+        );
         const rubrosRecibidos = await this.gestor.mostrarListaRubros(
           this.empresa.id,
         );
@@ -421,7 +427,7 @@ class PantallaModerador {
       try {
         // Envía la lista procesada al controlador
         this.insertarLoader(modalContent);
-        const respuesta = await this.gestor.cargarArticulosYRubros(
+        const respuesta = await this.gestor.cargarListaArticulos(
           archivo,
           this.empresa.id,
         );

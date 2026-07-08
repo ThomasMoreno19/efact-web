@@ -82,13 +82,13 @@
 
   <div class="lista-central" id="lista-central">
 
-    <div id="contenedor-busqueda" class="contenedor-busqueda hidden">
+    <div id="contenedor-busqueda-nombre" class="contenedor-busqueda hidden">
 
       <input
         type="text"
         id="barra-busqueda"
         class="barra hidden"
-        placeholder="Buscar artículos" />
+        placeholder="Buscar por nombre" />
 
       <svg
         class="icono-busqueda"
@@ -104,6 +104,77 @@
       </svg>
     </div>
 
+    <div id="contenedor-busqueda-codigo-proveedor" class="contenedor-busqueda hidden">
+
+      <input
+        type="text"
+        id="barra-busqueda-codigo-proveedor"
+        class="barra hidden"
+        placeholder="Buscar por código de proveedor" />
+
+      <svg
+        class="icono-busqueda"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </div>
+
+
+    <div id="contenedor-busqueda-codigo-interno" class="contenedor-busqueda hidden">
+
+      <input
+        type="text"
+        id="barra-busqueda-codigo-interno"
+        class="barra hidden"
+        placeholder="Buscar por código interno" />
+
+      <svg
+        class="icono-busqueda"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round" />
+      </svg>
+    </div>
+
+
+    <div class="botones-lista-cliente">
+
+      <div id="lista-botones-listas" class="">
+        <button id="boton-lista-rubros" class="boton-lista-cliente activo-cliente" type="button">Rubros</button>
+        <button id="boton-lista-proveedores" class="boton-lista-cliente" type="button">Proveedores</button>
+        <button id="boton-lista-marcas" class="boton-lista-cliente" type="button">Marcas</button>
+      </div>
+
+      <div id="lista-botones-filtros" class="">
+        <button id="boton-filtro-rubro" class="boton-filtro boton-lista-cliente hidden" type="button">
+          <p id="nombre-filtro-rubro" class="filtro nombre-filtro"></p>
+          <p id="eliminar-filtro-rubro" class="filtro eliminar">✕</p>
+        </button>
+        <button id="boton-filtro-proveedor" class="boton-filtro boton-lista-cliente hidden" type="button">
+          <p id="nombre-filtro-proveedor" class="filtro nombre-filtro"></p>
+          <p id="eliminar-filtro-proveedor" class="filtro eliminar">✕</p>
+        </button>
+        <button id="boton-filtro-marca" class="boton-filtro boton-lista-cliente hidden" type="button">
+          <p id="nombre-filtro-marca" class="filtro nombre-filtro"></p>
+          <p id="eliminar-filtro-marca" class="filtro eliminar">✕</p>
+        </button>
+      </div>
+
+    </div>
+
     <div class="loader" id="loader">
       <div class="cup">
         <div class="cup-handle"></div>
@@ -115,9 +186,13 @@
     </div>
 
     <div class="listas">
+
       <h2 id="titulo-rubros" class="hidden"></h2>
-      <div class="lista" id="lista-articulos"></div>
-      <div class="lista" id="lista-rubros"></div>
+      <div class="lista hidden" id="lista-articulos"></div>
+      <div class="lista lista-grupos" id="lista-rubros"></div>
+      <div class="lista hidden lista-grupos" id="lista-marcas"></div>
+      <div class="lista hidden lista-grupos" id="lista-proveedores"></div>
+
     </div>
   </div>
   <div class="made-by">
@@ -135,6 +210,8 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <script src="/Scripts/Administrador/Vista/Js/Articulo.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Rubro.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Proveedor.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Marca.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Empresa.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Cliente/Vista/Js/Carrito.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Cliente/Vista/Js/ModalCarrito.js?v=<?php echo APP_VERSION; ?>"></script>

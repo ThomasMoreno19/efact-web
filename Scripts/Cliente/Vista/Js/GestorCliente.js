@@ -1,5 +1,3 @@
-// Scripts/Administrador/Vista/Js/GestorAdministrador.js
-
 class GestorCliente {
   async cacheFetch(url, body, id_empresa) {
     const requestBody = { ...body, id_empresa };

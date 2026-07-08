@@ -2,7 +2,34 @@
 
 /* --- Estilos para la tarjeta de empresa individual (.empresa-item) --- */
 .listas {
-  margin: 5px;
+  background-color: transparent;
+  border-radius: 8px;
+  margin-bottom: 5px;
+}
+
+.botones-lista-clientes {
+  position: relative;
+  display: flex;
+  max-width: 280px;
+  justify-content: space-between;
+  margin: 0px;
+}
+
+.boton-lista-cliente {
+  background: #181818;
+  color: rgba(255, 255, 255, 0.722);
+  padding: 10px 12px;
+  border: none;
+  margin-bottom: -5px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 15px;
+  box-shadow: none;
+}
+
+.activo-cliente {
+  color: #ffffff;
+  font-weight: bold;
 }
 
 .lista-central {
@@ -16,6 +43,43 @@
   margin-top: 20px;
 }
 
+.botones-lista-cliente {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-bottom: -5px;
+  gap: 30px;
+}
+
+#lista-botones-filtros {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.nombre-filtro {
+  color: #ffffff7a;
+  font-size: 13px;
+}
+
+.boton-filtro {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.filtro {
+  margin: 0px !important;
+}
+
+.eliminar {
+  color: #e63946;
+  font-weight: bold;
+  cursor: pointer;
+}
+
 #titulo-rubros {
   color: #e9b44c;
   font-size: 22px;
@@ -23,11 +87,27 @@
   margin: 0px;
 }
 
-#lista-rubros {
+.lista-grupos {
   display: grid;
+  background-color: #181818;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px; /* Espacio entre los elementos de la cuadrícula */
   padding: 10px; /* Añade un poco de padding para mejor presentación */
+  border-radius: 8px;
+}
+
+#lista-articulos {
+  margin-top: 30px;
+}
+
+/* Elementos IMPARES (1, 3, 5...) */
+#lista-articulos > *:nth-child(odd) {
+  background-color: #1d1d1d; /* O el color que prefieras */
+}
+
+/* Elementos PARES (2, 4, 6...) */
+#lista-articulos > *:nth-child(even) {
+  background-color: #2e2e2e; /* Color de fondo alternativo */
 }
 
 .articulo-logo {
@@ -239,6 +319,22 @@ p.descripcion {
 
   position: relative;
   animation: slideIn 0.3s ease-in-out;
+}
+
+.info-marca-prov {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+#marca-articulo {
+  font-size: 14px;
+  color: #ffffff7f;
+}
+
+#proveedor-articulo {
+  font-size: 14px;
+  color: #ffffff7f;
 }
 
 /* MOBILE */

@@ -8,6 +8,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/Ges
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorModerador.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorArticulo.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorRubro.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorMarca.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorProveedor.php';
 
 $url = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'); // Tomar la url (Elimina barras iniciales/finales).
 
@@ -49,7 +51,17 @@ try {
       $controlador->derivarURL($porcionURL);
       break;
 
-    case 'carta':
+    case 'marca':
+      $controlador = new GestorMarca($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'proveedor':
+      $controlador = new GestorProveedor($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'catalogo':
       require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/PantallaCliente.php';
       exit;
 

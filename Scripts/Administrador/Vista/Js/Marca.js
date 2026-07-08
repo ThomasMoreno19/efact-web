@@ -1,10 +1,10 @@
-class RubroVista {
-  constructor(rubro) {
-    const { id, id_empresa, nombre, logo_url, video_url = null } = rubro;
+class MarcaVista {
+  constructor(marca) {
+    const { id, id_empresa, nombre, logo_url, video_url = null } = marca;
     this.id = id;
     this.id_empresa = id_empresa;
     this.nombre = nombre;
-    this.logo_url = logo_url;
+    this.logo_url = logo_url ?? "Archivos/Logos/Vacio.png";
     this.video_url = video_url;
     this.videoSVG = `<svg width="50px" height="50px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M12 3C4.5885 3 3 4.5885 3 12C3 19.4115 4.5885 21 12 21C19.4115 21 21 19.4115 21 12C21 4.5885 19.4115 3 12 3ZM15.224 13.0171C16.011 12.5674 16.011 11.4326 15.224 10.9829L10.7817 8.44446C10.0992 8.05446 9.25 8.54727 9.25 9.33333L9.25 14.6667C9.25 15.4527 10.0992 15.9455 10.7817 15.5555L15.224 13.0171Z" fill="#000000"/>
@@ -14,15 +14,15 @@ class RubroVista {
   }
 
   mostrarUno(paraCliente = false) {
-    const divRubro = document.createElement("div");
-    divRubro.classList.add("rubro");
-    divRubro.dataset.RubroId = this.id;
-    divRubro.style.backgroundImage = `url(${this.logo_url})`;
+    const divMarca = document.createElement("div");
+    divMarca.classList.add("rubro");
+    divMarca.dataset.MarcaId = this.id;
+    divMarca.style.backgroundImage = `url(${this.logo_url})`;
 
     const pNombre = document.createElement("h3");
     pNombre.textContent = this.nombre;
     // 2. Adjuntar la imagen al div principal
-    divRubro.appendChild(pNombre);
+    divMarca.appendChild(pNombre);
     const container2 = document.createElement("div");
 
     if (this.video_url) {
@@ -50,15 +50,15 @@ class RubroVista {
       container2.appendChild(botonVideo);
     }
 
-    divRubro.appendChild(container2);
+    divMarca.appendChild(container2);
 
-    return divRubro;
+    return divMarca;
   }
 
   modalConfigurar() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
-    modal.id = "modal-configurar-rubro";
+    modal.id = "modal-configurar-marca";
 
     const modalContenido = document.createElement("div");
     modalContenido.classList.add("modal-content-partial");
@@ -67,10 +67,10 @@ class RubroVista {
 
     const htmlContent = `
     <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
-    <form id="form-configurar-rubro">
+    <form id="form-configurar-marca">
       <h2 id="nombre-articulo-modal">${this.nombre}</h2>
       <button type="button" class="submit-button" id="modificar">Modificar</button>
-      <button type="button" class="submit-button" id="boton-subir-video-rubro">Subir video/imagen</button>
+      <button type="button" class="submit-button" id="boton-subir-video-marca">Subir video/imagen</button>
     </form>`;
 
     modalContenido.innerHTML = htmlContent;
@@ -92,15 +92,15 @@ class RubroVista {
   modalModificar(nombre) {
     const modalModificar = document.createElement("div");
     modalModificar.classList.add("modal");
-    modalModificar.id = "modal-modificar-rubro";
+    modalModificar.id = "modal-modificar-marca";
 
     const modalModificarContenido = document.createElement("div");
     modalModificarContenido.classList.add("modal-content-partial");
 
     const htmlContent = `
     <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
-            <form id="form-modificar-rubro" method="POST" enctype="multipart/form-data"> 
-                <h2 id ="titulo-modal">Modificar Rubro</h2> 
+            <form id="form-modificar-marca" method="POST" enctype="multipart/form-data"> 
+                <h2 id ="titulo-modal">Modificar Marca</h2> 
                 <div class="form-group"> 
                     <label for="nombre">Nombre:</label> 
                     <input type="text" id="nombre" name="nombre" value="${nombre}" required> 
@@ -109,7 +109,7 @@ class RubroVista {
                     <label for="nombre">Imagen:</label> 
                     <input type="file" id="imagen" name="imagen" accept="image/*"> 
                 </div> 
-                <button type="submit" class="submit-button" id="boton-modificar-rubro">Enviar</button> 
+                <button type="submit" class="submit-button" id="boton-modificar-marca">Enviar</button> 
             </form> `;
     modalModificarContenido.innerHTML = htmlContent;
     modalModificar.appendChild(modalModificarContenido);
@@ -125,7 +125,7 @@ class RubroVista {
     return modalModificar;
   }
 
-  modalSubirVideoRubro() {
+  modalSubirVideoMarca() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
 
@@ -378,7 +378,7 @@ class RubroVista {
   mostrarModalReproductor(url) {
     const modal = document.createElement("div");
     modal.classList.add("modal");
-    modal.id = "modal-video-rubro";
+    modal.id = "modal-video-marca";
 
     modal.innerHTML = `
       <div class="modal-content-partial" id="modal-video">
@@ -393,7 +393,7 @@ class RubroVista {
               ? `
                 <img
                   src="${url}"
-                  alt="Imagen Rubro"
+                  alt="Imagen Marca"
                   style="
                     max-width: 100%;
                     max-height: 80vh;
@@ -442,7 +442,7 @@ class RubroVista {
   mostrarModalReproductorParaCliente(url) {
     const modal = document.createElement("div");
     modal.classList.add("modal");
-    modal.id = "modal-video-rubro";
+    modal.id = "modal-video-marca";
 
     modal.innerHTML = `
       <div class="modal-content-partial" id="modal-video">
@@ -454,7 +454,7 @@ class RubroVista {
               ? `
                 <img
                   src="${url}"
-                  alt="Imagen Rubro"
+                  alt="Imagen Marca"
                   style="
                     max-width: 100%;
                     max-height: 80vh;
@@ -533,11 +533,11 @@ class RubroVista {
     const cancelarBtn = document.getElementById("cancelar-eliminar-video");
 
     confirmarBtn.addEventListener("click", () => {
-      const event = new CustomEvent("videoEliminarRubro", { detail: this });
+      const event = new CustomEvent("videoEliminarMarca", { detail: this });
       document.dispatchEvent(event);
-      if (typeof window.eliminarVideoRubro === "function") {
-        window.eliminarVideoRubro(this);
-        document.getElementById("modal-video-rubro").remove();
+      if (typeof window.eliminarVideoMarca === "function") {
+        window.eliminarVideoMarca(this);
+        document.getElementById("modal-video-marca").remove();
         modal.remove();
       }
     });

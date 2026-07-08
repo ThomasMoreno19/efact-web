@@ -3,17 +3,27 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/ArticuloRepositorio.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorRubro.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorMarca.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorProveedor.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/Config.php';
 
 class GestorArticulo
 {
   private PDO $pdo;
   private ArticuloRepositorio $articuloRepositorio;
+  private GestorRubro $gestorRubro;
+  private GestorProveedor $gestorProveedor;
+  private GestorMarca $gestorMarca;
 
   public function __construct(PDO $pdo)
   {
     $this->pdo = $pdo;
     $this->articuloRepositorio = new ArticuloRepositorio($pdo);
+
+    $this->gestorRubro = new GestorRubro($pdo);
+    $this->gestorProveedor = new GestorProveedor($pdo);
+    $this->gestorMarca = new GestorMarca($pdo);
   }
 
 
@@ -24,7 +34,6 @@ class GestorArticulo
     $primer_segmento = $url_segmentada[0]; //mostrar || modificar || crear
 
     switch (strtolower($primer_segmento)) {
-
 
       case 'mostrar':
 
@@ -192,43 +201,47 @@ class GestorArticulo
   private function cargarLista(): void
   {
     $datos = json_decode(file_get_contents('php://input'), true);
-    $listaArticulos = $datos['lista'] ?? [];
-    $id_empresa = $datos['id_empresa'];
 
-    if (empty($listaArticulos)) {
+    $id_empresa   = $datos['id_empresa'] ?? null;
+    $articulos    = $datos['articulos'] ?? [];
+    $proveedores  = $datos['proveedores'] ?? [];
+    $rubros       = $datos['rubros'] ?? [];
+    $marcas       = $datos['marcas'] ?? [];
+
+    if (empty($id_empresa) || empty($articulos)) {
       http_response_code(400);
-      echo json_encode(['error' => 'No se recibieron artículos.']);
+      echo json_encode([
+        'error' => 'Datos incompletos (id_empresa o artículos).'
+      ]);
       return;
-    }
-
-    if (empty($id_empresa)) {
-      http_response_code(400);
-      echo json_encode(['error' => 'No se recibió id_empresa.']);
-      return;
-    }
-
-    // Preparamos los artículos para enviarlos al repositorio
-    $articulosParaRepo = [];
-    foreach ($listaArticulos as $articulo) {
-      $articulosParaRepo[] = [
-        'id' => $articulo['id_articulo'],
-        'id_rubro' => $articulo['nombre_rubro'],
-        'id_empresa' => $id_empresa,
-        'nombre' => $articulo['nombre_articulo'],
-        'precio1' => $articulo['precio1'],
-        'precio2' => $articulo['precio2'],
-        'precio3' => $articulo['precio3'],
-        'no_procesado' => $articulo['no_procesado'] ?? 0,
-      ];
     }
 
     try {
-      // Llamamos al nuevo método del repositorio que recibe todos los artículos
-      $resultado = $this->articuloRepositorio->crearListaCsv($articulosParaRepo);
+
+      // Cargar primero las tablas dependientes
+      $rubrosOk = $this->gestorRubro->cargarLista($rubros, $id_empresa);
+      $marcasOk = $this->gestorMarca->cargarLista($marcas, $id_empresa);
+      $proveedoresOk = $this->gestorProveedor->cargarLista($proveedores, $id_empresa);
+
+      if (!$rubrosOk || !$marcasOk || !$proveedoresOk) {
+        http_response_code(500);
+        echo json_encode([
+          'error' => 'No se pudieron cargar rubros, marcas o proveedores.'
+        ]);
+        return;
+      }
+
+      // Finalmente cargar artículos
+      $resultado = $this->articuloRepositorio->crearListaCsv($articulos, $id_empresa);
+
       $this->borrarCacheTodos($id_empresa);
+
       echo json_encode($resultado);
     } catch (Exception $e) {
-      die($e->getMessage());
+      http_response_code(500);
+      echo json_encode([
+        'error' => $e->getMessage()
+      ]);
     }
   }
 

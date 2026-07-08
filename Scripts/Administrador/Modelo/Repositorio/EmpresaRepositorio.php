@@ -334,7 +334,6 @@ class EmpresaRepositorio
       $this->pdo->beginTransaction();
 
       $this->pdo->prepare("DELETE FROM Moderador WHERE id_empresa = ?")->execute([$id]);
-      $this->pdo->prepare("DELETE FROM Mesero WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM Articulo WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM Rubro WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM horarios_empresa WHERE id_empresa = ?")->execute([$id]);
