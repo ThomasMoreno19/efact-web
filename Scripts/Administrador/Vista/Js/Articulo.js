@@ -52,6 +52,7 @@ class ArticuloVista {
     precio_activo = 1,
     paraClientes = false,
     imagenesEnArticulos = true,
+    seleccionado = false,
   ) {
     const divArticulo = document.createElement("div");
     divArticulo.classList.add("articulo");
@@ -152,6 +153,10 @@ class ArticuloVista {
       divArticulo.appendChild(logoContainer);
     }
     divArticulo.appendChild(contentGroup);
+
+    if (seleccionado) {
+      divArticulo.classList.add("seleccionado");
+    }
 
     return divArticulo;
   }

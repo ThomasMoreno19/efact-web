@@ -50,11 +50,6 @@ class PantallaCliente {
       "boton-lista-proveedores",
     );
     this.botonListaMarcas = document.getElementById("boton-lista-marcas");
-    this.filtroRubro = null;
-    this.filtroProveedor = null;
-    this.filtroMarca = null;
-    this.onBuscarGeneral = this.filtrarArticulos.bind(this);
-    this.onBuscarRubro = null;
     this.onClickVolver = this.eventClickVolver.bind(this);
     this.onClickTelefono = this.eventClickTelefono.bind(this);
     this.onClickModalCarrito = this.abrirModalCarrito.bind(this);
@@ -165,7 +160,6 @@ class PantallaCliente {
     this.eliminarFiltroMarca.onclick = () => this.quitarFiltro("marca");
     this.eliminarFiltroRubro.onclick = () => this.quitarFiltro("rubro");
     this.eliminarFiltroProveedor.onclick = () => this.quitarFiltro("proveedor");
-    this.aplicarColoresAlternados(this.listaArticulos);
     this.loader.classList.add("hidden");
     this.barraBusqueda.classList.remove("hidden");
     this.barraBusquedaCodigoInterno.classList.remove("hidden");
@@ -468,19 +462,22 @@ class PantallaCliente {
   buscarPorNombre(valor) {
     this.filtros.nombre = valor;
 
-    this.actualizarArticulos();
+    if (valor === "") this.botonVolver.click();
+    else this.actualizarArticulos();
   }
 
   buscarPorCodigoProveedor(valor) {
     this.filtros.codigoProveedor = valor;
 
-    this.actualizarArticulos();
+    if (valor === "") this.botonVolver.click();
+    else this.actualizarArticulos();
   }
 
   buscarPorCodigoInterno(valor) {
     this.filtros.codigoInterno = valor;
 
-    this.actualizarArticulos();
+    if (valor === "") this.botonVolver.click();
+    else this.actualizarArticulos();
   }
 
   quitarFiltro(tipo) {
@@ -510,10 +507,8 @@ class PantallaCliente {
     const codigoInterno = this.filtros.codigoInterno.trim();
 
     if (codigoInterno !== "") {
-      articulos = articulos.filter((a) =>
-        // Convertimos a String() para asegurar que .includes funcione,
-        // manejando también los casos donde venga null o undefined
-        String(a.codigo_interno ?? "").includes(codigoInterno),
+      articulos = articulos.filter(
+        (a) => String(a.codigo_interno ?? "") === codigoInterno,
       );
 
       this.mostrarArticulos(articulos);
@@ -560,8 +555,8 @@ class PantallaCliente {
     const codigoProveedor = this.filtros.codigoProveedor.trim();
 
     if (codigoProveedor !== "") {
-      articulos = articulos.filter((a) =>
-        (a.codigo_proveedor ?? "").includes(codigoProveedor),
+      articulos = articulos.filter(
+        (a) => String(a.codigo_proveedor ?? "") === codigoProveedor,
       );
     }
 
@@ -591,84 +586,19 @@ class PantallaCliente {
 
     articulos.forEach((articulo) => {
       const vista = new ArticuloVista(articulo);
+      const estaSeleccionado = this.listaArticulosSeleccionados.some((id) => {
+        if (id) return id === articulo.id;
+      });
 
-      this.listaArticulos.appendChild(vista.mostrarUna(true));
+      this.listaArticulos.appendChild(
+        vista.mostrarUna(
+          1,
+          true,
+          this.empresa.imagenesEnArticulos,
+          estaSeleccionado,
+        ),
+      );
     });
-  }
-
-  filtrarArticulos() {
-    const textoBusqueda = this.normalizarTexto(this.barraBusqueda.value);
-
-    if (textoBusqueda.length === 0) {
-      this.restaurarVistaOriginal();
-      return;
-    }
-
-    this.ocultarRubrosYPrepararLista();
-
-    const listaPlana = this.crearListaPlana(textoBusqueda);
-    this.listaArticulos.appendChild(listaPlana);
-
-    this.aplicarColoresAlternados(listaPlana);
-  }
-
-  /* Oculta rubros y prepara el contenedor principal */
-  ocultarRubrosYPrepararLista() {
-    this.listaRubros.classList.add("hidden");
-    this.listaBotonesListas.classList.add("hidden");
-    this.botonVolver.classList.remove("hidden");
-    this.listaArticulos.classList.remove("hidden");
-
-    document
-      .querySelectorAll(".container-rubro")
-      .forEach((c) => c.classList.add("hidden"));
-
-    const listaPlanaAnterior =
-      this.listaArticulos.querySelector(".lista-plana");
-    if (listaPlanaAnterior) listaPlanaAnterior.remove();
-  }
-
-  crearListaPlana(textoBusqueda) {
-    const listaPlana = document.createElement("div");
-    listaPlana.classList.add("lista-plana");
-
-    this.todosLosArticulos.forEach((articulo) => {
-      const nombre = this.normalizarTexto(articulo.dataset.nombre || "");
-      if (!nombre.includes(textoBusqueda)) return;
-
-      const clon = articulo.cloneNode(true);
-      if (clon.dataset.no_procesado === "0") {
-        clon.addEventListener("click", () => {
-          this.clonesSeleccionados.push(clon);
-          const id = Number(clon.dataset.articuloId);
-          if (!this.listaArticulosSeleccionados.includes(id)) {
-            clon.classList.add("seleccionado");
-            this.listaArticulosSeleccionados.push(id);
-            this.carrito.agregarArticulo(clon, 1);
-            this.seleccionarArticulo(id);
-          } else {
-            this.clonesSeleccionados = this.clonesSeleccionados.filter(
-              (c) => c.dataset.articuloId != id,
-            );
-            clon.classList.remove("seleccionado");
-            this.carrito.eliminarArticulo(id);
-            this.listaArticulosSeleccionados =
-              this.listaArticulosSeleccionados.filter((x) => x !== id);
-            this.sacarArticulo(id);
-          }
-          this.cantidadArticulosCarrito.textContent =
-            this.listaArticulosSeleccionados.length;
-          this.botonCarrito.classList.toggle(
-            "hidden",
-            this.listaArticulosSeleccionados.length === 0,
-          );
-        });
-      }
-
-      listaPlana.appendChild(clon);
-    });
-
-    return listaPlana;
   }
 
   seleccionarArticulo(id) {
@@ -872,7 +802,6 @@ class PantallaCliente {
   }
 
   articuloSeleccionado(articulo) {
-    console.log(articulo);
     const articuloId = articulo.id;
     const precioSeleccionado = articulo.precio1;
     articulo.precio = this.carrito.eliminarPuntoPrecio(precioSeleccionado);
@@ -904,34 +833,6 @@ class PantallaCliente {
     }
     this.cantidadArticulosCarrito.textContent =
       this.listaArticulosSeleccionados.length;
-  }
-
-  articuloSeleccionadoPorId(idArticulo) {
-    const articulo = this.todosLosArticulos.find(
-      (a) => a.dataset.articuloId == idArticulo,
-    );
-    articulo.precio1 = this.carrito.eliminarPuntoPrecio(articulo.precio1);
-    const index = this.listaArticulosSeleccionados.findIndex((id) => {
-      id === articulo.dataset.id;
-    });
-
-    if (index === -1) {
-      this.carrito.agregarArticulo(articulo, 1);
-      this.listaArticulosSeleccionados.push(articulo.dataset.articuloId);
-      articulo.classList.add("seleccionado");
-    } else {
-      this.carrito.eliminarArticulo(articulo.dataset.articuloId);
-      this.listaArticulosSeleccionados.splice(index, 1);
-      articulo?.classList.remove("seleccionado", "pulse");
-      this.removerSeleccionVisual(articulo.dataset.articuloId);
-    }
-
-    this.cantidadArticulosCarrito.textContent =
-      this.listaArticulosSeleccionados.length;
-    this.botonCarrito.classList.toggle(
-      "hidden",
-      this.listaArticulosSeleccionados.length === 0,
-    );
   }
 
   abrirModalCarrito() {
@@ -1000,27 +901,6 @@ class PantallaCliente {
     if (this.listaArticulosSeleccionados.length === 0) {
       this.botonCarrito.classList.add("hidden");
     }
-  }
-
-  /* Aplica colores alternados a los artículos visibles */
-  aplicarColoresAlternados(lista) {
-    let articulos = [];
-
-    if (Array.isArray(lista)) {
-      // Si es un array de elementos ya obtenidos
-      articulos = lista;
-    } else if (lista instanceof HTMLElement) {
-      // Si es un contenedor del DOM
-      articulos = Array.from(lista.querySelectorAll(".articulo"));
-    } else {
-      console.warn("aplicarColoresAlternados: argumento no válido", lista);
-      return;
-    }
-
-    articulos.forEach((a, i) => {
-      a.classList.toggle("fondo-par", i % 2 === 0);
-      a.classList.toggle("fondo-impar", i % 2 === 1);
-    });
   }
 
   eventClickVolver(e) {

@@ -442,8 +442,7 @@ class PantallaModerador {
         this.loader.classList.add("hidden");
         this.listaArticulos.classList.remove("hidden");
       } catch (error) {
-        if (error.value == "Error al procesar el archivo:")
-          this.mensajeError(modalContent, error);
+        this.mensajeError(modalContent, error);
       }
     });
   }
