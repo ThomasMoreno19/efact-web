@@ -13,7 +13,7 @@ class MarcaRepositorio
     $marcas = [];
     try {
       $stmt = $this->pdo->prepare(
-        "SELECT id, nombre FROM marca WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
+        "SELECT id, nombre, abreviatura, logo_url FROM marca WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
@@ -21,6 +21,8 @@ class MarcaRepositorio
         $marcas[] = [
           'id'        => $data['id'],
           'nombre'    => $data['nombre'],
+          'abreviatura' => $data['abreviatura'],
+          'logo_url' => $data['logo_url'],
         ];
       }
     } catch (PDOException $e) {
@@ -55,6 +57,7 @@ class MarcaRepositorio
       $unicos[$a['id_marca']] = [
         'id' => $a['id_marca'],
         'nombre' => $a['nombre_marca'],
+        'abreviatura' => $a['abreviatura_marca'],
         'id_empresa' => $id_empresa
       ];
     }
@@ -65,17 +68,19 @@ class MarcaRepositorio
     $params = [];
     $i = 0;
     foreach ($unicos as $r) {
-      $values[] = "(:id$i, :id_empresa$i, :nombre$i, 1)";
+      $values[] = "(:id$i, :id_empresa$i, :nombre$i, :abreviatura$i, 1)";
       $params[":id$i"] = $r['id'];
       $params[":id_empresa$i"] = $id_empresa;
       $params[":nombre$i"] = $r['nombre'];
+      $params[":abreviatura$i"] = $r['abreviatura'];
       $i++;
     }
 
-    $sql = "INSERT INTO Marca (id, id_empresa, nombre, aparece_en_csv)
+    $sql = "INSERT INTO Marca (id, id_empresa, nombre, abreviatura, aparece_en_csv)
           VALUES " . implode(', ', $values) . "
           ON DUPLICATE KEY UPDATE
               nombre = VALUES(nombre),
+              abreviatura = VALUES(abreviatura),
               id_empresa = VALUES(id_empresa),
               aparece_en_csv = 1;";
 
@@ -135,5 +140,29 @@ class MarcaRepositorio
       error_log("Error al eliminar marca (PDOException): " . $e->getMessage());
       return false;
     }
+  }
+
+  public function modificar(int $id, int $id_empresa, string $nombre, string $logo_url): bool
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "UPDATE Marca
+                 SET nombre = :nombre,
+                 logo_url = :logo_url
+                 WHERE id = :id AND id_empresa = :id_empresa;"
+      );
+
+      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+      $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+      $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
+
+      if ($stmt->execute()) {
+        return true;
+      }
+    } catch (PDOException $e) {
+      error_log("Error al guardar nuevo marca: " . $e->getMessage());
+    }
+    return false;
   }
 }

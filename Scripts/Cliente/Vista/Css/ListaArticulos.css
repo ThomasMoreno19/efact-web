@@ -2,9 +2,16 @@
 
 /* --- Estilos para la tarjeta de empresa individual (.empresa-item) --- */
 .listas {
-  background-color: transparent;
+  background-color: #181818;
   border-radius: 8px;
   margin-bottom: 5px;
+  padding: 20px 0px;
+}
+
+#lista-botones-listas {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
 }
 
 .botones-lista-clientes {
@@ -20,20 +27,32 @@
   color: rgba(255, 255, 255, 0.722);
   padding: 10px 12px;
   border: none;
-  margin-bottom: -5px;
+  margin-bottom: -2px;
   border-radius: 8px;
   cursor: pointer;
   font-size: 15px;
   box-shadow: none;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
 }
 
 .activo-cliente {
-  color: #ffffff;
+  color: #e9b44c;
+  fill: #ffffff;
   font-weight: bold;
 }
 
+#boton-lista-articulos .activo-cliente {
+  fill: #e9b44c;
+}
+
 .lista-central {
-  margin: 250px auto 0px;
+  margin: 220px auto 0px;
+}
+
+#boton-lista-articulos {
+  margin-left: 15px;
 }
 
 #lista-vacia {
@@ -45,17 +64,18 @@
 
 .botones-lista-cliente {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: flex-start;
   margin-bottom: -5px;
-  gap: 30px;
+  gap: 15px;
 }
 
 #lista-botones-filtros {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  width: fit-content;
   justify-content: flex-start;
-  gap: 5px;
+  gap: 10px;
 }
 
 .nombre-filtro {
@@ -68,6 +88,7 @@
   flex-direction: row;
   justify-content: flex-start;
   gap: 8px;
+  width: fit-content;
 }
 
 .filtro {
@@ -102,12 +123,20 @@
 
 /* Elementos IMPARES (1, 3, 5...) */
 #lista-articulos > *:nth-child(odd) {
-  background-color: #1d1d1d; /* O el color que prefieras */
+  background-color: transparent; /* O el color que prefieras */
 }
 
 /* Elementos PARES (2, 4, 6...) */
 #lista-articulos > *:nth-child(even) {
   background-color: #2e2e2e; /* Color de fondo alternativo */
+}
+
+.lista-grupos > *:nth-child(odd) {
+  background-color: transparent; /* Color de fondo alternativo */
+}
+
+.lista-grupos > *:nth-child(even) {
+  background-color: #2e2e2e; /* O el color que prefieras */
 }
 
 .articulo-logo {
@@ -327,9 +356,9 @@ p.descripcion {
   gap: 20px;
 }
 
-#marca-articulo {
-  font-size: 14px;
-  color: #ffffff7f;
+.info-articulo {
+  font-size: 14px !important;
+  color: #ffffff7f !important;
 }
 
 #proveedor-articulo {

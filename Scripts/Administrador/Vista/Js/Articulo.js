@@ -14,6 +14,7 @@ class ArticuloVista {
       precio2,
       precio3,
       no_procesado,
+      ubicacion = "",
       seleccionado = false,
       video_url = null,
       logo_url = null,
@@ -30,6 +31,7 @@ class ArticuloVista {
     this.precio1 = precio1;
     this.precio2 = precio2;
     this.precio3 = precio3;
+    this.ubicacion = ubicacion;
     this.seleccionado = seleccionado;
     this.no_procesado = no_procesado;
     this.video_url = video_url;
@@ -53,6 +55,7 @@ class ArticuloVista {
     paraClientes = false,
     imagenesEnArticulos = true,
     seleccionado = false,
+    esInterno = false,
   ) {
     const divArticulo = document.createElement("div");
     divArticulo.classList.add("articulo");
@@ -62,6 +65,7 @@ class ArticuloVista {
     divArticulo.dataset.precio2 = this.precio2;
     divArticulo.dataset.precio3 = this.precio3;
     divArticulo.dataset.no_procesado = this.no_procesado;
+    divArticulo.dataset.codigo_barra = this.codigo_barra;
 
     const infoContainer = document.createElement("div");
     infoContainer.classList.add("articulo-info");
@@ -75,16 +79,28 @@ class ArticuloVista {
 
     const pMarca = document.createElement("p");
     pMarca.id = "marca-articulo";
+    pMarca.classList.add("info-articulo");
     pMarca.textContent = this.marca;
 
-    const pProveedor = document.createElement("p");
-    pProveedor.id = "proveedor-articulo";
-    pProveedor.textContent = this.proveedor;
+    if (esInterno) {
+      const pExistencia = document.createElement("p");
+      pExistencia.id = "existencia-articulo";
+      pExistencia.classList.add("info-articulo");
+      pExistencia.textContent = this.existencia;
+      infoMarcaProv.appendChild(pExistencia);
+    }
 
     infoMarcaProv.appendChild(pMarca);
-    infoMarcaProv.appendChild(pProveedor);
     infoContainer.appendChild(pNombre);
     infoContainer.appendChild(infoMarcaProv);
+
+    if (this.ubicacion && esInterno) {
+      const pUbicacion = document.createElement("p");
+      pUbicacion.id = "ubicacion-articulo";
+      pUbicacion.classList.add("info-articulo");
+      pUbicacion.textContent = "Ubicacion:" + this.ubicacion;
+      infoMarcaProv.appendChild(pUbicacion);
+    }
 
     const precioActual = this[`precio${precio_activo}`] ?? this.precio1;
     const pPrecio = document.createElement("p");

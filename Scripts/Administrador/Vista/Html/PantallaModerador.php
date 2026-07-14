@@ -35,28 +35,8 @@
     <div class="botones-lista">
       <button class="boton-lista activo" type="button" id="boton-mostrar-articulos">Artículos</button>
       <button class="boton-lista" type="button" id="boton-mostrar-rubros">Rubros</button>
-    </div>
-
-    <div id="contenedor-busqueda" class="contenedor-busqueda">
-
-      <input
-        type="text"
-        id="barra-busqueda"
-        class="barra hidden"
-        placeholder="Buscar artículos" />
-
-      <svg
-        class="icono-busqueda"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M15.7955 15.8111L21 21M18 10.5C18 14.6421 14.6421 18 10.5 18C6.35786 18 3 14.6421 3 10.5C3 6.35786 6.35786 3 10.5 3C14.6421 3 18 6.35786 18 10.5Z"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round" />
-      </svg>
+      <button class="boton-lista" type="button" id="boton-mostrar-proveedores">Proveedores</button>
+      <button class="boton-lista" type="button" id="boton-mostrar-marcas">Marcas</button>
     </div>
 
     <div class="loader" id="loader">
@@ -71,12 +51,16 @@
     <div class="listas">
       <div class="lista" id="lista-articulos"></div>
       <div class="lista" id="lista-rubros"></div>
+      <div class="lista" id="lista-proveedores"></div>
+      <div class="lista" id="lista-marcas"></div>
     </div>
   </div>
 
   <script src="/Scripts/Administrador/Vista/Js/Articulo.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Empresa.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Rubro.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Proveedor.js?v=<?php echo APP_VERSION; ?>"></script>
+  <script src="/Scripts/Administrador/Vista/Js/Marca.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Moderador.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Moderador/PantallaModerador.js?v=<?php echo APP_VERSION; ?>"></script>
   <script src="/Scripts/Administrador/Vista/Js/Moderador/GestorModerador.js?v=<?php echo APP_VERSION; ?>"></script>

@@ -28,6 +28,14 @@ class GestorMarca
         $this->crear();
         break;
 
+      case 'modificar':
+        $this->modificar();
+        break;
+
+      case 'subir-logo':
+        $this->subirLogo();
+        break;
+
       default:
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para marca.']);
@@ -108,7 +116,7 @@ class GestorMarca
   private function borrarCacheTodos(int $id_empresa): void
   {
     $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/";
-    $pattern = $cacheDir . "marca_empresa_{$id_empresa}.json";
+    $pattern = $cacheDir . "catalogos_empresa_{$id_empresa}.json";
 
     $archivos = glob($pattern);
     if ($archivos) {
@@ -119,13 +127,63 @@ class GestorMarca
       }
     }
 
-    $cacheEmpresa = $cacheDir . "marca_empresa_{$id_empresa}.json";
-    $cacheCliente = $cacheDir . "marca_empresa_{$id_empresa}_cliente.json";
+    $cacheEmpresa = $cacheDir . "catalogos_empresa_{$id_empresa}.json";
+    $cacheCliente = $cacheDir . "catalogos_empresa_{$id_empresa}_cliente.json";
     if (file_exists($cacheEmpresa)) {
       @unlink($cacheEmpresa);
     }
     if (file_exists($cacheCliente)) {
       @unlink($cacheCliente);
+    }
+  }
+
+  private function modificar(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id = $datos['id'];
+    $id_empresa = $datos['id_empresa'];
+    $nombre = $datos['nombre'];
+    $logo_url = $datos['logo_url'];
+
+    if ((is_null($nombre) && is_null($id_empresa))) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Faltan datos válidos para modificar la empresa con el id recibido']);
+      return;
+    }
+
+    try {
+      $marcaModificado = $this->marcaRepositorio->modificar($id, $id_empresa, $nombre, $logo_url);
+      $this->borrarCacheTodos($id_empresa);
+      echo json_encode($marcaModificado);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al modificar la empresa: ' . $e->getMessage()]);
+    }
+  }
+
+  private function subirLogo(): void
+  {
+
+    if (empty($_FILES['imagen']['tmp_name'])) {
+      http_response_code(400);
+      echo json_encode(['error' => 'No se ha enviado ningún archivo.']);
+      return;
+    }
+
+    $directorioDestino = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/Marca/';
+    $nombreOriginal = basename($_FILES['imagen']['name']);
+    $nombreSinEspacios = str_replace(' ', '-', $nombreOriginal); // Reemplaza espacios por guiones
+    $nombreArchivo = uniqid() . '-' . $nombreSinEspacios;
+    $rutaDestino = $directorioDestino . $nombreArchivo;
+
+    if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
+      //Devuelve la ruta donde se guardó la imagen, para que la guarden en la BD
+      $url = '/Archivos/Logos/Marca/' . $nombreArchivo;
+      echo json_encode(['url' => $url]);
+    } else {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al mover el archivo subido.']);
     }
   }
 }

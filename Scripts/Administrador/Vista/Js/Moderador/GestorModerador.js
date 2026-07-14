@@ -16,15 +16,6 @@ class GestorModerador {
     return await response.json();
   }
 
-  // El método mostrarListaEmpresas ahora solo devuelve los datos, sin manipular el DOM
-  async mostrarListaArticulos(id_rubro, id_empresa) {
-    return await this.llamadaAlBackend(
-      `/articulo/mostrar`,
-      { id_rubro },
-      id_empresa,
-    );
-  }
-
   async mostrarListaArticulosPorEmpresa(id_empresa) {
     return await this.llamadaAlBackend(
       `/articulo/mostrar/empresa`,
@@ -33,25 +24,9 @@ class GestorModerador {
     );
   }
 
-  async mostrarListaRubros(id_empresa) {
+  async mostrarListaGrupos(id_empresa) {
     return await this.llamadaAlBackend(
-      `/rubro/mostrar`,
-      { id_empresa },
-      id_empresa,
-    );
-  }
-
-  async mostrarListaMarcas(id_empresa) {
-    return await this.llamadaAlBackend(
-      `/marca/mostrar`,
-      { id_empresa },
-      id_empresa,
-    );
-  }
-
-  async mostrarListaProveedores(id_empresa) {
-    return await this.llamadaAlBackend(
-      `/proveedor/mostrar`,
+      `/rubro/mostrar/para-cliente`,
       { id_empresa },
       id_empresa,
     );
@@ -223,6 +198,7 @@ class GestorModerador {
               precio2: parseFloat(fila[9]) || 0,
               precio3: parseFloat(fila[10]) || 0,
               existencia: parseFloat(fila[12]) || 0,
+              ubicacion: fila[15]?.trim() ?? "",
               no_procesado: noProcesado,
             });
           });
@@ -236,6 +212,7 @@ class GestorModerador {
             proveedores.push({
               id_proveedor: fila[0],
               nombre_proveedor: fila[1]?.trim() ?? "",
+              abreviatura_proveedor: fila[2]?.trim() ?? "",
             });
           });
 
@@ -248,6 +225,7 @@ class GestorModerador {
             rubros.push({
               id_rubro: fila[0],
               nombre_rubro: fila[1]?.trim() ?? "",
+              abreviatura_rubro: fila[2]?.trim() ?? "",
             });
           });
 
@@ -260,6 +238,7 @@ class GestorModerador {
             marcas.push({
               id_marca: fila[0],
               nombre_marca: fila[1]?.trim() ?? "",
+              abreviatura_marca: fila[2]?.trim() ?? "",
             });
           });
 
@@ -461,6 +440,92 @@ class GestorModerador {
 
     try {
       const response = await fetch(`/rubro/modificar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al modificar rubro" }));
+        throw new Error(
+          errorData.message ||
+            `Error al modificar el rubro: ${response.status}`,
+        );
+      }
+
+      // El backend debe devolver el objeto del nuevo rubro modificado.
+      return await response.json();
+    } catch (error) {
+      console.error("Error al modificar articulo:", error);
+      throw error;
+    }
+  }
+
+  async modificarMarca(id, id_empresa, nombre, archivoImagen, logo_url = "") {
+    let urlLogoEmpresa = logo_url;
+
+    // Solo subir imagen si se proporcionó una nueva
+    if (archivoImagen) {
+      urlLogoEmpresa = await this.subirImagen(archivoImagen, logo_url);
+    }
+
+    const bodyData = {
+      id: id,
+      id_empresa: id_empresa,
+      nombre: nombre,
+      logo_url: urlLogoEmpresa,
+    };
+
+    try {
+      const response = await fetch(`/marca/modificar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al modificar marca" }));
+        throw new Error(
+          errorData.message ||
+            `Error al modificar el rubro: ${response.status}`,
+        );
+      }
+
+      // El backend debe devolver el objeto del nuevo rubro modificado.
+      return await response.json();
+    } catch (error) {
+      console.error("Error al modificar articulo:", error);
+      throw error;
+    }
+  }
+
+  async modificarProveedor(
+    id,
+    id_empresa,
+    nombre,
+    archivoImagen,
+    logo_url = "",
+  ) {
+    let urlLogoEmpresa = logo_url;
+
+    // Solo subir imagen si se proporcionó una nueva
+    if (archivoImagen) {
+      urlLogoEmpresa = await this.subirImagen(archivoImagen, logo_url);
+    }
+
+    const bodyData = {
+      id: id,
+      id_empresa: id_empresa,
+      nombre: nombre,
+      logo_url: urlLogoEmpresa,
+    };
+
+    try {
+      const response = await fetch(`/proveedor/modificar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),

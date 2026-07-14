@@ -1,10 +1,10 @@
-// Scripts/Administrador/Vista/Js/PantallaModerador.js
 class PantallaModerador {
   constructor() {
-    // Inicializamos el Gestor y los elementos del DOM
     this.gestor = new GestorModerador();
     this.listaArticulos = document.getElementById("lista-articulos");
     this.listaRubros = document.getElementById("lista-rubros");
+    this.listaProveedores = document.getElementById("lista-proveedores");
+    this.listaMarcas = document.getElementById("lista-marcas");
     this.listaCentral = document.getElementById("lista-central");
     this.articuloSeleccionado = null;
     this.horariosGuardados = [];
@@ -19,25 +19,27 @@ class PantallaModerador {
       "boton-cargar-articulos",
     );
 
-    this.botonModificarCafeteria = document.getElementById(
-      "modificar-cafeteria",
+    this.botonListaProveedores = document.getElementById(
+      "boton-mostrar-proveedores",
     );
 
-    this.barraBusqueda = document.getElementById("barra-busqueda");
-    this.contenedorBarraBusqueda = document.getElementById(
-      "contenedor-busqueda",
+    this.botonListaMarcas = document.getElementById("boton-mostrar-marcas");
+
+    this.botonModificarCafeteria = document.getElementById(
+      "modificar-cafeteria",
     );
     this.tituloPagina = document.getElementById("titulo-pagina");
     this.loader = document.getElementById("loader");
     window.gestorDeArticulosCallback = (articulo) =>
       this.modalArticuloSeleccionado(articulo);
-    window.gestorDeRubrosCallback = (rubro) => {
-      this.modalRubroSeleccionado(rubro);
-    };
 
     this.agregarEventListeners();
     this.todosLosArticulos = [];
     this.arrayContainerRubro = [];
+
+    this.todosLosRubros = [];
+    this.todasLasMarcas = [];
+    this.todosLosProveedores = [];
   }
 
   async init() {
@@ -99,34 +101,21 @@ class PantallaModerador {
   }
 
   agregarEventListeners() {
-    if (this.botonListaArticulos && this.botonListaRubros) {
-      this.botonListaArticulos.addEventListener("click", () => {
-        if (this.loader.classList.contains("hidden")) {
-          this.botonListaArticulos.classList.add("activo");
-          this.botonListaRubros.classList.remove("activo");
-          this.listaRubros.classList.add("hidden");
-          this.listaArticulos.classList.remove("hidden");
-          this.barraBusqueda.classList.remove("hidden");
-          this.contenedorBarraBusqueda.classList.remove("hidden");
-        }
-      });
+    this.botonListaArticulos.onclick = () => {
+      this.mostrarTipo("articulo");
+    };
 
-      this.botonListaRubros.addEventListener("click", () => {
-        if (this.loader.classList.contains("hidden")) {
-          this.botonListaArticulos.classList.remove("activo");
-          this.botonListaRubros.classList.add("activo");
-          this.listaRubros.classList.remove("hidden");
-          this.listaArticulos.classList.add("hidden");
-          this.barraBusqueda.classList.add("hidden");
-          this.contenedorBarraBusqueda.classList.add("hidden");
-        }
-      });
-    }
-    if (this.barraBusqueda) {
-      this.barraBusqueda.addEventListener("input", () =>
-        this.filtrarArticulos(),
-      );
-    }
+    this.botonListaRubros.onclick = () => {
+      this.mostrarTipo("rubro");
+    };
+
+    this.botonListaProveedores.onclick = () => {
+      this.mostrarTipo("proveedor");
+    };
+
+    this.botonListaMarcas.onclick = () => {
+      this.mostrarTipo("marca");
+    };
     this.botonCargarArticulos.addEventListener("click", () => {
       if (this.empresa.deshabilitarExcel) return;
       this.abrirModalCargarArticulos();
@@ -138,14 +127,10 @@ class PantallaModerador {
     });
   }
 
-  async habilitarVentanaPrincipal() {
+  async habilitarVentanaPrincipal(tipo = "articulo") {
     this.loader.classList.remove("hidden");
-    await this.mostrarLista(this.listaRubros);
-    this.listaRubros.classList.add("hidden");
-    this.listaArticulos.classList.add("hidden");
-    await this.mostrarLista(this.listaArticulos);
+    await this.mostrarLista(tipo);
     this.loader.classList.add("hidden");
-    this.listaArticulos.classList.remove("hidden");
   }
 
   clickFuera(modal) {
@@ -164,113 +149,80 @@ class PantallaModerador {
     });
   }
 
-  async mostrarLista(lista) {
-    if (!lista) return;
-
+  async mostrarLista(tipo = null) {
     try {
-      let esArticulo = lista === this.listaArticulos;
-      lista.innerHTML = ""; // Limpiar la lista antes de cargar nuevos datos
+      this.listaRubros.innerHTML = "";
+      this.listaArticulos.innerHTML = "";
+      this.listaProveedores.innerHTML = "";
+      this.listaMarcas.innerHTML = "";
+      const listaGrupos = await this.gestor.mostrarListaGrupos(this.empresa.id);
 
-      if (esArticulo) {
-        // 1. Obtener la lista de todos los rubros
-        const marcasRecibidas = await this.gestor.mostrarListaMarcas(
-          this.empresa.id,
-        );
-        const proveedoresRecibidos = await this.gestor.mostrarListaProveedores(
-          this.empresa.id,
-        );
-        const rubrosRecibidos = await this.gestor.mostrarListaRubros(
-          this.empresa.id,
-        );
-        const articulosRecibidos =
-          await this.gestor.mostrarListaArticulosPorEmpresa(this.empresa.id);
-        const articulosPorRubro = articulosRecibidos.reduce((acc, articulo) => {
-          const idRubro = String(articulo.id_rubro);
-          if (!acc[idRubro]) {
-            acc[idRubro] = [];
-          }
-          acc[idRubro].push(articulo);
-          return acc;
-        }, {});
+      this.todosLosRubros = listaGrupos.rubros ?? [];
+      this.todosLosRubros.forEach((rubro) => {
+        const vista = new RubroVista(rubro);
+        const elemento = vista.mostrarUno(true);
+        elemento.onclick = () => this.abrirModalModificarRubro(vista);
 
-        if (rubrosRecibidos.length === 0) {
-          lista.innerHTML = `<p class="texto-vacio"> No se encontraron artículos. </p>`;
-          return;
-        }
+        this.listaRubros.appendChild(elemento);
+      });
 
-        // 2. Iterar sobre cada rubro
-        for (const rubroArray of rubrosRecibidos) {
-          const id_rubro = rubroArray["id"];
-          const nombre_rubro = rubroArray["nombre"];
+      this.todasLasMarcas = listaGrupos.marcas ?? [];
+      this.todasLasMarcas.forEach((marca) => {
+        const vista = new MarcaVista(marca);
+        const elemento = vista.mostrarUno(true);
+        elemento.onclick = () => this.abrirModalModificarMarca(vista);
 
-          // Crear el contenedor para el rubro
-          const containerRubro = document.createElement("div");
-          containerRubro.classList.add("container-rubro");
+        this.listaMarcas.appendChild(elemento);
+      });
 
-          // Crear y agregar el título del rubro
-          const nombreRubroTitulo = document.createElement("h2");
-          nombreRubroTitulo.classList.add("titulo-rubro");
-          nombreRubroTitulo.textContent = nombre_rubro;
-          containerRubro.appendChild(nombreRubroTitulo);
+      this.todosLosProveedores = listaGrupos.proveedores ?? [];
+      this.todosLosProveedores.forEach((proveedor) => {
+        const vista = new ProveedorVista(proveedor);
+        const elemento = vista.mostrarUno(true);
+        elemento.onclick = () => this.abrirModalModificarProveedor(vista);
 
-          // 3. Obtener la lista de artículos para el rubro actual (cargada en bloque)
-          const listaArticulosRecibidos =
-            articulosPorRubro[String(id_rubro)] || [];
+        this.listaProveedores.appendChild(elemento);
+      });
+      this.todosLosArticulos =
+        await this.gestor.mostrarListaArticulosPorEmpresa(this.empresa.id);
+      this.todosLosArticulos.forEach((articulo) => {
+        const vista = new ArticuloVista(articulo);
+        const elemento = vista.mostrarUna(true);
+        elemento.onclick = () => this.mostrarConfigurar(articulo, "articulo");
 
-          // 4. Crear un contenedor para los artículos dentro del rubro
-          const listaArticulosDiv = document.createElement("div");
-          listaArticulosDiv.classList.add("lista-articulos-rubro");
+        this.listaArticulos.appendChild(elemento);
+      });
 
-          // Iterar sobre los artículos y crear sus vistas
-          if (listaArticulosRecibidos.length > 0) {
-            for (const articulo of listaArticulosRecibidos) {
-              const articuloRecibido = new ArticuloVista(articulo);
-              // ✅ Corregido: Crear el elemento solo una vez
-              const elementoArticulo = articuloRecibido.mostrarUna(
-                null,
-                null,
-                this.empresa.imagenesEnArticulos,
-              );
-
-              // ✅ Agregarlo al DOM
-              listaArticulosDiv.appendChild(elementoArticulo);
-
-              // ✅ Y luego, guardar la misma referencia en el array
-              this.todosLosArticulos.push(elementoArticulo);
-              this.arrayContainerRubro.push(containerRubro);
-            }
-          } else {
-            const noArticulosMsg = document.createElement("p");
-            noArticulosMsg.textContent = "No hay artículos en este rubro.";
-            listaArticulosDiv.appendChild(noArticulosMsg);
-          }
-
-          // Agregar la lista de artículos al contenedor del rubro
-          containerRubro.appendChild(listaArticulosDiv);
-
-          // Agregar el contenedor del rubro a la lista principal
-          lista.appendChild(containerRubro);
-        }
-      } else {
-        // Lógica para mostrar solo los rubros (moderadores)
-        const rubrosRecibidos = await this.gestor.mostrarListaRubros(
-          this.empresa.id,
-        );
-        if (rubrosRecibidos.length === 0) {
-          lista.innerHTML = `<p class="texto-vacio"> No se encontraron rubros. </p>`;
-        } else {
-          rubrosRecibidos.forEach((rubroArray) => {
-            const rubroRecibido = new RubroVista(rubroArray);
-            lista.appendChild(rubroRecibido.mostrarUno());
-          });
-        }
-      }
-      await this.aplicarColoresAlternados(lista);
-      this.barraBusqueda.classList.remove("hidden");
-      this.contenedorBarraBusqueda.classList.remove("hidden");
+      if (tipo) this.mostrarTipo(tipo);
     } catch (error) {
       console.error("Error en mostrarLista:", error);
       lista.innerHTML = `<p class="texto-error"> Error al cargar los datos: ${error.message}. Por favor, recargue la página. </p>`;
+    }
+  }
+
+  mostrarTipo(tipo) {
+    this.listaRubros.classList.add("hidden");
+    this.listaArticulos.classList.add("hidden");
+    this.listaProveedores.classList.add("hidden");
+    this.listaMarcas.classList.add("hidden");
+
+    this.botonListaRubros.classList.remove("activo");
+    this.botonListaArticulos.classList.remove("activo");
+    this.botonListaProveedores.classList.remove("activo");
+    this.botonListaMarcas.classList.remove("activo");
+
+    if (tipo === "rubro") {
+      this.listaRubros.classList.remove("hidden");
+      this.botonListaRubros.classList.add("activo");
+    } else if (tipo === "articulo") {
+      this.listaArticulos.classList.remove("hidden");
+      this.botonListaArticulos.classList.add("activo");
+    } else if (tipo === "proveedor") {
+      this.listaProveedores.classList.remove("hidden");
+      this.botonListaProveedores.classList.add("activo");
+    } else if (tipo === "marca") {
+      this.listaMarcas.classList.remove("hidden");
+      this.botonListaMarcas.classList.add("activo");
     }
   }
 
@@ -294,75 +246,6 @@ class PantallaModerador {
 
     botonModificarArticulo.addEventListener("click", () => {
       this.abrirModalModificarArticulo(modal);
-    });
-  }
-
-  async modalRubroSeleccionado(rubro) {
-    if (this.empresa.deshabilitarExcel) return;
-    const modal = rubro.modalConfigurar();
-    this.rubroSeleccionado = rubro;
-    // Agregamos un ID al modal para poder identificarlo
-    document.body.appendChild(modal);
-
-    this.clickFuera(modal);
-
-    const botonModificar = document.getElementById("modificar");
-    const botonSubirVideo = document.getElementById("boton-subir-video-rubro");
-
-    botonModificar.addEventListener("click", () => {
-      this.modalRubroModificar(rubro);
-    });
-
-    botonSubirVideo.addEventListener("click", () => {
-      this.abrirModalSubirVideoRubro(rubro);
-    });
-  }
-
-  async modalRubroModificar(rubro) {
-    if (this.empresa.deshabilitarExcel) return;
-    const Rubro = new RubroVista(rubro);
-    const modal = rubro.modalModificar(rubro.nombre);
-
-    // Agregamos un ID al modal para poder identificarlo
-    document.body.appendChild(modal);
-
-    this.clickFuera(modal);
-
-    const form = document.getElementById("form-modificar-rubro");
-    const botonEnviarDatos = document.getElementById("boton-modificar-rubro");
-    botonEnviarDatos.addEventListener("click", async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const nombre = formData.get("nombre");
-      let imagen = formData.get("imagen");
-      if (!imagen || imagen.size === 0) {
-        imagen = null;
-      }
-
-      try {
-        // Llamamos al método del gestor con el nombre y el archivo.
-        const rubroModificado = await this.gestor.modificarRubro(
-          rubro.id,
-          rubro.id_empresa,
-          nombre,
-          imagen,
-          rubro.logo_url,
-        );
-        if (rubroModificado) {
-          document.body.removeChild(modal);
-          await this.habilitarVentanaPrincipal();
-          this.listaArticulos.classList.add("hidden");
-          this.listaRubros.classList.remove("hidden");
-          this.botonListaRubros.classList.add("activo");
-          this.botonListaArticulos.classList.remove("activo");
-          this.barraBusqueda.classList.add("hidden");
-          this.contenedorBarraBusqueda.classList.add("hidden");
-        } else {
-          document.body.appendChild(modal);
-        }
-      } catch (error) {
-        alert(`Error: ${error.message}`);
-      }
     });
   }
 
@@ -410,6 +293,114 @@ class PantallaModerador {
     });
   }
 
+  abrirModalModificarRubro(rubro) {
+    const modal = rubro.modalModificar();
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+
+    const form = modal.querySelector("#form-modificar-rubro");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      let imagen = formData.get("imagen");
+      if (!imagen || imagen.size === 0) {
+        imagen = null;
+      }
+
+      try {
+        await this.gestor.modificarRubro(
+          rubro.id,
+          this.empresa.id,
+          formData.get("nombre"),
+          imagen,
+          rubro.logo_url,
+        );
+
+        document.body.removeChild(modal);
+        await this.habilitarVentanaPrincipal("rubro");
+      } catch (error) {
+        alert("Error al modificar: " + error.message);
+      }
+    });
+  }
+
+  abrirModalModificarMarca(marca) {
+    const modal = marca.modalModificar();
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+
+    const form = modal.querySelector("#form-modificar-marca");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      let imagen = formData.get("imagen");
+      if (!imagen || imagen.size === 0) {
+        imagen = null;
+      }
+
+      try {
+        await this.gestor.modificarMarca(
+          marca.id,
+          this.empresa.id,
+          formData.get("nombre"),
+          imagen,
+          marca.logo_url,
+        );
+
+        document.body.removeChild(modal);
+        await this.habilitarVentanaPrincipal("marca");
+      } catch (error) {
+        alert("Error al modificar: " + error.message);
+      }
+    });
+  }
+
+  abrirModalModificarProveedor(proveedor) {
+    const modal = proveedor.modalModificar();
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+
+    const form = modal.querySelector("#form-modificar-proveedor");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      let imagen = formData.get("imagen");
+      if (!imagen || imagen.size === 0) {
+        imagen = null;
+      }
+
+      try {
+        await this.gestor.modificarProveedor(
+          proveedor.id,
+          this.empresa.id,
+          formData.get("nombre"),
+          imagen,
+          proveedor.logo_url,
+        );
+
+        document.body.removeChild(modal);
+        await this.habilitarVentanaPrincipal("proveedor");
+      } catch (error) {
+        alert("Error al modificar: " + error.message);
+      }
+    });
+  }
+
   abrirModalCargarArticulos() {
     const modal = this.modalCargarArticulos();
     document.body.appendChild(modal);
@@ -437,8 +428,7 @@ class PantallaModerador {
         this.loader.classList.remove("hidden");
         this.listaRubros.classList.add("hidden");
         this.listaArticulos.classList.add("hidden");
-        await this.mostrarLista(this.listaRubros);
-        await this.mostrarLista(this.listaArticulos);
+        await this.mostrarLista();
         this.loader.classList.add("hidden");
         this.listaArticulos.classList.remove("hidden");
       } catch (error) {
@@ -593,7 +583,7 @@ class PantallaModerador {
         // Actualización de la vista si es necesario
         this.loader.classList.remove("hidden");
         this.listaArticulos.classList.add("hidden");
-        await this.mostrarLista(this.listaArticulos);
+        await this.mostrarLista();
         this.loader.classList.add("hidden");
         this.listaArticulos.classList.remove("hidden");
       } catch (error) {
@@ -632,7 +622,7 @@ class PantallaModerador {
         // Actualización de la vista si es necesario
         this.loader.classList.remove("hidden");
         this.listaRubros.classList.add("hidden");
-        await this.mostrarLista(this.listaRubros);
+        await this.mostrarLista();
         this.loader.classList.add("hidden");
         this.listaRubros.classList.remove("hidden");
       } catch (error) {
@@ -737,7 +727,7 @@ class PantallaModerador {
           imagenesEnArticulos,
           incluirHorarios,
         );
-        this.mostrarLista(this.listaArticulos);
+        this.mostrarLista();
         modal.classList.add("hidden");
         document.body.removeChild(modal);
         this.listaCentral.classList.remove("hidden");
@@ -1057,48 +1047,6 @@ class PantallaModerador {
     );
   }
 
-  filtrarArticulos() {
-    const textoBusqueda = this.normalizarTexto(this.barraBusqueda.value);
-
-    if (textoBusqueda.length === 0) {
-      this.volverAtras();
-      this.todosLosArticulos.forEach((articulo) =>
-        articulo.classList.remove("hidden"),
-      );
-      this.arrayContainerRubro.forEach((rubro) =>
-        rubro.classList.remove("hidden"),
-      );
-      this.aplicarColoresAlternados(this.listaArticulos);
-      return;
-    }
-
-    this.todosLosArticulos.forEach((articulo) => {
-      const nombreArticulo = articulo.dataset.nombre.toLowerCase();
-      const containerRubro = articulo.closest(".container-rubro");
-
-      // Mostrar u ocultar el artículo
-      if (nombreArticulo.includes(textoBusqueda)) {
-        articulo.classList.remove("hidden");
-        containerRubro.classList.remove("hidden");
-      } else {
-        articulo.classList.add("hidden");
-      }
-    });
-
-    // Mostrar u ocultar el contenedor del rubro si todos sus artículos están ocultos
-    document.querySelectorAll(".container-rubro").forEach((containerRubro) => {
-      const articulosVisibles = containerRubro.querySelectorAll(
-        ".articulo:not(.hidden)",
-      ).length;
-      if (articulosVisibles === 0) {
-        containerRubro.classList.add("hidden");
-      } else {
-        containerRubro.classList.remove("hidden");
-      }
-    });
-    this.aplicarColoresAlternados(this.listaArticulos);
-  }
-
   volverAtras() {
     // Show the list of rubros
     this.listaArticulos.classList.remove("hidden");
@@ -1118,25 +1066,6 @@ class PantallaModerador {
       console.error("Error al asignar el título de la página:", error);
       this.tituloPagina.innerHTML = `<p>Error al cargar el título.</p>`;
     }
-  }
-
-  aplicarColoresAlternados(container) {
-    let articulos = [];
-
-    if (container instanceof HTMLElement) {
-      articulos = Array.from(
-        container.querySelectorAll(".articulo:not(.hidden)"),
-      );
-    } else if (Array.isArray(container)) {
-      articulos = container.filter((el) => !el.classList.contains("hidden"));
-    } else {
-      console.warn("aplicarColoresAlternados: argumento no válido", container);
-      return;
-    }
-
-    articulos.forEach((articulo, index) => {
-      articulo.style.backgroundColor = index % 2 === 0 ? "#1d1d1d" : "#2c2c2e";
-    });
   }
 
   normalizarTexto(texto) {
@@ -1327,8 +1256,7 @@ class PantallaModerador {
       articulo.video_url,
       this.empresa.id,
     );
-    console.log(mensaje);
-    await this.mostrarLista(this.listaArticulos);
+    await this.mostrarLista();
   }
 
   async eliminarVideoRubro(rubro) {
@@ -1337,7 +1265,7 @@ class PantallaModerador {
       rubro.video_url,
       this.empresa.id,
     );
-    await this.mostrarLista(this.listaRubros);
+    await this.mostrarLista();
   }
 }
 

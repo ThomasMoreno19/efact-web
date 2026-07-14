@@ -31,7 +31,6 @@ class RubroRepositorio
           'nombre' => $data['nombre'],
           'id_empresa' => $data['id_empresa'],
           'logo_url' => $data['logo_url'],
-          'video_url' => $data['video_url'],
         ];
       }
     } catch (PDOException $e) {
@@ -40,38 +39,28 @@ class RubroRepositorio
     return $rubro;
   }
 
-  public function obtenerParaCliente(int $id_empresa): array
+  public function obtenerPorEmpresa(int $id_empresa): array
   {
-    $rubro = [];
+    $rubros = [];
     try {
-      $stmt = $this->pdo->prepare("
-                SELECT
-                    id,
-                    id_empresa,
-                    nombre,
-                    logo_url,
-                    video_url
-                FROM Rubro
-                WHERE id_empresa= :id_empresa
-                ORDER BY nombre ASC;
-                ");
+      $stmt = $this->pdo->prepare(
+        "SELECT id, nombre, abreviatura, logo_url FROM Rubro WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
+      );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
       while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $rubro[] = [
-          'id' => $data['id'],
-          'nombre' => $data['nombre'],
-          'id_empresa' => $data['id_empresa'],
+        $rubros[] = [
+          'id'        => $data['id'],
+          'nombre'    => $data['nombre'],
+          'abreviatura' => $data['abreviatura'],
           'logo_url' => $data['logo_url'],
-          'video_url' => $data['video_url']
         ];
       }
     } catch (PDOException $e) {
-      error_log("Error al obtener todas las rubros: " . $e->getMessage());
+      error_log("Error al obtener rubros: " . $e->getMessage());
     }
-    return $rubro;
+    return $rubros;
   }
-
 
   public function crearListaCsv(array $articulos, int $id_empresa): bool
   {
@@ -83,6 +72,7 @@ class RubroRepositorio
       $unicos[$a['id_rubro']] = [
         'id' => $a['id_rubro'],
         'nombre' => $a['nombre_rubro'],
+        'abreviatura' => $a['abreviatura_rubro'],
         'id_empresa' => $id_empresa
       ];
     }
@@ -93,19 +83,20 @@ class RubroRepositorio
     $params = [];
     $i = 0;
     foreach ($unicos as $r) {
-      $values[] = "(:id$i, :id_empresa$i, :nombre$i, 1, :logo_url$i, :video_url$i)";
+      $values[] = "(:id$i, :id_empresa$i, :nombre$i, :abreviatura$i, 1, :logo_url$i)";
       $params[":id$i"] = $r['id'];
       $params[":id_empresa$i"] = $id_empresa;
       $params[":nombre$i"] = $r['nombre'];
+      $params[":abreviatura$i"] = $r['abreviatura'];
       $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
-      $params[":video_url$i"] = '';
       $i++;
     }
 
-    $sql = "INSERT INTO Rubro (id, id_empresa, nombre, aparece_en_csv, logo_url, video_url)
+    $sql = "INSERT INTO Rubro (id, id_empresa, nombre, abreviatura, aparece_en_csv, logo_url)
           VALUES " . implode(', ', $values) . "
           ON DUPLICATE KEY UPDATE
               nombre = VALUES(nombre),
+              abreviatura = VALUES(abreviatura),
               id_empresa = VALUES(id_empresa),
               aparece_en_csv = 1;";
 
@@ -219,48 +210,5 @@ class RubroRepositorio
       error_log("Error al setear rubro a 0: " . $e->getMessage());
       return false;
     }
-  }
-
-  public function agregarUrlVideo(int $id, int $id_empresa, string $video_url): bool
-  {
-    try {
-      $stmt = $this->pdo->prepare(
-        "UPDATE Rubro
-             SET video_url = :video_url
-             WHERE id = :id AND id_empresa = :id_empresa;"
-      );
-
-      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-      $stmt->bindParam(':video_url', $video_url, PDO::PARAM_STR);
-
-      if ($stmt->execute()) {
-        return true;
-      }
-    } catch (PDOException $e) {
-      error_log("Error al agregar URL de video al artículo: " . $e->getMessage());
-    }
-    return false;
-  }
-
-  public function eliminarUrlVideo(int $id, int $id_empresa): bool
-  {
-    try {
-      $stmt = $this->pdo->prepare(
-        "UPDATE Rubro
-             SET video_url = ''
-             WHERE id = :id AND id_empresa = :id_empresa;"
-      );
-
-      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-
-      if ($stmt->execute()) {
-        return true;
-      }
-    } catch (PDOException $e) {
-      error_log("Error al eliminar URL de video del artículo: " . $e->getMessage());
-    }
-    return false;
   }
 }

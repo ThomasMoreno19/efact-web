@@ -534,7 +534,7 @@ class EmpresaVista {
 
         <button id="qr-catalogo-local" class="qr-button">Catálogo</button>
 
-        <button id="qr-catalogo-fuera" class="qr-button">Catálogo (sin Escáner)</button>
+        <button id="qr-catalogo-fuera" class="qr-button">Catálogo para Internos</button>
       </div>
 
       <div id="qr-resultado" style="margin-top:20px; text-align:center;"></div>
@@ -559,16 +559,16 @@ class EmpresaVista {
     modalQR
       .querySelector("#qr-catalogo-fuera")
       .addEventListener("click", () => {
-        this.generarQR(`${baseURL}/catalogo/${this.id}`, "carta-delivery");
+        this.generarQR(
+          `${baseURL}/catalogo/${this.id}?interno`,
+          "carta-delivery",
+        );
       });
 
     modalQR
       .querySelector("#qr-catalogo-local")
       .addEventListener("click", () => {
-        this.generarQR(
-          `${baseURL}/catalogo/${this.id}?soloPresupuesto`,
-          "carta-local",
-        );
+        this.generarQR(`${baseURL}/catalogo/${this.id}`, "carta-local");
       });
 
     modalQR.querySelector("#cerrar-qr-modal").addEventListener("click", () => {

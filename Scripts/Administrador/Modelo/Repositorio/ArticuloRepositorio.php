@@ -53,6 +53,7 @@ class ArticuloRepositorio
                     precio2, 
                     precio3,
                     video_url,
+                    ubicacion,
                     logo_url
                 FROM Articulo
                 WHERE id_rubro = :id_rubro
@@ -86,6 +87,7 @@ class ArticuloRepositorio
                     precio2,
                     precio3,
                     no_procesado,
+                    ubicacion,
                     video_url,
                     logo_url
                 FROM Articulo
@@ -122,6 +124,7 @@ class ArticuloRepositorio
                 a.precio2,
                 a.precio3,
                 a.no_procesado,
+                a.ubicacion,
                 a.video_url,
                 a.logo_url
             FROM Articulo a
@@ -172,6 +175,7 @@ class ArticuloRepositorio
             :codigo_barra$i,
             :codigo_proveedor$i,
             1,
+            :ubicacion$i,
             :logo_url$i,
             :video_url$i
         )";
@@ -190,6 +194,8 @@ class ArticuloRepositorio
 
       $params[":existencia$i"] = (string) $a['existencia'];
       $params[":no_procesado$i"] = $a['no_procesado'] ?? 0;
+
+      $params[":ubicacion$i"] = $a['ubicacion'] ?: null;
 
       $params[":codigo_interno$i"] = $a['codigo_interno'];
       $params[":codigo_barra$i"] = $a['codigo_barra'] ?: null;
@@ -216,6 +222,7 @@ class ArticuloRepositorio
             codigo_barra,
             codigo_proveedor,
             aparece_en_csv,
+            ubicacion,
             logo_url,
             video_url
         )
@@ -230,6 +237,7 @@ class ArticuloRepositorio
             precio3 = VALUES(precio3),
             existencia = VALUES(existencia),
             no_procesado = VALUES(no_procesado),
+            ubicacion = VALUES(ubicacion),
             codigo_interno = VALUES(codigo_interno),
             codigo_barra = VALUES(codigo_barra),
             codigo_proveedor = VALUES(codigo_proveedor),

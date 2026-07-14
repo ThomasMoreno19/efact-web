@@ -9,7 +9,7 @@
     border-color 0.3s ease,
     box-shadow 0.3s ease;
   color: white;
-  width: 280px;
+  width: 100%;
   outline: none;
 }
 
@@ -18,10 +18,26 @@
   border-radius: 8px;
   display: flex;
   padding: 0px 5px;
-  max-width: 300px;
-  margin: 15px auto;
+  max-width: 340px;
+  margin: 5px auto;
   flex-direction: row;
-  background-color: #181818;
+  background-color: #00000042;
+}
+
+#contenedores-codigos {
+  display: flex;
+  flex-direction: row;
+  max-width: 90%;
+  margin: auto;
+  gap: 10px;
+}
+
+#contenedor-busqueda-codigo-proveedor {
+  max-width: 180px;
+}
+
+#contenedor-busqueda-codigo-interno {
+  max-width: 130px;
 }
 
 .icono-busqueda {
