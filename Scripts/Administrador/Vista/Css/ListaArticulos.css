@@ -103,10 +103,6 @@
   flex-direction: column;
 }
 
-.articulo:hover {
-  transform: translateY(-4px);
-}
-
 .articulo p {
   margin: 0px;
   text-align: left;

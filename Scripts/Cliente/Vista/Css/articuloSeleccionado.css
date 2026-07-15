@@ -15,15 +15,6 @@
   color: #343333 !important;
 }
 
-/* Animación de pulso para artículos seleccionados */
-.articulo.pulse {
-  animation: pulse 0.35s ease-out;
-}
-
-.articulo:hover {
-  transform: scale(1.02); /* Efecto de zoom al pasar el cursor */
-}
-
 /* Animación tipo latido */
 @keyframes pulse {
   0% {
