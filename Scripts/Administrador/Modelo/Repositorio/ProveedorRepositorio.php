@@ -13,7 +13,7 @@ class ProveedorRepositorio
     $proveedores = [];
     try {
       $stmt = $this->pdo->prepare(
-        "SELECT id, nombre, abreviatura, logo_url FROM proveedor WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
+        "SELECT id, nombre, abreviatura, logo_url FROM Proveedor WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
@@ -35,7 +35,7 @@ class ProveedorRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "INSERT INTO proveedor (id, id_empresa, nombre) VALUES (:id, :id_empresa, :nombre);"
+        "INSERT INTO Proveedor (id, id_empresa, nombre) VALUES (:id, :id_empresa, :nombre);"
       );
       $stmt->bindParam(':id',        $id,        PDO::PARAM_INT);
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
