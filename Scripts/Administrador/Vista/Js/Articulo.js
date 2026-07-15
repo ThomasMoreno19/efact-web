@@ -147,7 +147,7 @@ class ArticuloVista {
     contentGroup.classList.add("articulo-content");
     contentGroup.appendChild(container2);
 
-    if (!this.no_procesado) {
+    if (!this.no_procesado && !esInterno) {
       divArticulo.addEventListener("click", () => {
         const event = new CustomEvent("articuloSeleccionado", { detail: this });
         document.dispatchEvent(event);
@@ -159,11 +159,10 @@ class ArticuloVista {
           window.gestorDeArticulosCallback(this);
         }
       });
-      contentGroup.appendChild(infoContainer);
-    } else {
+    } else if (this.no_procesado) {
       divArticulo.classList.add("no-procesado");
-      contentGroup.appendChild(infoContainer);
     }
+    contentGroup.appendChild(infoContainer);
 
     if (imagenesEnArticulos) {
       divArticulo.appendChild(logoContainer);

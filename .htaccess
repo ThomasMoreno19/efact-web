@@ -6,22 +6,22 @@ php_value max_execution_time 300
 # Habilita el módulo de reescritura de URLs
 RewriteEngine On
 
-# Define la base de reescritura, que es la raíz de tu dominio
+# Define la base de reescritura, que es la raíz del dominio
 RewriteBase /
 
 # Evita que se muestren los listados de directorios si no hay index.php/html
 Options -Indexes
 
 RewriteCond %{REQUEST_FILENAME} !-f
-# 2. NO redirijas solicitudes a directorios reales
+
+# 2. Evita redireccionar a directorios
 RewriteCond %{REQUEST_FILENAME} !-d
-# 3. Redirige CUALQUIER otra solicitud a tu GestorGeneral.php
+
+# 3. Redirige Cualquier otra solicitud a GestorGeneral.php
 #    El ^(.*)$ captura toda la URL después de RewriteBase.
 RewriteRule ^(.*)$ Scripts/Incluye/GestorGeneral.php [QSA,L]
 
-# Opcional pero muy recomendado: Prohibir el acceso directo a los archivos PHP
-# que no deben ser llamados directamente (controladores, modelos, gestores internos).
-# Esto mejora la seguridad.
+
 RewriteRule ^Scripts/Administrador/Controlador/ - [F,NC]
 RewriteRule ^Scripts/Administrador/Modelo/Repositorio/ - [F,NC]
 RewriteRule ^Scripts/Incluye/GestorGeneral.php - [L]

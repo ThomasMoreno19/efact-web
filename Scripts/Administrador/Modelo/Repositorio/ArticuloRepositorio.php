@@ -175,13 +175,14 @@ class ArticuloRepositorio
             :codigo_barra$i,
             :codigo_proveedor$i,
             1,
+            :abreviatura$i,
             :ubicacion$i,
             :logo_url$i,
             :video_url$i
         )";
 
       $params[":id$i"] = $a['id_articulo'];
-      $params[":id_rubro$i"] = $a['id_rubro'];
+      $params[":id_rubro$i"] = $a['id_rubro'] ?: null;
       $params[":id_marca$i"] = $a['id_marca'] ?: null;
       $params[":id_proveedor$i"] = $a['id_proveedor'] ?: null;
       $params[":id_empresa$i"] = $id_empresa;
@@ -195,6 +196,7 @@ class ArticuloRepositorio
       $params[":existencia$i"] = (string) $a['existencia'];
       $params[":no_procesado$i"] = $a['no_procesado'] ?? 0;
 
+      $params[":abreviatura$i"] = $a['abreviatura'] ?: null;
       $params[":ubicacion$i"] = $a['ubicacion'] ?: null;
 
       $params[":codigo_interno$i"] = $a['codigo_interno'];
@@ -222,6 +224,7 @@ class ArticuloRepositorio
             codigo_barra,
             codigo_proveedor,
             aparece_en_csv,
+            abreviatura,
             ubicacion,
             logo_url,
             video_url
@@ -237,6 +240,7 @@ class ArticuloRepositorio
             precio3 = VALUES(precio3),
             existencia = VALUES(existencia),
             no_procesado = VALUES(no_procesado),
+            abreviatura = VALUES(abreviatura),
             ubicacion = VALUES(ubicacion),
             codigo_interno = VALUES(codigo_interno),
             codigo_barra = VALUES(codigo_barra),
@@ -255,7 +259,112 @@ class ArticuloRepositorio
 
       return $articulos;
     } catch (PDOException $e) {
-      throw $e;
+
+      $errores = [];
+
+      foreach ($articulos as $i => $a) {
+
+        $sqlIndividual = "
+            INSERT INTO Articulo (
+                id,
+                id_rubro,
+                id_marca,
+                id_proveedor,
+                id_empresa,
+                nombre,
+                precio1,
+                precio2,
+                precio3,
+                existencia,
+                no_procesado,
+                codigo_interno,
+                codigo_barra,
+                codigo_proveedor,
+                aparece_en_csv,
+                abreviatura,
+                ubicacion,
+                logo_url,
+                video_url
+            )
+            VALUES (
+                :id,
+                :id_rubro,
+                :id_marca,
+                :id_proveedor,
+                :id_empresa,
+                :nombre,
+                :precio1,
+                :precio2,
+                :precio3,
+                :existencia,
+                :no_procesado,
+                :codigo_interno,
+                :codigo_barra,
+                :codigo_proveedor,
+                1,
+                :abreviatura,
+                :ubicacion,
+                :logo_url,
+                :video_url
+            )
+            ON DUPLICATE KEY UPDATE
+                id_rubro = VALUES(id_rubro),
+                id_marca = VALUES(id_marca),
+                id_proveedor = VALUES(id_proveedor),
+                nombre = VALUES(nombre),
+                precio1 = VALUES(precio1),
+                precio2 = VALUES(precio2),
+                precio3 = VALUES(precio3),
+                existencia = VALUES(existencia),
+                no_procesado = VALUES(no_procesado),
+                abreviatura = VALUES(abreviatura),
+                ubicacion = VALUES(ubicacion),
+                codigo_interno = VALUES(codigo_interno),
+                codigo_barra = VALUES(codigo_barra),
+                codigo_proveedor = VALUES(codigo_proveedor),
+                aparece_en_csv = 1
+        ";
+
+        try {
+
+          $stmt = $this->pdo->prepare($sqlIndividual);
+
+          $stmt->execute([
+            ':id' => $a['id_articulo'],
+            ':id_rubro' => $a['id_rubro'] ?: null,
+            ':id_marca' => $a['id_marca'] ?: null,
+            ':id_proveedor' => $a['id_proveedor'] ?: null,
+            ':id_empresa' => $id_empresa,
+            ':nombre' => $a['nombre_articulo'],
+            ':precio1' => (string)$a['precio1'],
+            ':precio2' => (string)$a['precio2'],
+            ':precio3' => (string)$a['precio3'],
+            ':existencia' => (string)$a['existencia'],
+            ':no_procesado' => $a['no_procesado'] ?? 0,
+            ':codigo_interno' => $a['codigo_interno'],
+            ':codigo_barra' => $a['codigo_barra'] ?: null,
+            ':codigo_proveedor' => $a['codigo_proveedor'] ?: null,
+            ':abreviatura' => $a['abreviatura'] ?: null,
+            ':ubicacion' => $a['ubicacion'] ?: null,
+            ':logo_url' => 'Archivos/Logos/Vacio.png',
+            ':video_url' => '',
+          ]);
+        } catch (PDOException $ex) {
+
+          $errores[] = [
+            'indice_array' => $i,
+            'id_articulo' => $a['id_articulo'] ?? null,
+            'codigo_interno' => $a['codigo_interno'] ?? null,
+            'nombre' => $a['nombre_articulo'] ?? null,
+            'mensaje' => $ex->getMessage(),
+          ];
+        }
+      }
+
+      throw new Exception(
+        "Falló el INSERT masivo.\n" .
+          json_encode($errores, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
+      );
     }
   }
 

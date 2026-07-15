@@ -478,7 +478,6 @@ class PantallaCliente {
       "hidden",
       !this.filtros.proveedor,
     );
-    console.log(this.filtros);
 
     if (!this.filtros.rubro) this.nombreFiltroRubro.textContent = "";
     else this.nombreFiltroRubro.textContent = this.filtros.rubro.abreviatura;

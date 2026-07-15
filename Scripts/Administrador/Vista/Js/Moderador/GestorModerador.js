@@ -174,8 +174,15 @@ class GestorModerador {
           // ==========================
           // Artículos
           // ==========================
-          datosArticulos.slice(1).forEach((fila) => {
-            if (!fila || fila.length === 0) return;
+          const filasArticulos = datosArticulos.slice(1);
+
+          for (const fila of filasArticulos) {
+            if (!fila || fila.length === 0) continue;
+
+            // Si no hay id_articulo, termina la lectura
+            if (fila[0] == null || String(fila[0]).trim() === "") {
+              break;
+            }
 
             const noProcesado =
               fila[13] === true ||
@@ -192,16 +199,17 @@ class GestorModerador {
               codigo_barra: fila[3] ?? "",
               codigo_proveedor: fila[4]?.trim() ?? "",
               id_proveedor: fila[5] ?? null,
-              id_rubro: fila[6],
+              id_rubro: fila[6] ?? null,
               id_marca: fila[7] ?? null,
               precio1: parseFloat(fila[8]) || 0,
               precio2: parseFloat(fila[9]) || 0,
               precio3: parseFloat(fila[10]) || 0,
               existencia: parseFloat(fila[12]) || 0,
+              abreviatura: fila[14]?.trim() ?? "",
               ubicacion: fila[15]?.trim() ?? "",
               no_procesado: noProcesado,
             });
-          });
+          }
 
           // ==========================
           // Proveedores

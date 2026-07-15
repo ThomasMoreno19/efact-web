@@ -1,7 +1,3 @@
-.articulo {
-  cursor: pointer;
-}
-
 .articulo.seleccionado {
   background-color: #e8a114 !important;
   -webkit-tap-highlight-color: transparent;
