@@ -40,13 +40,6 @@
     </div>
 
     <div class="loader" id="loader">
-      <div class="cup">
-        <div class="cup-handle"></div>
-        <div class="smoke one"></div>
-        <div class="smoke two"></div>
-        <div class="smoke three"></div>
-      </div>
-      <div class="load">..........................</div>
     </div>
     <div class="listas">
       <div class="lista" id="lista-articulos"></div>

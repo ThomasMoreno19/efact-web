@@ -263,7 +263,7 @@ class ArticuloRepositorio
     }
   }
 
-  public function modificar(int $id, int $id_rubro, string $nombre, string $precio1, string $precio2, string $precio3, string $logo_url): bool
+  public function modificar(int $id, int $id_empresa, string $nombre, string $precio1, string $precio2, string $precio3, string $logo_url): bool
   {
     try {
       $stmt = $this->pdo->prepare(
@@ -273,11 +273,11 @@ class ArticuloRepositorio
                     precio2 = :precio2,
                     precio3 = :precio3,
                     logo_url = :logo_url
-                 WHERE id = :id AND id_rubro = :id_rubro;"
+                 WHERE id = :id AND id_empresa = :id_empresa"
       );
 
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-      $stmt->bindParam(':id_rubro', $id_rubro, PDO::PARAM_INT);
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':precio1', $precio1, PDO::PARAM_STR);
       $stmt->bindParam(':precio2', $precio2, PDO::PARAM_STR);

@@ -425,7 +425,6 @@ class GestorArticulo
     $datos = json_decode(file_get_contents('php://input'), true);
 
     $id = $datos['id'];
-    $id_rubro = $datos['id_rubro'];
     $id_empresa = $datos['id_empresa'];
     $nombre = $datos['nombre'];
     $precio1 = $datos['precio1'];
@@ -439,14 +438,14 @@ class GestorArticulo
       unlink($cacheFile); // Borra cache
     }
 
-    if (empty($nombre) || empty($id) || empty($id_rubro) || empty($precio1) || empty($precio2) || empty($precio3)) {
+    if (empty($nombre) || empty($id)) {
       http_response_code(400);
       echo json_encode(['error' => 'Faltan datos válidos para modificar el articulo con el id recibido']);
       return;
     }
 
     try {
-      $articuloModificado = $this->articuloRepositorio->modificar($id, $id_rubro, $nombre, $precio1, $precio2, $precio3, $logo_url);
+      $articuloModificado = $this->articuloRepositorio->modificar($id, $id_empresa, $nombre, $precio1, $precio2, $precio3, $logo_url);
       $this->borrarCacheTodos($id_empresa);
       echo json_encode($articuloModificado);
     } catch (Exception $e) {
