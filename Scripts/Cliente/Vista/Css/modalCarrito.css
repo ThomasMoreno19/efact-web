@@ -17,6 +17,10 @@
   width: 100%;
 }
 
+#cantidad-articulo {
+  touch-action: none;
+}
+
 #modal-articulo-wrapper {
   position: fixed;
   inset: 0;
@@ -255,11 +259,12 @@
   background-color: #f5b73a;
   border: none;
   color: white;
-  width: 21px;
-  height: 21px;
+  width: 27px;
+  height: 27px;
   align-items: center;
   border-radius: 5px;
   cursor: pointer;
+  font-size: 20px;
 }
 
 .btn-eliminar {

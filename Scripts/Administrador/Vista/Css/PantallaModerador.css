@@ -453,8 +453,6 @@ br {
 
   background: transparent;
   border-radius: 10px;
-
-  overflow: hidden;
 }
 
 @keyframes bordeGlow {

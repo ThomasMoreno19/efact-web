@@ -1,14 +1,15 @@
 class RubroVista {
   constructor(rubro) {
-    const { id, id_empresa, nombre, logo_url, abreviatura } = rubro;
+    const { id, id_empresa, nombre, logo_url, abreviatura, cantidad } = rubro;
     this.id = id;
     this.id_empresa = id_empresa;
     this.nombre = nombre;
     this.abreviatura = abreviatura;
     this.logo_url = logo_url;
+    this.cantidad = cantidad;
   }
 
-  mostrarUno(paraCliente = false) {
+  mostrarUno(paraCliente = false, cantArticulosSeleccionados) {
     const divRubro = document.createElement("div");
     divRubro.classList.add("rubro");
     divRubro.dataset.RubroId = this.id;
@@ -21,6 +22,14 @@ class RubroVista {
     const container2 = document.createElement("div");
 
     divRubro.appendChild(container2);
+
+    if (cantArticulosSeleccionados > 0) {
+      const badge = document.createElement("span");
+      badge.classList.add("badge-articulos");
+      badge.textContent = cantArticulosSeleccionados;
+
+      divRubro.appendChild(badge);
+    }
 
     return divRubro;
   }

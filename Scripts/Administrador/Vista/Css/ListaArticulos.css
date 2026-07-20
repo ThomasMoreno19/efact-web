@@ -156,8 +156,19 @@ p.descripcion {
     height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
   }
 
+  .articulo {
+    width: 380px;
+    margin: 0 auto;
+    margin-bottom: 10px;
+  }
+
   .articulo p {
-    font-size: 20px;
+    font-size: 15px;
+    overflow-wrap: break-word;
+  }
+
+  .articulo-info {
+    word-break: break-word;
   }
 
   p.descripcion {

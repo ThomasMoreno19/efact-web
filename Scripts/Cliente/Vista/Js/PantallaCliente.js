@@ -31,6 +31,15 @@ class PantallaCliente {
     this.contenedorBarraBusquedaCodigoInterno = document.getElementById(
       "contenedor-busqueda-codigo-interno",
     );
+    this.botonBorrarBusquedaNombre = document.getElementById(
+      "eliminar-busqueda-nombre",
+    );
+    this.botonBorrarBusquedaCodigoProveedor = document.getElementById(
+      "eliminar-busqueda-codigo-proveedor",
+    );
+    this.botonBorrarBusquedaCodigoInterno = document.getElementById(
+      "eliminar-busqueda-codigo-interno",
+    );
     this.listaBotonesListas = document.getElementById("lista-botones-listas");
     this.listaBotonesFiltros = document.getElementById("lista-botones-filtros");
     this.botonFiltroRubro = document.getElementById("boton-filtro-rubro");
@@ -76,7 +85,6 @@ class PantallaCliente {
     this.botonEscaner = document.getElementById("boton-escaner");
 
     this.esInterno = new URLSearchParams(window.location.search).has("interno");
-
     this.filtros = {
       rubro: null,
       marca: null,
@@ -86,6 +94,12 @@ class PantallaCliente {
       codigoProveedor: "",
       codigoInterno: "",
       abreviatura: "",
+    };
+
+    this.listaGruposSeleccionados = {
+      rubros: [],
+      marcas: [],
+      proveedores: [],
     };
 
     this.MINUTOS_DIA = 1440;
@@ -110,6 +124,9 @@ class PantallaCliente {
         link.id = "css-articulo-seleccionado";
         document.head.appendChild(link);
       }
+    }
+    if (!this.esInterno && !this.empresa.incluirCodigoBarra) {
+      this.botonEscaner.classList.add("hidden");
     }
 
     try {
@@ -158,6 +175,10 @@ class PantallaCliente {
     this.eliminarFiltroMarca.onclick = () => this.quitarFiltro("marca");
     this.eliminarFiltroRubro.onclick = () => this.quitarFiltro("rubro");
     this.eliminarFiltroProveedor.onclick = () => this.quitarFiltro("proveedor");
+    this.botonBorrarBusquedaCodigoInterno.onclick = () =>
+      this.borrarBusqueda("codigoInterno");
+    this.botonBorrarBusquedaCodigoProveedor.onclick = () =>
+      this.borrarBusqueda("codigoProveedor");
     this.loader.classList.add("hidden");
     this.barraBusqueda.classList.remove("hidden");
     this.barraBusquedaCodigoInterno.classList.remove("hidden");
@@ -372,31 +393,10 @@ class PantallaCliente {
       const catalogos = await this.gestor.mostrarListaRubros(this.empresa.id);
 
       this.todosLosRubros = catalogos.rubros ?? [];
-      this.todosLosRubros.forEach((rubro) => {
-        const vista = new RubroVista(rubro);
-        const elemento = vista.mostrarUno(true);
-        elemento.onclick = () => this.seleccionarTipo(rubro, "rubro");
-
-        this.listaRubros.appendChild(elemento);
-      });
 
       this.todasLasMarcas = catalogos.marcas ?? [];
-      this.todasLasMarcas.forEach((marca) => {
-        const vista = new MarcaVista(marca);
-        const elemento = vista.mostrarUno(true);
-        elemento.onclick = () => this.seleccionarTipo(marca, "marca");
-
-        this.listaMarcas.appendChild(elemento);
-      });
 
       this.todosLosProveedores = catalogos.proveedores ?? [];
-      this.todosLosProveedores.forEach((proveedor) => {
-        const vista = new ProveedorVista(proveedor);
-        const elemento = vista.mostrarUno(true);
-        elemento.onclick = () => this.seleccionarTipo(proveedor, "proveedor");
-
-        this.listaProveedores.appendChild(elemento);
-      });
 
       // Obtener y ordenar todos los artículos
       this.todosLosArticulos =
@@ -418,7 +418,7 @@ class PantallaCliente {
     this.botonListaRubros.classList.remove("activo-cliente");
     this.botonListaMarcas.classList.remove("activo-cliente");
     this.botonListaProveedores.classList.remove("activo-cliente");
-    this.botonListaArticulos.classList.remove("activo-cliente");
+    this.botonListaArticulos.classList.remove("lupa-activa");
 
     switch (tipo) {
       case "rubros":
@@ -451,7 +451,7 @@ class PantallaCliente {
       case "articulos":
         this.listaArticulos.classList.remove("hidden");
         this.contenedoresBarraCodigos.classList.remove("hidden");
-        this.botonListaArticulos.classList.add("activo-cliente");
+        this.botonListaArticulos.classList.add("lupa-activa");
 
         this.barraBusqueda.oninput = () =>
           this.buscarPorNombre(this.barraBusqueda.value);
@@ -471,7 +471,8 @@ class PantallaCliente {
     this.botonListaArticulos.click();
   }
 
-  actualizarFiltros(actualizarArticulos = false) {
+  actualizarFiltros(actualizarArticulos = false, tipo = null) {
+    this.contenedoresBarraCodigos.classList.add("hidden");
     this.botonFiltroMarca.classList.toggle("hidden", !this.filtros.marca);
     this.botonFiltroRubro.classList.toggle("hidden", !this.filtros.rubro);
     this.botonFiltroProveedor.classList.toggle(
@@ -488,14 +489,26 @@ class PantallaCliente {
       this.nombreFiltroProveedor.textContent =
         this.filtros.proveedor.abreviatura;
 
+    if (actualizarArticulos) this.actualizarArticulos();
+    if (tipo) {
+      this.mostrarGrupo(tipo);
+      return;
+    }
     if (!this.filtros.marca && !this.filtros.rubro && !this.filtros.proveedor) {
       this.botonListaArticulos.click();
     }
-
-    if (actualizarArticulos) this.actualizarArticulos();
   }
 
-  mostrarGrupo(tipo, valor) {
+  mostrarGrupo(tipo, valor = "") {
+    this.botonListaMarcas.classList.remove("activo-cliente");
+    this.botonListaProveedores.classList.remove("activo-cliente");
+    this.botonListaRubros.classList.remove("activo-cliente");
+    this.botonListaArticulos.classList.remove("lupa-activa");
+
+    this.listaArticulos.classList.add("hidden");
+    this.listaRubros.classList.add("hidden");
+    this.listaProveedores.classList.add("hidden");
+    this.listaMarcas.classList.add("hidden");
     switch (tipo) {
       case "rubro":
         this.mostrarRubro(valor);
@@ -510,23 +523,36 @@ class PantallaCliente {
   }
 
   buscarPorNombre(valor, tipo = null) {
+    if (valor !== "") this.botonBorrarBusquedaNombre.classList.remove("hidden");
+    else this.botonBorrarBusquedaNombre.classList.add("hidden");
     if (tipo) {
+      this.botonBorrarBusquedaNombre.onclick = () =>
+        this.borrarBusqueda("nombre", tipo);
       this.mostrarGrupo(tipo, valor);
       return;
     }
     this.filtros.nombre = valor;
+
+    this.botonBorrarBusquedaNombre.onclick = () =>
+      this.borrarBusqueda("nombre");
 
     this.actualizarArticulos();
   }
 
   buscarPorCodigoProveedor(valor) {
     this.filtros.codigoProveedor = valor;
+    if (valor !== "")
+      this.botonBorrarBusquedaCodigoProveedor.classList.remove("hidden");
+    else this.botonBorrarBusquedaCodigoProveedor.classList.add("hidden");
 
     this.actualizarArticulos();
   }
 
   buscarPorCodigoInterno(valor) {
     this.filtros.codigoInterno = valor;
+    if (valor !== "")
+      this.botonBorrarBusquedaCodigoInterno.classList.remove("hidden");
+    else this.botonBorrarBusquedaCodigoInterno.classList.add("hidden");
 
     this.actualizarArticulos();
   }
@@ -534,6 +560,29 @@ class PantallaCliente {
   quitarFiltro(tipo) {
     this.filtros[tipo] = null;
 
+    this.actualizarFiltros(false, tipo);
+  }
+
+  borrarBusqueda(tipo, tipoGrupo = null) {
+    this.filtros[tipo] = "";
+    switch (tipo) {
+      case "nombre":
+        this.barraBusqueda.value = "";
+        this.botonBorrarBusquedaNombre.classList.add("hidden");
+        break;
+      case "codigoInterno":
+        this.barraBusquedaCodigoInterno.value = "";
+        this.botonBorrarBusquedaCodigoInterno.classList.add("hidden");
+        break;
+      case "codigoProveedor":
+        this.barraBusquedaCodigoProveedor.value = "";
+        this.botonBorrarBusquedaCodigoProveedor.classList.add("hidden");
+        break;
+    }
+    if (tipoGrupo) {
+      this.mostrarGrupo(tipoGrupo);
+      return;
+    }
     this.actualizarFiltros(true);
   }
 
@@ -611,9 +660,13 @@ class PantallaCliente {
     // ==================
 
     if (nombre !== "") {
-      articulos = articulos.filter((a) =>
-        (a.nombre ?? "").toLowerCase().includes(nombre),
-      );
+      const palabras = nombre.split(/\s+/).filter(Boolean);
+
+      articulos = articulos.filter((a) => {
+        const nombreArticulo = (a.nombre ?? "").toLowerCase();
+
+        return palabras.every((palabra) => nombreArticulo.includes(palabra));
+      });
     }
 
     // =============================
@@ -667,16 +720,25 @@ class PantallaCliente {
   }
 
   mostrarRubro(valor) {
+    this.botonListaRubros.classList.add("activo-cliente");
+    this.listaRubros.classList.remove("hidden");
+
     window.history.pushState({ vista: "rubros" }, "", window.location.href);
     this.listaRubros.innerHTML = "";
 
-    const rubros = this.todosLosRubros.filter((r) =>
-      (r.nombre ?? "").toLowerCase().includes(valor.toLowerCase()),
-    );
+    const palabras = valor.toLowerCase().trim().split(/\s+/).filter(Boolean);
+
+    const rubros = this.todosLosRubros.filter((r) => {
+      const nombre = (r.nombre ?? "").toLowerCase();
+
+      return palabras.every((palabra) => nombre.includes(palabra));
+    });
 
     rubros.forEach((rubro) => {
       const vista = new RubroVista(rubro);
-      const elemento = vista.mostrarUno(true);
+      const cantArticulosSelecc =
+        this.listaGruposSeleccionados.rubros[rubro.id] || 0;
+      const elemento = vista.mostrarUno(true, cantArticulosSelecc);
       elemento.onclick = () => this.seleccionarTipo(rubro, "rubro");
 
       this.listaRubros.appendChild(elemento);
@@ -684,6 +746,9 @@ class PantallaCliente {
   }
 
   mostrarProveedor(valor) {
+    this.botonListaProveedores.classList.add("activo-cliente");
+    this.listaProveedores.classList.remove("hidden");
+
     window.history.pushState(
       { vista: "proveedores" },
       "",
@@ -691,9 +756,13 @@ class PantallaCliente {
     );
     this.listaProveedores.innerHTML = "";
 
-    const proveedores = this.todosLosProveedores.filter((p) =>
-      (p.nombre ?? "").toLowerCase().includes(valor.toLowerCase()),
-    );
+    const palabras = valor.toLowerCase().trim().split(/\s+/).filter(Boolean);
+
+    const proveedores = this.todosLosProveedores.filter((p) => {
+      const nombre = (p.nombre ?? "").toLowerCase();
+
+      return palabras.every((palabra) => nombre.includes(palabra));
+    });
 
     proveedores.forEach((proveedor) => {
       const vista = new ProveedorVista(proveedor);
@@ -705,16 +774,25 @@ class PantallaCliente {
   }
 
   mostrarMarca(valor) {
+    this.botonListaMarcas.classList.add("activo-cliente");
+    this.listaMarcas.classList.remove("hidden");
+
     window.history.pushState({ vista: "marcas" }, "", window.location.href);
     this.listaMarcas.innerHTML = "";
 
-    const marcas = this.todasLasMarcas.filter((m) =>
-      (m.nombre ?? "").toLowerCase().includes(valor.toLowerCase()),
-    );
+    const palabras = valor.toLowerCase().trim().split(/\s+/).filter(Boolean);
+
+    const marcas = this.todasLasMarcas.filter((m) => {
+      const nombre = (m.nombre ?? "").toLowerCase();
+
+      return palabras.every((palabra) => nombre.includes(palabra));
+    });
 
     marcas.forEach((marca) => {
       const vista = new MarcaVista(marca);
-      const elemento = vista.mostrarUno(true);
+      const cantArticulosSelecc =
+        this.listaGruposSeleccionados.marcas[marca.id] || 0;
+      const elemento = vista.mostrarUno(true, cantArticulosSelecc);
       elemento.onclick = () => this.seleccionarTipo(marca, "marca");
 
       this.listaMarcas.appendChild(elemento);
@@ -941,10 +1019,38 @@ class PantallaCliente {
       // No está seleccionado → agregar
       this.carrito.agregarArticulo(articulo, 1);
       this.listaArticulosSeleccionados.push(articulo.id);
+      this.incrementarGrupo(
+        this.listaGruposSeleccionados.rubros,
+        articulo.id_rubro,
+      );
+
+      this.incrementarGrupo(
+        this.listaGruposSeleccionados.marcas,
+        articulo.id_marca,
+      );
+
+      this.incrementarGrupo(
+        this.listaGruposSeleccionados.proveedores,
+        articulo.id_proveedor,
+      );
     } else {
       // Ya estaba seleccionado → eliminar
       this.carrito.eliminarArticulo(articulo.id);
       this.listaArticulosSeleccionados.splice(index, 1);
+      this.decrementarGrupo(
+        this.listaGruposSeleccionados.rubros,
+        articulo.id_rubro,
+      );
+
+      this.decrementarGrupo(
+        this.listaGruposSeleccionados.marcas,
+        articulo.id_marca,
+      );
+
+      this.decrementarGrupo(
+        this.listaGruposSeleccionados.proveedores,
+        articulo.id_proveedor,
+      );
     }
 
     if (this.listaArticulosSeleccionados.length > 0) {
@@ -954,6 +1060,20 @@ class PantallaCliente {
     }
     this.cantidadArticulosCarrito.textContent =
       this.listaArticulosSeleccionados.length;
+  }
+
+  incrementarGrupo(grupo, id) {
+    grupo[id] = (grupo[id] || 0) + 1;
+  }
+
+  decrementarGrupo(grupo, id) {
+    if (!grupo[id]) return;
+
+    grupo[id]--;
+
+    if (grupo[id] === 0) {
+      delete grupo[id];
+    }
   }
 
   abrirModalCarrito() {
@@ -980,10 +1100,7 @@ class PantallaCliente {
   }
 
   borrarSeleccion() {
-    this.todosLosArticulos.forEach((articulo) => {
-      articulo.classList.remove("seleccionado");
-      articulo.classList.remove("pulse");
-    });
+    this.mostrarArticulos(this.todosLosArticulos);
     this.volverAtras();
     this.barraBusqueda.value = "";
   }

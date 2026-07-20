@@ -56,10 +56,16 @@
 }
 
 #lista-vacia {
-  color: white;
-  font-size: 18px;
+  background: #00000034;
+  padding: 20px;
+  border-radius: 8px;
+  color: #ffffffb7;
+  font-size: 16px;
   text-align: center;
   margin-top: 20px;
+  word-wrap: break-word;
+  max-width: 80%;
+  margin: 30px auto;
 }
 
 .botones-lista-cliente {
@@ -235,7 +241,7 @@
 .articulo-logo {
   flex-shrink: 0;
   width: 90px; /* el ancho que quieras */
-  height: 70px; /* altura fija para mantener proporción cuadrada */
+  max-height: 100%; /* altura fija para mantener proporción cuadrada */
   align-self: stretch; /* abarca toda la altura */
   display: flex;
   align-items: stretch;
@@ -268,14 +274,13 @@
   width: 100%;
   padding: 0 5px;
   flex-direction: column;
+  word-break: break-word;
 }
 
 .articulo p {
-  margin: 0px 5px;
-  font-size: 22px;
+  margin: 0px;
   color: #fff;
   word-wrap: break-word;
-  overflow-wrap: break-word;
   text-align: left;
 }
 
@@ -319,7 +324,7 @@ p.descripcion {
     height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
   }
   .articulo p {
-    font-size: 19px;
+    font-size: 17px;
   }
 
   p.descripcion {
@@ -353,7 +358,7 @@ p.descripcion {
 .info-marca-prov {
   display: flex;
   flex-direction: row;
-  gap: 20px;
+  gap: 5px;
 }
 
 .info-articulo {
@@ -400,6 +405,12 @@ p.descripcion {
   color: white;
 }
 
+.eliminar-busqueda {
+  color: #fff;
+  margin: 5px;
+  font-size: 19px;
+}
+
 #nombre-video {
   margin-bottom: 15px;
   font-size: 24px;
@@ -412,4 +423,8 @@ p.descripcion {
   padding: 0px;
   background: transparent;
   color: white;
+}
+
+#nombre-articulo {
+  overflow-wrap: break-word;
 }

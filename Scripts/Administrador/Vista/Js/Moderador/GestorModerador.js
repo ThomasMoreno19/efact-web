@@ -615,6 +615,7 @@ class GestorModerador {
     transferencia,
     imagenesEnArticulos,
     incluirHorarios,
+    incluirCodigoBarra,
   ) {
     const bodyData = {
       id: id,
@@ -626,6 +627,7 @@ class GestorModerador {
       transferencia: transferencia,
       imagenesEnArticulos: imagenesEnArticulos,
       incluirHorarios: incluirHorarios,
+      incluirCodigoBarra: incluirCodigoBarra,
     };
 
     try {

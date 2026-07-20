@@ -82,8 +82,6 @@
 
   <div class="lista-central" id="lista-central">
 
-
-
     <div class="botones-lista-cliente">
 
       <div id="lista-botones-filtros" class="">
@@ -151,7 +149,7 @@
           </svg>
           Marcas
         </button>
-        <button id="boton-lista-articulos" class="boton-lista-cliente activo-cliente" type="button">
+        <button id="boton-lista-articulos" class="boton-lista-cliente" type="button">
           <svg fill="#ffffff" height="18px" width="18px" version="1.1" id="svg-lupa" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
             viewBox="0 0 512 512" xml:space="preserve">
             <g>
@@ -167,8 +165,6 @@
         </button>
       </div>
 
-
-
     </div>
 
     <div class="loader" id="loader">
@@ -182,6 +178,8 @@
           id="barra-busqueda"
           class="barra hidden"
           placeholder="Búsqueda por Nombre" />
+
+        <p id="eliminar-busqueda-nombre" class="eliminar-busqueda hidden">✕</p>
 
         <svg
           class="icono-busqueda"
@@ -206,6 +204,8 @@
             class="barra hidden"
             placeholder="Código de Proveedor" />
 
+          <p id="eliminar-busqueda-codigo-proveedor" class="eliminar-busqueda hidden">✕</p>
+
           <svg
             class="icono-busqueda"
             viewBox="0 0 24 24"
@@ -220,7 +220,6 @@
           </svg>
         </div>
 
-
         <div id="contenedor-busqueda-codigo-interno" class="contenedor-busqueda hidden">
 
           <input
@@ -228,6 +227,8 @@
             id="barra-busqueda-codigo-interno"
             class="barra hidden"
             placeholder="Código Interno" />
+
+          <p id="eliminar-busqueda-codigo-interno" class="eliminar-busqueda hidden">✕</p>
 
           <svg
             class="icono-busqueda"
@@ -248,7 +249,7 @@
       <div class="lista lista-grupos" id="lista-rubros"></div>
       <div class="lista hidden lista-grupos" id="lista-marcas"></div>
       <div class="lista hidden lista-grupos" id="lista-proveedores"></div>
-      <div class="lista hidden" id="lista-vacia">Para mostrar los artículos debe filtrar por rubro, marca o proveedor</div>
+      <div class="lista hidden" id="lista-vacia">Ingrese criterios de búsqueda para obtener resultados</div>
 
     </div>
   </div>

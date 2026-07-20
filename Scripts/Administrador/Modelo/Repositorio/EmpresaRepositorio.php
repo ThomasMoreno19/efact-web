@@ -38,6 +38,7 @@ class EmpresaRepositorio
         'fecha_creacion' => $data['fecha_creacion'],
         'imagenesEnArticulos' => $data['imagenesEnArticulos'],
         'incluirHorarios' => $data['incluirHorarios'],
+        'incluirCodigoBarra' => $data['incluirCodigoBarra'],
       ];
     }
 
@@ -66,6 +67,7 @@ class EmpresaRepositorio
           'fecha_creacion' => $data['fecha_creacion'],
           'imagenesEnArticulos' => $data['imagenesEnArticulos'],
           'incluirHorarios' => $data['incluirHorarios'],
+          'incluirCodigoBarra' => $data['incluirCodigoBarra'],
         ];
       }
     } catch (PDOException $e) {
@@ -117,7 +119,7 @@ class EmpresaRepositorio
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, bool $imagenesEnArticulos, bool $incluirHorarios): bool
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, bool $imagenesEnArticulos, bool $incluirHorarios, bool $incluirCodigoBarra): bool
   {
     try {
       $sql = "UPDATE Empresa
@@ -128,7 +130,8 @@ class EmpresaRepositorio
           tarjeta = :tarjeta,
           transferencia = :transferencia,
           imagenesEnArticulos = :imagenesEnArticulos,
-          incluirHorarios = :incluirHorarios";
+          incluirHorarios = :incluirHorarios,
+          incluirCodigoBarra = :incluirCodigoBarra";
 
       $sql .= " WHERE id = :id;";
 
@@ -143,6 +146,7 @@ class EmpresaRepositorio
       $stmt->bindParam(':transferencia', $transferencia, PDO::PARAM_BOOL);
       $stmt->bindParam(':imagenesEnArticulos', $imagenesEnArticulos, PDO::PARAM_BOOL);
       $stmt->bindParam(':incluirHorarios', $incluirHorarios, PDO::PARAM_BOOL);
+      $stmt->bindParam(':incluirCodigoBarra', $incluirCodigoBarra, PDO::PARAM_BOOL);
       return $stmt->execute();
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());

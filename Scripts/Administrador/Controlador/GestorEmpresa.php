@@ -226,6 +226,7 @@ class GestorEmpresa
     $transferencia = $datos['transferencia'];
     $imagenesEnArticulos = $datos['imagenesEnArticulos'];
     $incluirHorarios = $datos['incluirHorarios'];
+    $incluirCodigoBarra = $datos['incluirCodigoBarra'];
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -235,7 +236,7 @@ class GestorEmpresa
 
 
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $imagenesEnArticulos, $incluirHorarios);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $imagenesEnArticulos, $incluirHorarios, $incluirCodigoBarra);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);

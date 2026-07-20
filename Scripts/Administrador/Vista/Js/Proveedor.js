@@ -1,10 +1,12 @@
 class ProveedorVista {
   constructor(proveedor) {
-    const { id, id_empresa, nombre, logo_url, abreviatura } = proveedor;
+    const { id, id_empresa, nombre, logo_url, abreviatura, cantidad } =
+      proveedor;
     this.id = id;
     this.id_empresa = id_empresa;
     this.nombre = nombre;
     this.abreviatura = abreviatura;
+    this.cantidad = cantidad;
     this.logo_url = logo_url ?? "Archivos/Logos/Vacio.png";
   }
 

@@ -11,6 +11,7 @@ class EmpresaVista {
     this.transferencia = empresa.transferencia ?? false;
     this.imagenesEnArticulos = empresa.imagenesEnArticulos ?? true;
     this.incluirHorarios = empresa.incluirHorarios ?? false;
+    this.incluirCodigoBarra = empresa.incluirCodigoBarra ?? false;
     this.logo_url = empresa.logo_url;
   }
 
@@ -23,6 +24,7 @@ class EmpresaVista {
     transferencia,
     imagenesEnArticulos,
     incluirHorarios,
+    incluirCodigoBarra,
   ) {
     this.nombre = nombre;
     this.telefono = telefono;
@@ -32,6 +34,7 @@ class EmpresaVista {
     this.transferencia = transferencia;
     this.imagenesEnArticulos = imagenesEnArticulos;
     this.incluirHorarios = incluirHorarios;
+    this.incluirCodigoBarra = incluirCodigoBarra;
   }
 
   mostrarUna() {
@@ -59,6 +62,7 @@ class EmpresaVista {
           empresaLogoUrl: this.logo_url,
           empresaImagenesEnArticulos: this.imagenesEnArticulos ?? true,
           empresaIncluirHorarios: this.incluirHorarios ?? false,
+          empresaIncluirCodigoBarra: this.incluirCodigoBarra ?? false,
         },
       });
       document.dispatchEvent(event);
@@ -458,6 +462,12 @@ class EmpresaVista {
               class="toggle-btn ${this.incluirHorarios ? "active" : ""}">
             Incluir Horarios
           </button>
+          <button
+              type="button"
+              id="btnIncluirCodigoBarra"
+              class="toggle-btn ${this.incluirCodigoBarra ? "active" : ""}">
+            Lector de códigos de barras
+          </button>
         </div>
 
         <input
@@ -471,6 +481,12 @@ class EmpresaVista {
           name="incluirHorarios"
           id="incluirHorarios"
           value="${!!this.incluirHorarios}">
+
+        <input
+          type="hidden"
+          name="incluirCodigoBarra"
+          id="incluirCodigoBarra"
+          value="${!!this.incluirCodigoBarra}">
 
         <div class="form-group">
           <label for="imagen">Imagen</label>

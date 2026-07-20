@@ -15,6 +15,17 @@
   color: #343333 !important;
 }
 
+.badge-articulos {
+  background-color: red;
+  border-radius: 500px;
+  color: white;
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  font-size: 14px;
+  padding: 1px 6px;
+}
+
 /* Animación tipo latido */
 @keyframes pulse {
   0% {

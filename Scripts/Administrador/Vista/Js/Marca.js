@@ -1,14 +1,15 @@
 class MarcaVista {
   constructor(marca) {
-    const { id, id_empresa, nombre, logo_url, abreviatura } = marca;
+    const { id, id_empresa, nombre, logo_url, abreviatura, cantidad } = marca;
     this.id = id;
     this.id_empresa = id_empresa;
     this.nombre = nombre;
     this.abreviatura = abreviatura;
+    this.cantidad = cantidad;
     this.logo_url = logo_url ?? "Archivos/Logos/Vacio.png";
   }
 
-  mostrarUno(paraCliente = false) {
+  mostrarUno(paraCliente = false, cantArticulosSeleccionados) {
     const divMarca = document.createElement("div");
     divMarca.classList.add("rubro");
     divMarca.dataset.MarcaId = this.id;
@@ -21,6 +22,14 @@ class MarcaVista {
     const container2 = document.createElement("div");
 
     divMarca.appendChild(container2);
+
+    if (cantArticulosSeleccionados > 0) {
+      const badge = document.createElement("span");
+      badge.classList.add("badge-articulos");
+      badge.textContent = cantArticulosSeleccionados;
+
+      divMarca.appendChild(badge);
+    }
 
     return divMarca;
   }
@@ -35,17 +44,17 @@ class MarcaVista {
 
     const htmlContent = `
     <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
-            <form id="form-modificar-marca" method="POST" enctype="multipart/form-data"> 
-                <h2 id ="titulo-modal">Modificar Marca</h2> 
-                <div class="form-group"> 
-                    <label for="nombre">Nombre:</label> 
-                    <input type="text" id="nombre" name="nombre" value="${this.nombre}" required> 
-                </div> 
-                <div class="form-group"> 
-                    <label for="nombre">Imagen:</label> 
-                    <input type="file" id="imagen" name="imagen" accept="image/*"> 
-                </div> 
-                <button type="submit" class="submit-button" id="boton-modificar-marca">Enviar</button> 
+            <form id="form-modificar-marca" method="POST" enctype="multipart/form-data">
+                <h2 id ="titulo-modal">Modificar Marca</h2>
+                <div class="form-group">
+                    <label for="nombre">Nombre:</label>
+                    <input type="text" id="nombre" name="nombre" value="${this.nombre}" required>
+                </div>
+                <div class="form-group">
+                    <label for="nombre">Imagen:</label>
+                    <input type="file" id="imagen" name="imagen" accept="image/*">
+                </div>
+                <button type="submit" class="submit-button" id="boton-modificar-marca">Enviar</button>
             </form> `;
     modalModificarContenido.innerHTML = htmlContent;
     modalModificar.appendChild(modalModificarContenido);

@@ -23,6 +23,7 @@ class ProveedorRepositorio
           'nombre'    => $data['nombre'],
           'abreviatura' => $data['abreviatura'],
           'logo_url' => $data['logo_url'],
+          'cantidad' => 0
         ];
       }
     } catch (PDOException $e) {
