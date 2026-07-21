@@ -647,18 +647,6 @@ class PantallaModerador {
         btn.classList.toggle("active");
         const activo = btn.classList.contains("active");
 
-        if (btn.id === "btnEfectivo") {
-          document.getElementById("efectivo").value = activo;
-        }
-
-        if (btn.id === "btnTarjeta") {
-          document.getElementById("tarjeta").value = activo;
-        }
-
-        if (btn.id === "btnTransferencia") {
-          document.getElementById("transferencia").value = activo;
-        }
-
         if (btn.id === "btnImagenesEnArticulos") {
           document.getElementById("imagenesEnArticulos").value = activo;
         }
@@ -688,9 +676,6 @@ class PantallaModerador {
       const nombre = formData.get("nombre");
       const telefono = formData.get("telefono");
       const ubicacion = formData.get("ubicacion");
-      const efectivo = formData.get("efectivo") === "true";
-      const tarjeta = formData.get("tarjeta") === "true";
-      const transferencia = formData.get("transferencia") === "true";
       const imagenesEnArticulos =
         formData.get("imagenesEnArticulos") === "true";
       const incluirHorarios = formData.get("incluirHorarios") === "true";
@@ -706,9 +691,6 @@ class PantallaModerador {
           nombre,
           telefono,
           ubicacion,
-          efectivo,
-          tarjeta,
-          transferencia,
           imagenesEnArticulos,
           incluirHorarios,
           incluirCodigoBarra,
@@ -727,9 +709,6 @@ class PantallaModerador {
           nombre,
           telefono,
           ubicacion,
-          efectivo,
-          tarjeta,
-          transferencia,
           imagenesEnArticulos,
           incluirHorarios,
         );

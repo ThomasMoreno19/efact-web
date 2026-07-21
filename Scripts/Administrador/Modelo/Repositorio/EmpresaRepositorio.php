@@ -32,9 +32,6 @@ class EmpresaRepositorio
         'ubicacion' => $data['ubicacion'],
         'tieneCarrito' => $data['tieneCarrito'],
         'deshabilitarExcel' => $data['deshabilitar_excel'],
-        'efectivo' => $data['efectivo'],
-        'tarjeta' => $data['tarjeta'],
-        'transferencia' => $data['transferencia'],
         'fecha_creacion' => $data['fecha_creacion'],
         'imagenesEnArticulos' => $data['imagenesEnArticulos'],
         'incluirHorarios' => $data['incluirHorarios'],
@@ -60,9 +57,6 @@ class EmpresaRepositorio
           'ubicacion' => $data['ubicacion'],
           'tieneCarrito' => $data['tieneCarrito'],
           'deshabilitarExcel' => $data['deshabilitar_excel'],
-          'efectivo' => $data['efectivo'],
-          'tarjeta' => $data['tarjeta'],
-          'transferencia' => $data['transferencia'],
           'logo_url' => $data['logo_url'],
           'fecha_creacion' => $data['fecha_creacion'],
           'imagenesEnArticulos' => $data['imagenesEnArticulos'],
@@ -76,7 +70,7 @@ class EmpresaRepositorio
     return $empresas;
   }
 
-  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia, ?string $logo_url = null): bool
+  public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $deshabilitar_excel, ?string $logo_url = null): bool
   {
     try {
       $sql = "UPDATE Empresa
@@ -84,10 +78,7 @@ class EmpresaRepositorio
           telefono = :telefono,
           ubicacion = :ubicacion,
           tieneCarrito = :tieneCarrito,
-          deshabilitar_excel = :deshabilitar_excel,
-          efectivo = :efectivo,
-          tarjeta = :tarjeta,
-          transferencia = :transferencia";
+          deshabilitar_excel = :deshabilitar_excel";
 
       if ($logo_url !== null && $logo_url !== '') {
         $sql .= ", logo_url = :logo_url";
@@ -103,9 +94,6 @@ class EmpresaRepositorio
       $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
       $stmt->bindParam(':tieneCarrito', $tieneCarrito, PDO::PARAM_BOOL);
       $stmt->bindParam(':deshabilitar_excel', $deshabilitar_excel, PDO::PARAM_BOOL);
-      $stmt->bindParam(':efectivo', $efectivo, PDO::PARAM_BOOL);
-      $stmt->bindParam(':tarjeta', $tarjeta, PDO::PARAM_BOOL);
-      $stmt->bindParam(':transferencia', $transferencia, PDO::PARAM_BOOL);
 
       if ($logo_url !== null && $logo_url !== '') {
         $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
@@ -115,20 +103,16 @@ class EmpresaRepositorio
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());
       return false;
-      return false;
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $efectivo, bool $tarjeta, bool $transferencia, bool $imagenesEnArticulos, bool $incluirHorarios, bool $incluirCodigoBarra): bool
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $imagenesEnArticulos, bool $incluirHorarios, bool $incluirCodigoBarra): bool
   {
     try {
       $sql = "UPDATE Empresa
           SET nombre = :nombre,
           telefono = :telefono,
           ubicacion = :ubicacion,
-          efectivo = :efectivo,
-          tarjeta = :tarjeta,
-          transferencia = :transferencia,
           imagenesEnArticulos = :imagenesEnArticulos,
           incluirHorarios = :incluirHorarios,
           incluirCodigoBarra = :incluirCodigoBarra";
@@ -141,9 +125,6 @@ class EmpresaRepositorio
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':telefono', $telefono, PDO::PARAM_STR);
       $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
-      $stmt->bindParam(':efectivo', $efectivo, PDO::PARAM_BOOL);
-      $stmt->bindParam(':tarjeta', $tarjeta, PDO::PARAM_BOOL);
-      $stmt->bindParam(':transferencia', $transferencia, PDO::PARAM_BOOL);
       $stmt->bindParam(':imagenesEnArticulos', $imagenesEnArticulos, PDO::PARAM_BOOL);
       $stmt->bindParam(':incluirHorarios', $incluirHorarios, PDO::PARAM_BOOL);
       $stmt->bindParam(':incluirCodigoBarra', $incluirCodigoBarra, PDO::PARAM_BOOL);
@@ -163,7 +144,6 @@ class EmpresaRepositorio
           WHERE id = :id;"
       );
 
-
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
 
@@ -181,14 +161,13 @@ class EmpresaRepositorio
     return null;
   }
 
-  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $deshabilitar_excel, bool $efectivo, bool $tarjeta, bool $transferencia): array
+  public function crear(string $nombre, string $logo_url, string $telefono, string $ubicacion, bool $tieneCarrito, bool $deshabilitar_excel): array
   {
     try {
       $fecha_actual = date('Y-m-d');
-      $fecha_actual = date('Y-m-d');
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, deshabilitar_excel, efectivo, tarjeta, transferencia) 
-        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :deshabilitar_excel, :efectivo, :tarjeta, :transferencia)"
+        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, deshabilitar_excel) 
+        VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :deshabilitar_excel)"
       );
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
@@ -196,9 +175,6 @@ class EmpresaRepositorio
       $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
       $stmt->bindParam(':tieneCarrito', $tieneCarrito, PDO::PARAM_BOOL);
       $stmt->bindParam(':deshabilitar_excel', $deshabilitar_excel, PDO::PARAM_BOOL);
-      $stmt->bindParam(':efectivo', $efectivo, PDO::PARAM_BOOL);
-      $stmt->bindParam(':tarjeta', $tarjeta, PDO::PARAM_BOOL);
-      $stmt->bindParam(':transferencia', $transferencia, PDO::PARAM_BOOL);
       $stmt->bindParam(':fecha_actual', $fecha_actual, PDO::PARAM_STR);
       $stmt->execute();
 
@@ -220,10 +196,7 @@ class EmpresaRepositorio
           'telefono' => $data['telefono'],
           'ubicacion' => $data['ubicacion'],
           'tieneCarrito' => $data['tieneCarrito'],
-          'deshabilitar_excel' => $data['deshabilitar_excel'],
-          'efectivo' => $data['efectivo'],
-          'tarjeta' => $data['tarjeta'],
-          'transferencia' => $data['transferencia'],
+          'deshabilitar_excel' => $data['deshabilitar_excel']
         ];
       }
     } catch (PDOException $e) {
@@ -341,6 +314,7 @@ class EmpresaRepositorio
       $this->pdo->prepare("DELETE FROM Articulo WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM Rubro WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM horarios_empresa WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM interno WHERE id_empresa = ?")->execute([$id]);
 
       $this->pdo->prepare("DELETE FROM Empresa WHERE id = ?")->execute([$id]);
 

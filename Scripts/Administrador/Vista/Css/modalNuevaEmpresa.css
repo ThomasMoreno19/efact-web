@@ -15,6 +15,13 @@ h3 {
   color: white;
 }
 
+.contenedor-contrasena-internos {
+  display: flex;
+  flex-direction: row;
+}
+
+#vaciar-contrasena-interno
+
 /* Estilos para el contenedor principal del contenido del modal */
 .modal-content {
   width: 100%;

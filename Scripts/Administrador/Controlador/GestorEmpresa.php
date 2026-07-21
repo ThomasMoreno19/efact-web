@@ -2,16 +2,19 @@
 // Scripts/Administrador/Controlador/GestorEmpresa.php
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/EmpresaRepositorio.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorInterno.php';
 
 class GestorEmpresa
 {
   private PDO $pdo;
   private empresaRepositorio $empresaRepositorio;
+  private GestorInterno $gestorInterno;
 
   public function __construct(PDO $pdo)
   {
     $this->pdo = $pdo;
     $this->empresaRepositorio = new EmpresaRepositorio($pdo);
+    $this->gestorInterno = new GestorInterno($pdo);
   }
 
   public function derivarURL(string $porcionURL): void
@@ -116,9 +119,7 @@ class GestorEmpresa
     $ubicacion = $_POST['ubicacion'];
     $tieneCarrito   = filter_var($_POST['tieneCarrito'], FILTER_VALIDATE_BOOLEAN);
     $deshabilitar_excel = filter_var($_POST['deshabilitarExcel'], FILTER_VALIDATE_BOOLEAN);
-    $efectivo       = filter_var($_POST['efectivo'], FILTER_VALIDATE_BOOLEAN);
-    $tarjeta        = filter_var($_POST['tarjeta'], FILTER_VALIDATE_BOOLEAN);
-    $transferencia  = filter_var($_POST['transferencia'], FILTER_VALIDATE_BOOLEAN);
+    $contrasenaInternos = $_POST['contrasenaInternos'];
     $imagen = null;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -140,8 +141,9 @@ class GestorEmpresa
       }
 
       // 4️⃣ Crear la empresa en la base de datos
-      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia);
+      $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $deshabilitar_excel);
 
+      $this->gestorInterno->crear($empresa['id'], $contrasenaInternos);
       // 5️⃣ Devolver respuesta
       http_response_code(200);
       echo json_encode([
@@ -151,9 +153,6 @@ class GestorEmpresa
         'ubicacion' => $empresa['ubicacion'],
         'tieneCarrito' => $empresa['tieneCarrito'],
         'deshabilitar_excel' => $empresa['deshabilitar_excel'],
-        'efectivo' => $empresa['efectivo'],
-        'tarjeta' => $empresa['tarjeta'],
-        'transferencia' => $empresa['transferencia'],
         'fecha_creacion' => $empresa['fecha_creacion'],
         'logo_url' => $empresa['logo_url'],
       ]);
@@ -175,9 +174,7 @@ class GestorEmpresa
     $telefono = $_POST['telefono'] ?? '';
     $tieneCarrito = filter_var($_POST['tieneCarrito'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $deshabilitar_excel = filter_var($_POST['deshabilitarExcel'] ?? false, FILTER_VALIDATE_BOOLEAN);
-    $efectivo = filter_var($_POST['efectivo'] ?? false, FILTER_VALIDATE_BOOLEAN);
-    $tarjeta = filter_var($_POST['tarjeta'] ?? false, FILTER_VALIDATE_BOOLEAN);
-    $transferencia = filter_var($_POST['transferencia'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    $contrasenaInternos = $_POST['contrasenaInternos'] ?? '';
     $imagen = null;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -200,8 +197,9 @@ class GestorEmpresa
         $logo_url = $this->subirLogo($nombre, $imagen);
       }
 
-      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $deshabilitar_excel, $efectivo, $tarjeta, $transferencia, $logo_url);
+      $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $deshabilitar_excel, $logo_url);
 
+      $this->gestorInterno->modificar($id_empresa, $contrasenaInternos);
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
 
@@ -221,9 +219,6 @@ class GestorEmpresa
     $nombre = $datos['nombre'];
     $ubicacion = $datos['ubicacion'];
     $telefono = $datos['telefono'];
-    $efectivo = $datos['efectivo'];
-    $tarjeta = $datos['tarjeta'];
-    $transferencia = $datos['transferencia'];
     $imagenesEnArticulos = $datos['imagenesEnArticulos'];
     $incluirHorarios = $datos['incluirHorarios'];
     $incluirCodigoBarra = $datos['incluirCodigoBarra'];
@@ -236,7 +231,7 @@ class GestorEmpresa
 
 
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $efectivo, $tarjeta, $transferencia, $imagenesEnArticulos, $incluirHorarios, $incluirCodigoBarra);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $imagenesEnArticulos, $incluirHorarios, $incluirCodigoBarra);
 
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);

@@ -10,10 +10,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/Ges
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorRubro.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorMarca.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorProveedor.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorInterno.php';
 
 $url = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'); // Tomar la url (Elimina barras iniciales/finales).
 
-cargarEnv($_SERVER['DOCUMENT_ROOT'] . '/.env');
 cargarEnv($_SERVER['DOCUMENT_ROOT'] . '/.env');
 // Dividir la url en un array
 $url_segmentada = explode('/', $url);
@@ -62,8 +62,34 @@ try {
       break;
 
     case 'catalogo':
-      require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/PantallaCliente.php';
-      exit;
+
+      $esInterno = isset($_GET['interno']);
+
+      if ($esInterno) {
+
+        // Obtener el número de empresa de la URL
+        $segmentos = explode('/', trim($porcionURL, '/'));
+        $idEmpresa = $segmentos[0] ?? null;
+
+        // Si no existe la sesión correspondiente
+        if (
+          !$idEmpresa ||
+          !isset($_SESSION['interno'][$idEmpresa]) ||
+          $_SESSION['interno'][$idEmpresa] !== true
+        ) {
+
+          require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/LoginInterno.php';
+          exit;
+        } else {
+          require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/pantallaCliente.php';
+          exit;
+        }
+      }
+
+    case 'interno':
+      $controlador = new GestorInterno($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
 
     default:
       http_response_code(404);

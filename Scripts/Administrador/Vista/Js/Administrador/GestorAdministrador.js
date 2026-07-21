@@ -26,10 +26,8 @@ class GestorAdministrador {
     ubicacion,
     tienecarrito,
     deshabilitar_excel,
-    efectivo,
-    tarjeta,
-    transferencia,
     imagen,
+    contrasenaInternos = null,
   ) {
     try {
       const formData = new FormData();
@@ -38,9 +36,8 @@ class GestorAdministrador {
       formData.append("ubicacion", ubicacion);
       formData.append("tieneCarrito", tienecarrito ? true : false);
       formData.append("deshabilitarExcel", deshabilitar_excel ? true : false);
-      formData.append("efectivo", efectivo ? true : false);
-      formData.append("tarjeta", tarjeta ? true : false);
-      formData.append("transferencia", transferencia ? true : false);
+      if (contrasenaInternos)
+        formData.append("contrasenaInternos", contrasenaInternos);
 
       if (imagen) {
         formData.append("imagen", imagen);
@@ -141,10 +138,8 @@ class GestorAdministrador {
     ubicacion,
     tieneCarrito,
     deshabilitar_excel,
-    efectivo,
-    tarjeta,
-    transferencia,
     imagenFile,
+    contrasenaInternos = null,
   ) {
     const formData = new FormData();
 
@@ -154,9 +149,9 @@ class GestorAdministrador {
     formData.append("ubicacion", ubicacion);
     formData.append("tieneCarrito", tieneCarrito);
     formData.append("deshabilitarExcel", deshabilitar_excel);
-    formData.append("efectivo", efectivo);
-    formData.append("tarjeta", tarjeta);
-    formData.append("transferencia", transferencia);
+
+    if (contrasenaInternos)
+      formData.append("contrasenaInternos", contrasenaInternos);
 
     // Solo mandamos la imagen si el usuario eligió una
     if (imagenFile) {

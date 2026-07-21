@@ -113,17 +113,6 @@ class PantallaAdministrador {
         if (btn.id === "btnDeshabilitarExcel") {
           document.getElementById("deshabilitarExcel").value = activo;
         }
-        if (btn.id === "btnEfectivo") {
-          document.getElementById("efectivo").value = activo;
-        }
-
-        if (btn.id === "btnTarjeta") {
-          document.getElementById("tarjeta").value = activo;
-        }
-
-        if (btn.id === "btnTransferencia") {
-          document.getElementById("transferencia").value = activo;
-        }
       });
     });
 
@@ -142,11 +131,9 @@ class PantallaAdministrador {
       const UBICACION = FORMDATA.get("ubicacion");
       const TIENE_CARRITO = FORMDATA.get("tieneCarrito") === "true";
       const DESHABILITAR_EXCEL = FORMDATA.get("deshabilitarExcel") === "true";
-      const EFECTIVO = FORMDATA.get("efectivo") === "true";
-      const TARJETA = FORMDATA.get("tarjeta") === "true";
-      const TRANSFERENCIA = FORMDATA.get("transferencia") === "true";
       const USUARIO = FORMDATA.get("usuario");
       const CONTRASENA = FORMDATA.get("contrasena");
+      const CONTRASENAINTERNOS = FORMDATA.get("contrasenaInternos");
 
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
@@ -156,10 +143,8 @@ class PantallaAdministrador {
           UBICACION,
           TIENE_CARRITO,
           DESHABILITAR_EXCEL,
-          EFECTIVO,
-          TARJETA,
-          TRANSFERENCIA,
           IMAGEN,
+          CONTRASENAINTERNOS,
         );
         await this.gestor.crearModerador(USUARIO, EMPRESA.id, CONTRASENA);
         MODAL.classList.add("hidden");
@@ -196,17 +181,6 @@ class PantallaAdministrador {
         if (btn.id === "btnDeshabilitarExcel") {
           document.getElementById("deshabilitarExcel").value = activo;
         }
-        if (btn.id === "btnEfectivo") {
-          document.getElementById("efectivo").value = activo;
-        }
-
-        if (btn.id === "btnTarjeta") {
-          document.getElementById("tarjeta").value = activo;
-        }
-
-        if (btn.id === "btnTransferencia") {
-          document.getElementById("transferencia").value = activo;
-        }
       });
     });
 
@@ -226,12 +200,10 @@ class PantallaAdministrador {
       const UBICACION = FORMDATA.get("ubicacion");
       const TIENE_CARRITO = FORMDATA.get("tieneCarrito") === "true";
       const DESHABILITAR_EXCEL = FORMDATA.get("deshabilitarExcel") === "true";
-      const EFECTIVO = FORMDATA.get("efectivo") === "true";
-      const TARJETA = FORMDATA.get("tarjeta") === "true";
-      const TRANSFERENCIA = FORMDATA.get("transferencia") === "true";
       const IMAGEN = document.getElementById("imagen").files[0] || null;
       const USUARIO = FORMDATA.get("usuario");
       const CONTRASENA = FORMDATA.get("contrasena");
+      const CONTRASENAINTERNOS = FORMDATA.get("contrasenaInternos");
 
       try {
         // Llamamos al método del gestor con el nombre y el archivo.
@@ -243,10 +215,8 @@ class PantallaAdministrador {
           UBICACION,
           TIENE_CARRITO,
           DESHABILITAR_EXCEL,
-          EFECTIVO,
-          TARJETA,
-          TRANSFERENCIA,
           IMAGEN,
+          CONTRASENAINTERNOS,
         );
         MODAL.classList.add("hidden");
         document.body.removeChild(MODAL);

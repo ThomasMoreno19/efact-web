@@ -6,9 +6,6 @@ class EmpresaVista {
     this.ubicacion = empresa.ubicacion;
     this.tieneCarrito = empresa.tieneCarrito ?? false;
     this.deshabilitarExcel = empresa.deshabilitarExcel ?? false;
-    this.efectivo = empresa.efectivo ?? false;
-    this.tarjeta = empresa.tarjeta ?? false;
-    this.transferencia = empresa.transferencia ?? false;
     this.imagenesEnArticulos = empresa.imagenesEnArticulos ?? true;
     this.incluirHorarios = empresa.incluirHorarios ?? false;
     this.incluirCodigoBarra = empresa.incluirCodigoBarra ?? false;
@@ -19,9 +16,6 @@ class EmpresaVista {
     nombre,
     telefono,
     ubicacion,
-    efectivo,
-    tarjeta,
-    transferencia,
     imagenesEnArticulos,
     incluirHorarios,
     incluirCodigoBarra,
@@ -29,9 +23,6 @@ class EmpresaVista {
     this.nombre = nombre;
     this.telefono = telefono;
     this.ubicacion = ubicacion;
-    this.efectivo = efectivo;
-    this.tarjeta = tarjeta;
-    this.transferencia = transferencia;
     this.imagenesEnArticulos = imagenesEnArticulos;
     this.incluirHorarios = incluirHorarios;
     this.incluirCodigoBarra = incluirCodigoBarra;
@@ -56,9 +47,6 @@ class EmpresaVista {
           empresaUbicacion: this.ubicacion,
           empresaTieneCarrito: this.tieneCarrito,
           empresaDeshabilitarExcel: this.deshabilitarExcel,
-          empresaEfectivo: this.efectivo,
-          empresaTarjeta: this.tarjeta,
-          empresaTransferencia: this.transferencia,
           empresaLogoUrl: this.logo_url,
           empresaImagenesEnArticulos: this.imagenesEnArticulos ?? true,
           empresaIncluirHorarios: this.incluirHorarios ?? false,
@@ -134,31 +122,8 @@ class EmpresaVista {
             Deshabilitar Excel
           </button>
         </div>
-        <text id="titulo-modulos"> Métodos de pago </text>
-        <div class="lista-botones">
-          <button type="button"
-              id="btnEfectivo"
-              class="toggle-btn ${this.efectivo ? "active" : ""}">
-            Efectivo
-          </button>
-
-          <button type="button"
-              id="btnTarjeta"
-              class="toggle-btn ${this.tarjeta ? "active" : ""}">
-            Tarjeta
-          </button>
-
-          <button type="button"
-              id="btnTransferencia"
-              class="toggle-btn ${this.transferencia ? "active" : ""}">
-            Transferencia
-          </button>
-        </div>
         <input type="hidden" name="tieneCarrito" id="tieneCarrito" value="${!!this.tieneCarrito}">
         <input type="hidden" name="deshabilitarExcel" id="deshabilitarExcel" value="${!!this.deshabilitarExcel}">
-        <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
-        <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
-        <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
         <div class="form-group">
           <label for="imagen">Imagen</label>
           <input type="file" id="imagen" name="imagen" accept="image/*">
@@ -171,6 +136,10 @@ class EmpresaVista {
           <label for="contrasena" class="required">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" required>
         </div>
+          <div class="form-group">
+            <label for="contrasenaInternos" class="">Contraseña para internos</label>
+            <input type="password" id="contrasenaInternos" name="contrasenaInternos">
+          </div>
         <div class="footer-wrapper">
           <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
         </div>
@@ -303,31 +272,8 @@ class EmpresaVista {
             Deshabilitar Excel
           </button>
         </div>
-        <text id="titulo-modulos"> Métodos de pago </text>
-        <div class="lista-botones">
-          <button type="button"
-              id="btnEfectivo"
-              class="toggle-btn ${this.efectivo ? "active" : ""}">
-            Efectivo
-          </button>
-
-          <button type="button"
-              id="btnTarjeta"
-              class="toggle-btn ${this.tarjeta ? "active" : ""}">
-            Tarjeta
-          </button>
-
-          <button type="button"
-              id="btnTransferencia"
-              class="toggle-btn ${this.transferencia ? "active" : ""}">
-            Transferencia
-          </button>
-        </div>
         <input type="hidden" name="tieneCarrito" id="tieneCarrito" value="${!!this.tieneCarrito}">
         <input type="hidden" name="deshabilitarExcel" id="deshabilitarExcel" value="${!!this.deshabilitarExcel}">
-        <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
-        <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
-        <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
         <div class="form-group">
           <label for="imagen">Imagen</label>
           <input type="file" id="imagen" name="imagen" accept="image/*">
@@ -339,6 +285,18 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+        </div>
+        <div class="contenedor-contrasena-internos">
+        <div class="form-group">
+          <label for="contrasenaInternos" class="">Contraseña para internos</label>
+          <input type="password" id="contrasenaInternos" name="contrasenaInternos" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+        </div>
+        <button type="button" id="vaciar-contrasena-interno" class="boton-vaciar eliminar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
         </div>
         <div class="footer-wrapper">
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
@@ -422,30 +380,6 @@ class EmpresaVista {
           <label for="ubicacion">Direccion</label>
           <input type="text" id="ubicacion" name="ubicacion" value="${this.ubicacion}">
         </div>
-        <text id="titulo-modulos"> Métodos de pago </text>
-        <div class="lista-botones">
-          <button type="button"
-              id="btnEfectivo"
-              class="toggle-btn ${this.efectivo ? "active" : ""}">
-            Efectivo
-          </button>
-
-          <button type="button"
-              id="btnTarjeta"
-              class="toggle-btn ${this.tarjeta ? "active" : ""}">
-            Tarjeta
-          </button>
-
-          <button type="button"
-              id="btnTransferencia"
-              class="toggle-btn ${this.transferencia ? "active" : ""}">
-            Transferencia
-          </button>
-        </div>
-
-        <input type="hidden" name="efectivo" id="efectivo" value="${!!this.efectivo}">
-        <input type="hidden" name="tarjeta" id="tarjeta" value="${!!this.tarjeta}">
-        <input type="hidden" name="transferencia" id="transferencia" value="${!!this.transferencia}">
 
         <text id="titulo-modulos-config">Módulos</text>
 
@@ -509,19 +443,7 @@ class EmpresaVista {
     if (!this.tieneCarrito) {
       const listaBotones =
         modalModificarEmpresaContenido.querySelector(".lista-botones");
-      const btnEfectivo =
-        modalModificarEmpresaContenido.querySelector("#btnEfectivo");
-      const btnTarjeta =
-        modalModificarEmpresaContenido.querySelector("#btnTarjeta");
-      const btnTransferencia =
-        modalModificarEmpresaContenido.querySelector("#btnTransferencia");
-      const textoMetodosPago =
-        modalModificarEmpresaContenido.querySelector("#titulo-modulos");
       listaBotones.classList.add("hidden");
-      textoMetodosPago.classList.add("hidden");
-      btnEfectivo.classList.add("hidden");
-      btnTarjeta.classList.add("hidden");
-      btnTransferencia.classList.add("hidden");
     }
 
     modalModificarEmpresa.appendChild(modalModificarEmpresaContenido);
