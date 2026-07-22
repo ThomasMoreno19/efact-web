@@ -1,6 +1,4 @@
 <?php
-// Inicia la sesión globalmente, ya que todas las solicitudes pasan por aquí.
-session_start();
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/env.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Incluye/ConexionBD.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorEmpresa.php';
@@ -12,6 +10,19 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/Ges
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorProveedor.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorInterno.php';
 
+
+$lifetime = 60 * 60 * 24; // 1 día
+
+ini_set('session.gc_maxlifetime', $lifetime);
+
+session_set_cookie_params([
+  'lifetime' => $lifetime,
+  'path' => '/',
+  'httponly' => true,
+  'samesite' => 'Lax',
+]);
+session_start();
+
 $url = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'); // Tomar la url (Elimina barras iniciales/finales).
 
 cargarEnv($_SERVER['DOCUMENT_ROOT'] . '/.env');
@@ -21,7 +32,6 @@ $url_principal = $url_segmentada[0]; //lo que va antes de la primer barra en el 
 $porcionURL = implode('/', array_slice($url_segmentada, 1)); // el resto de la url, si la url entera es Empresa/mostrar/123, entonces porcionURl será mostrar/123
 
 $pdo = conectarBD();
-
 
 // Distribuir, dependiendo del primer segmento
 try {

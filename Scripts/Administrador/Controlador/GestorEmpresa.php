@@ -174,7 +174,7 @@ class GestorEmpresa
     $telefono = $_POST['telefono'] ?? '';
     $tieneCarrito = filter_var($_POST['tieneCarrito'] ?? false, FILTER_VALIDATE_BOOLEAN);
     $deshabilitar_excel = filter_var($_POST['deshabilitarExcel'] ?? false, FILTER_VALIDATE_BOOLEAN);
-    $contrasenaInternos = $_POST['contrasenaInternos'] ?? '';
+    $contrasenaInterno = $_POST['contrasenaInterno'] ?? null;
     $imagen = null;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -199,7 +199,9 @@ class GestorEmpresa
 
       $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $deshabilitar_excel, $logo_url);
 
-      $this->gestorInterno->modificar($id_empresa, $contrasenaInternos);
+      if ($contrasenaInterno !== null && $contrasenaInterno !== '') {
+        $this->gestorInterno->modificar($id_empresa, $contrasenaInterno);
+      }
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
 
@@ -222,6 +224,7 @@ class GestorEmpresa
     $imagenesEnArticulos = $datos['imagenesEnArticulos'];
     $incluirHorarios = $datos['incluirHorarios'];
     $incluirCodigoBarra = $datos['incluirCodigoBarra'];
+    $contrasenaInterno = $datos['contrasenaInterno'] ?? null;
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -233,6 +236,9 @@ class GestorEmpresa
     try {
       $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $imagenesEnArticulos, $incluirHorarios, $incluirCodigoBarra);
 
+      if ($contrasenaInterno !== null && $contrasenaInterno !== '') {
+        $this->gestorInterno->modificar($id_empresa, $contrasenaInterno);
+      }
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
 

@@ -669,6 +669,13 @@ class PantallaModerador {
       this.listaCentral.classList.remove("hidden");
     });
 
+    const botonVaciarContrasenaInternos = document.getElementById(
+      "vaciar-contrasena-interno",
+    );
+    botonVaciarContrasenaInternos.addEventListener("click", () => {
+      this.ConfirmarVaciarContrasenaInternos();
+    });
+
     const form = document.getElementById("formModificarEmpresa");
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -682,6 +689,7 @@ class PantallaModerador {
       const incluirCodigoBarra = formData.get("incluirCodigoBarra") === "true";
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
+      const contrasenaInternos = formData.get("contrasenaInternos");
       const imagen = formData.get("imagen");
 
       try {
@@ -694,6 +702,7 @@ class PantallaModerador {
           imagenesEnArticulos,
           incluirHorarios,
           incluirCodigoBarra,
+          contrasenaInternos,
         );
         if (imagen && imagen.size > 0) {
           const empresaConNuevoLogo = await this.gestor.cambiarLogoEmpresa(
@@ -720,6 +729,16 @@ class PantallaModerador {
         alert(`Error: ${error.message}`);
       }
     });
+  }
+
+  ConfirmarVaciarContrasenaInternos() {
+    if (
+      confirm(
+        "¿Estás seguro de que deseas vaciar la contraseña de los moderadores internos? Esta acción no se puede deshacer.",
+      )
+    ) {
+      this.gestor.vaciarContrasenaInternos(this.empresa.id);
+    }
   }
 
   async configurarEmpresa() {

@@ -98,6 +98,33 @@ class GestorAdministrador {
     }
   }
 
+  async vaciarContrasenaInternos(id_empresa) {
+    const bodyData = { id_empresa: id_empresa };
+
+    try {
+      const response = await fetch(`/interno/vaciar-contrasena`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al vaciar contrasena" }));
+        throw new Error(
+          errorData.message ||
+            `Error al vaciar la contrasena: ${response.status}`,
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error al modificar el empresa:", error);
+      throw error;
+    }
+  }
+
   async modificarModerador(id, nombre, contrasena) {
     const bodyData = {
       nombre: nombre,
@@ -151,7 +178,7 @@ class GestorAdministrador {
     formData.append("deshabilitarExcel", deshabilitar_excel);
 
     if (contrasenaInternos)
-      formData.append("contrasenaInternos", contrasenaInternos);
+      formData.append("contrasenaInterno", contrasenaInternos);
 
     // Solo mandamos la imagen si el usuario eligió una
     if (imagenFile) {
@@ -209,7 +236,6 @@ class GestorAdministrador {
         body: JSON.stringify(bodyData),
       });
       const moderador = await Moderador.json();
-      console.log("Moderador obtenido:", moderador);
       return moderador;
     } catch (error) {
       console.error(

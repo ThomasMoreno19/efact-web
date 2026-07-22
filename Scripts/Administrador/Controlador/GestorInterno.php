@@ -152,9 +152,12 @@ class GestorInterno
     return $this->repositorio->modificar($id, $password);
   }
 
-  private function vaciarContrasena(): bool
+  private function vaciarContrasena()
   {
-    $id_empresa = (int)($_POST['id_empresa'] ?? 0);
-    return $this->repositorio->vaciarContrasena($id_empresa);
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = (int)($datos['id_empresa'] ?? 0);
+
+    echo json_encode($this->repositorio->vaciarContrasena($id_empresa));
   }
 }

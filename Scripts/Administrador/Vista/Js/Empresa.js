@@ -286,18 +286,20 @@ class EmpresaVista {
           <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
         </div>
-        <div class="contenedor-contrasena-internos">
+        
         <div class="form-group">
           <label for="contrasenaInternos" class="">Contraseña para internos</label>
-          <input type="password" id="contrasenaInternos" name="contrasenaInternos" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+          <div class="contenedor-contrasena-internos">
+            <input type="password" id="contrasenaInternos" name="contrasenaInternos" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+            <button type="button" id="vaciar-contrasena-interno" class="boton-vaciar eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
         </div>
-        <button type="button" id="vaciar-contrasena-interno" class="boton-vaciar eliminar">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
-          </svg>
-        </button>
-        </div>
+        
         <div class="footer-wrapper">
         <button type="submit" class="submit-button" id="boton-guardar-empresa">Enviar</button>
         </div>
@@ -433,6 +435,19 @@ class EmpresaVista {
         <div class="form-group">
           <label for="contrasena">Contraseña</label>
           <input type="password" id="contrasena" name="contrasena" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+        </div>
+
+        <div class="form-group">
+          <label for="contrasenaInternos" class="">Contraseña para internos</label>
+          <div class="contenedor-contrasena-internos">
+            <input type="password" id="contrasenaInternos" name="contrasenaInternos" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+            <button type="button" id="vaciar-contrasena-interno" class="boton-vaciar eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
         </div>
         <div class="footer-wrapper">
           <button type="submit" id="boton-guardar-empresa">Enviar</button>

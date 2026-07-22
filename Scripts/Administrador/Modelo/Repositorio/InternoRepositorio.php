@@ -68,7 +68,7 @@ class RepositorioInterno
     $sql = "
         UPDATE interno
         SET contrasena = :contrasena
-        WHERE id = :id
+        WHERE id_empresa = :id
     ";
 
     $stmt = $this->pdo->prepare($sql);
@@ -81,15 +81,17 @@ class RepositorioInterno
 
   public function vaciarContrasena(int $id_empresa): bool
   {
+    $contrasena = password_hash('', PASSWORD_DEFAULT);
     $sql = "
         UPDATE interno
-        SET contrasena = ''
+        SET contrasena = :contrasena
         WHERE id_empresa = :id_empresa
     ";
 
     $stmt = $this->pdo->prepare($sql);
 
     $stmt->bindValue(':id_empresa', $id_empresa, PDO::PARAM_INT);
+    $stmt->bindValue(':contrasena', $contrasena, PDO::PARAM_STR);
 
     return $stmt->execute();
   }

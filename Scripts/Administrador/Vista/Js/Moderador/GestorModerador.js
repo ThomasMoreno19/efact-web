@@ -613,6 +613,7 @@ class GestorModerador {
     imagenesEnArticulos,
     incluirHorarios,
     incluirCodigoBarra,
+    contrasenaInterno,
   ) {
     const bodyData = {
       id: id,
@@ -623,6 +624,9 @@ class GestorModerador {
       incluirHorarios: incluirHorarios,
       incluirCodigoBarra: incluirCodigoBarra,
     };
+    if (contrasenaInterno) {
+      bodyData.contrasenaInterno = contrasenaInterno;
+    }
 
     try {
       const response = await fetch(`/empresa/modificar-para-moderador`, {
@@ -642,6 +646,33 @@ class GestorModerador {
       }
 
       // El backend debe devolver el objeto de la nueva empresa creada.
+      return await response.json();
+    } catch (error) {
+      console.error("Error al modificar el empresa:", error);
+      throw error;
+    }
+  }
+
+  async vaciarContrasenaInternos(id_empresa) {
+    const bodyData = { id_empresa: id_empresa };
+
+    try {
+      const response = await fetch(`/interno/vaciar-contrasena`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al vaciar contrasena" }));
+        throw new Error(
+          errorData.message ||
+            `Error al vaciar la contrasena: ${response.status}`,
+        );
+      }
+
       return await response.json();
     } catch (error) {
       console.error("Error al modificar el empresa:", error);

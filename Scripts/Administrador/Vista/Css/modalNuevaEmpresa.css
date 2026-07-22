@@ -20,8 +20,6 @@ h3 {
   flex-direction: row;
 }
 
-#vaciar-contrasena-interno
-
 /* Estilos para el contenedor principal del contenido del modal */
 .modal-content {
   width: 100%;
@@ -65,6 +63,15 @@ h3 {
   cursor: pointer;
   font-size: 38px;
   color: white;
+}
+
+#vaciar-contrasena-interno {
+  height: fit-content;
+  padding: 4px;
+  border-radius: 4px;
+  border: none;
+  background: red;
+  margin: auto 10px;
 }
 
 .footer-wrapper {
@@ -198,7 +205,7 @@ h3 {
 .form-group input[type="number"],
 .form-group input[type="password"],
 select {
-  width: 40%;
+  width: 400px;
   padding: 10px;
   border: transparent;
   border-radius: 5px;
@@ -224,7 +231,7 @@ option {
   .form-group input[type="numeric"],
   .form-group input[type="password"],
   select {
-    width: 70%;
+    width: 250px;
   }
 
   .modal-content-configurar {

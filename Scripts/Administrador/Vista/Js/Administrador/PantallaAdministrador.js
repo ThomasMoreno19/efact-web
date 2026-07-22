@@ -191,6 +191,13 @@ class PantallaAdministrador {
       document.body.removeChild(MODAL);
     });
 
+    const botonVaciarContrasenaInternos = document.getElementById(
+      "vaciar-contrasena-interno",
+    );
+    botonVaciarContrasenaInternos.addEventListener("click", () => {
+      this.ConfirmarVaciarContrasenaInternos(empresa.id);
+    });
+
     const FORM = document.getElementById("formModificarEmpresa");
     FORM.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -225,6 +232,16 @@ class PantallaAdministrador {
         alert(`Error: ${error.message}`);
       }
     });
+  }
+
+  ConfirmarVaciarContrasenaInternos(id) {
+    if (
+      confirm(
+        "¿Estás seguro de que deseas vaciar la contraseña de los moderadores internos? Esta acción no se puede deshacer.",
+      )
+    ) {
+      this.gestor.vaciarContrasenaInternos(id);
+    }
   }
 }
 
