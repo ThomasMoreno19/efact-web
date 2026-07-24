@@ -13,7 +13,7 @@ class ProveedorRepositorio
     $proveedores = [];
     try {
       $stmt = $this->pdo->prepare(
-        "SELECT id, nombre, abreviatura, logo_url FROM Proveedor WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
+        "SELECT id, nombre, abreviatura, logo_url FROM proveedor WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
@@ -36,7 +36,7 @@ class ProveedorRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Proveedor (id, id_empresa, nombre) VALUES (:id, :id_empresa, :nombre);"
+        "INSERT INTO proveedor (id, id_empresa, nombre) VALUES (:id, :id_empresa, :nombre);"
       );
       $stmt->bindParam(':id',        $id,        PDO::PARAM_INT);
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
@@ -77,7 +77,7 @@ class ProveedorRepositorio
       $i++;
     }
 
-    $sql = "INSERT INTO Proveedor (id, id_empresa, nombre, abreviatura, aparece_en_csv)
+    $sql = "INSERT INTO proveedor (id, id_empresa, nombre, abreviatura, aparece_en_csv)
           VALUES " . implode(', ', $values) . "
           ON DUPLICATE KEY UPDATE
               nombre = VALUES(nombre),
@@ -100,7 +100,7 @@ class ProveedorRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Proveedor
+        "UPDATE proveedor
                  SET aparece_en_csv = 0
                  WHERE id_empresa = :id_empresa;"
       );
@@ -118,7 +118,7 @@ class ProveedorRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "DELETE FROM Proveedor 
+        "DELETE FROM proveedor 
             WHERE aparece_en_csv = 0 AND id_empresa = :id_empresa;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
@@ -148,7 +148,7 @@ class ProveedorRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Proveedor
+        "UPDATE proveedor
                  SET nombre = :nombre,
                  logo_url = :logo_url
                  WHERE id = :id AND id_empresa = :id_empresa;"

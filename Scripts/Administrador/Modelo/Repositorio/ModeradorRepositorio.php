@@ -18,7 +18,7 @@ class ModeradorRepositorio
   {
     if ($this->sosAtributo($atributo)) {
       $stmt = $this->pdo->prepare("
-            SELECT * FROM Moderador 
+            SELECT * FROM moderador 
             WHERE (" . $atributo . " BETWEEN :valor_min AND :valor_max)");
       $stmt->bindParam(':valor_min', $valor_min, PDO::PARAM_STR);
       $stmt->bindParam(':valor_max', $valor_max, PDO::PARAM_STR);
@@ -37,26 +37,12 @@ class ModeradorRepositorio
   }
 
 
-  public function obtenerPorId(int $id, int $id_empresa): ?Moderador
-  {
-    $stmt = $this->pdo->prepare("SELECT * FROM Moderador WHERE id = :id AND id_empresa = :id_empresa");
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-    $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
-    $stmt->execute();
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($data) {
-      return new Moderador($data['id'], $data['id_empresa'], $data['nombre'], $data['contrasena']);
-    }
-    return null;
-  }
-
-
   public function obtenerTodos(): array
   {
     $moderadores = [];
     try {
       $stmt = $this->pdo->prepare("
-                SELECT id, id_empresa, nombre FROM Moderador
+                SELECT id, id_empresa, nombre FROM moderador
                 ORDER BY nombre ASC;");
       $stmt->execute();
 
@@ -99,7 +85,7 @@ class ModeradorRepositorio
       $contrasenaHasheada = password_hash($contrasena, PASSWORD_DEFAULT);
 
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Moderador (id_empresa, nombre, contrasena)
+        "INSERT INTO moderador (id_empresa, nombre, contrasena)
                 VALUES (:id_empresa, :nombre, :contrasena)"
       );
 
@@ -127,7 +113,7 @@ class ModeradorRepositorio
     try {
       $contrasenaHasheada = password_hash($contrasena, PASSWORD_DEFAULT);
       $stmt = $this->pdo->prepare(
-        "UPDATE Moderador
+        "UPDATE moderador
                  SET nombre = :nombre,
                  contrasena = :contrasena
                  WHERE id = :id;"
@@ -141,7 +127,7 @@ class ModeradorRepositorio
         return $moderador = [$id, $nombre, $contrasena];
       }
     } catch (PDOException $e) {
-      error_log("Error al modificar Moderador: " . $e->getMessage());
+      error_log("Error al modificar moderador: " . $e->getMessage());
     }
     return [];
   }
@@ -150,7 +136,7 @@ class ModeradorRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Moderador
+        "UPDATE moderador
                  SET nombre = :nombre
                  WHERE id = :id;"
       );
@@ -162,7 +148,7 @@ class ModeradorRepositorio
         return $moderador = [$id, $nombre];
       }
     } catch (PDOException $e) {
-      error_log("Error al modificar Moderador: " . $e->getMessage());
+      error_log("Error al modificar moderador: " . $e->getMessage());
     }
     return [];
   }
@@ -172,7 +158,7 @@ class ModeradorRepositorio
     try {
       $contrasenaHasheada = password_hash($contrasena, PASSWORD_DEFAULT);
       $sql = $this->pdo->prepare(
-        "UPDATE Moderador
+        "UPDATE moderador
                  SET contrasena = :contrasena
                  WHERE id = :id;"
       );
@@ -184,7 +170,7 @@ class ModeradorRepositorio
         return true;
       }
     } catch (PDOException $error) {
-      error_log("Error al cambiar contrasena de Moderador: " . $error->getMessage());
+      error_log("Error al cambiar contrasena de moderador: " . $error->getMessage());
     }
     return false;
   }
@@ -193,7 +179,7 @@ class ModeradorRepositorio
   {
     try {
       $sql = $this->pdo->prepare(
-        "DELETE FROM Moderador WHERE id = :id;"
+        "DELETE FROM moderador WHERE id = :id;"
       );
 
       $sql->bindParam(':id', $id, PDO::PARAM_INT);
@@ -211,7 +197,7 @@ class ModeradorRepositorio
   {
     try {
       $sql = $this->pdo->prepare(
-        "SELECT contrasena FROM Moderador WHERE id = :id;"
+        "SELECT contrasena FROM moderador WHERE id = :id;"
       );
 
       $sql->bindParam(':id', $id, PDO::PARAM_INT);
@@ -238,7 +224,7 @@ class ModeradorRepositorio
   {
     try {
       $sql = $this->pdo->prepare(
-        "SELECT * FROM Moderador WHERE id_empresa = :id_empresa;"
+        "SELECT * FROM moderador WHERE id_empresa = :id_empresa;"
       );
       $sql->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $sql->execute();

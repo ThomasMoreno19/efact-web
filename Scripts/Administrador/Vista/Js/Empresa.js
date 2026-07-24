@@ -289,9 +289,22 @@ class EmpresaVista {
         
         <div class="form-group">
           <label for="contrasenaInternos" class="">Contraseña para internos</label>
-          <div class="contenedor-contrasena-internos">
+          <div class="contenedor-contrasena">
             <input type="password" id="contrasenaInternos" name="contrasenaInternos" placeholder="Dejar vacío en caso de no cambiar la contrasena">
             <button type="button" id="vaciar-contrasena-interno" class="boton-vaciar eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="contrasenaExternos" class="">Contraseña para externos</label>
+          <div class="contenedor-contrasena">
+            <input type="password" id="contrasenaExternos" name="contrasenaExternos" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+            <button type="button" id="vaciar-contrasena-externo" class="boton-vaciar eliminar">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
@@ -441,7 +454,20 @@ class EmpresaVista {
           <label for="contrasenaInternos" class="">Contraseña para internos</label>
           <div class="contenedor-contrasena-internos">
             <input type="password" id="contrasenaInternos" name="contrasenaInternos" placeholder="Dejar vacío en caso de no cambiar la contrasena">
-            <button type="button" id="vaciar-contrasena-interno" class="boton-vaciar eliminar">
+            <button type="button" id="vaciar-contrasena-interno" class="boton-vaciar-contrasena-usuario eliminar">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="contrasenaExternos" class="">Contraseña para externos</label>
+          <div class="contenedor-contrasena-externos">
+            <input type="password" id="contrasenaExternos" name="contrasenaExternos" placeholder="Dejar vacío en caso de no cambiar la contrasena">
+            <button type="button" id="vaciar-contrasena-externo" class="boton-vaciar-contrasena-usuario eliminar">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trash-2">
                 <polyline points="3 6 5 6 21 6"></polyline>
                 <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6m5 0V4a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v2"></path>

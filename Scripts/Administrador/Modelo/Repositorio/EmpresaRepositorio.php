@@ -1,7 +1,4 @@
 <?php
-// Scripts/Administrador/Modelo/Repositorio/EmpresaRepositorio.php
-
-require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Entidad/EmpresaEntidad.php';
 
 class EmpresaRepositorio
 {
@@ -16,7 +13,7 @@ class EmpresaRepositorio
     $stmt = $this->pdo->prepare("
       SELECT 
         *
-      FROM Empresa 
+      FROM empresa 
       WHERE id = :id
     ");
 
@@ -47,7 +44,7 @@ class EmpresaRepositorio
     $empresas = [];
     try {
       $stmt = $this->pdo->query(
-        "SELECT * FROM Empresa ORDER BY nombre ASC;"
+        "SELECT * FROM empresa ORDER BY nombre ASC;"
       );
       while ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $empresas[] = [
@@ -73,7 +70,7 @@ class EmpresaRepositorio
   public function modificar(int $id, string $nombre, string $ubicacion, string $telefono, bool $tieneCarrito, bool $deshabilitar_excel, ?string $logo_url = null): bool
   {
     try {
-      $sql = "UPDATE Empresa
+      $sql = "UPDATE empresa
           SET nombre = :nombre,
           telefono = :telefono,
           ubicacion = :ubicacion,
@@ -109,7 +106,7 @@ class EmpresaRepositorio
   public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $imagenesEnArticulos, bool $incluirHorarios, bool $incluirCodigoBarra): bool
   {
     try {
-      $sql = "UPDATE Empresa
+      $sql = "UPDATE empresa
           SET nombre = :nombre,
           telefono = :telefono,
           ubicacion = :ubicacion,
@@ -139,7 +136,7 @@ class EmpresaRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Empresa
+        "UPDATE empresa
           SET logo_url = :logo_url
           WHERE id = :id;"
       );
@@ -166,7 +163,7 @@ class EmpresaRepositorio
     try {
       $fecha_actual = date('Y-m-d');
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, deshabilitar_excel) 
+        "INSERT INTO empresa (nombre, fecha_creacion, logo_url, telefono, ubicacion, tieneCarrito, deshabilitar_excel) 
         VALUES (:nombre, :fecha_actual, :logo_url, :telefono, :ubicacion, :tieneCarrito, :deshabilitar_excel)"
       );
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
@@ -180,7 +177,7 @@ class EmpresaRepositorio
 
 
       $id = $this->pdo->lastInsertId();
-      $stmt = $this->pdo->prepare("SELECT * FROM Empresa WHERE id = :id");
+      $stmt = $this->pdo->prepare("SELECT * FROM empresa WHERE id = :id");
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);
       $stmt->execute();
 
@@ -310,13 +307,16 @@ class EmpresaRepositorio
       // Una sola consulta multitabla
       $this->pdo->beginTransaction();
 
-      $this->pdo->prepare("DELETE FROM Moderador WHERE id_empresa = ?")->execute([$id]);
-      $this->pdo->prepare("DELETE FROM Articulo WHERE id_empresa = ?")->execute([$id]);
-      $this->pdo->prepare("DELETE FROM Rubro WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM articulo WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM horarios_empresa WHERE id_empresa = ?")->execute([$id]);
       $this->pdo->prepare("DELETE FROM interno WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM externo WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM moderador WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM rubro WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM proveedor WHERE id_empresa = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM marca WHERE id_empresa = ?")->execute([$id]);
 
-      $this->pdo->prepare("DELETE FROM Empresa WHERE id = ?")->execute([$id]);
+      $this->pdo->prepare("DELETE FROM empresa WHERE id = ?")->execute([$id]);
 
       $this->pdo->commit();
 

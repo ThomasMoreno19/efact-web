@@ -15,7 +15,7 @@ h3 {
   color: white;
 }
 
-.contenedor-contrasena-internos {
+.contenedor-contrasena {
   display: flex;
   flex-direction: row;
 }
@@ -65,7 +65,7 @@ h3 {
   color: white;
 }
 
-#vaciar-contrasena-interno {
+.boton-vaciar-contrasena-usuario {
   height: fit-content;
   padding: 4px;
   border-radius: 4px;

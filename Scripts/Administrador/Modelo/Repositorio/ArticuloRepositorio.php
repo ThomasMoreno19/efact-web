@@ -1,8 +1,6 @@
 <?php
 //Scripts/Administrador/Modelo/Repositorio/ArticuloRepositorio.php
 
-require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Entidad/ArticuloEntidad.php';
-
 
 class ArticuloRepositorio
 {
@@ -11,31 +9,6 @@ class ArticuloRepositorio
   public function __construct(PDO $pdo)
   {
     $this->pdo = $pdo;
-  }
-
-
-  public function obtenerPorId(int $id, int $id_rubro): ?Articulo
-  {
-    $stmt = $this->pdo->prepare("SELECT * FROM Articulo WHERE id = :id AND id_rubro = :id_rubro");
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-    $stmt->bindParam(':id_rubro', $id_rubro, PDO::PARAM_INT);
-    $stmt->execute();
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($data) {
-      return new Articulo(
-        $data['id'],
-        $data['id_rubro'],
-        $data['id_empresa'],
-        $data['nombre'],
-        $data['precio1'],
-        $data['precio2'],
-        $data['precio3'],
-        $data['aparece_en_csv'],
-        $data['logo_url'],
-        $data['video_url'],
-      );
-    }
-    return null;
   }
 
   public function obtenerTodos(int $id_rubro): array
@@ -55,7 +28,7 @@ class ArticuloRepositorio
                     video_url,
                     ubicacion,
                     logo_url
-                FROM Articulo
+                FROM articulo
                 WHERE id_rubro = :id_rubro
                 ORDER BY nombre ASC
             ");
@@ -87,10 +60,11 @@ class ArticuloRepositorio
                     precio2,
                     precio3,
                     no_procesado,
+                    oferta,
                     ubicacion,
                     video_url,
                     logo_url
-                FROM Articulo
+                FROM articulo
                 WHERE id_empresa = :id_empresa
                 ORDER BY id_rubro ASC, nombre ASC
             ");
@@ -124,14 +98,15 @@ class ArticuloRepositorio
                 a.precio2,
                 a.precio3,
                 a.no_procesado,
+                a.oferta,
                 a.ubicacion,
                 a.video_url,
                 a.logo_url
-            FROM Articulo a
-            LEFT JOIN Marca m
+            FROM articulo a
+            LEFT JOIN marca m
                 ON a.id_marca = m.id
                 AND a.id_empresa = m.id_empresa
-            LEFT JOIN Proveedor p
+            LEFT JOIN proveedor p
                 ON a.id_proveedor = p.id
                 AND a.id_empresa = p.id_empresa
             WHERE a.id_empresa = :id_empresa
@@ -171,6 +146,7 @@ class ArticuloRepositorio
             :precio3$i,
             :existencia$i,
             :no_procesado$i,
+            :oferta$i,
             :codigo_interno$i,
             :codigo_barra$i,
             :codigo_proveedor$i,
@@ -195,6 +171,7 @@ class ArticuloRepositorio
 
       $params[":existencia$i"] = (string) $a['existencia'];
       $params[":no_procesado$i"] = $a['no_procesado'] ?? 0;
+      $params[":oferta$i"] = $a['oferta'] ?? 0;
 
       $params[":abreviatura$i"] = $a['abreviatura'] ?: null;
       $params[":ubicacion$i"] = $a['ubicacion'] ?: null;
@@ -208,7 +185,7 @@ class ArticuloRepositorio
     }
 
     $sql = "
-        INSERT INTO Articulo (
+        INSERT INTO articulo (
             id,
             id_rubro,
             id_marca,
@@ -220,6 +197,7 @@ class ArticuloRepositorio
             precio3,
             existencia,
             no_procesado,
+            oferta,
             codigo_interno,
             codigo_barra,
             codigo_proveedor,
@@ -240,6 +218,7 @@ class ArticuloRepositorio
             precio3 = VALUES(precio3),
             existencia = VALUES(existencia),
             no_procesado = VALUES(no_procesado),
+            oferta = VALUES(oferta),
             abreviatura = VALUES(abreviatura),
             ubicacion = VALUES(ubicacion),
             codigo_interno = VALUES(codigo_interno),
@@ -267,7 +246,7 @@ class ArticuloRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Articulo
+        "UPDATE articulo
                  SET nombre = :nombre,
                     precio1 = :precio1,
                     precio2 = :precio2,
@@ -297,7 +276,7 @@ class ArticuloRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "DELETE FROM Articulo 
+        "DELETE FROM articulo 
             WHERE aparece_en_csv = 0 AND id_empresa = :id_empresa;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
@@ -327,7 +306,7 @@ class ArticuloRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Articulo
+        "UPDATE articulo
                  SET aparece_en_csv = 0
                  WHERE id_empresa = :id_empresa;"
       );
@@ -344,7 +323,7 @@ class ArticuloRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Articulo
+        "UPDATE articulo
              SET video_url = :video_url
              WHERE id = :id AND id_empresa = :id_empresa;"
       );
@@ -366,7 +345,7 @@ class ArticuloRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Articulo
+        "UPDATE articulo
              SET video_url = ''
              WHERE id = :id AND id_empresa = :id_empresa;"
       );

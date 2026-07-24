@@ -2,15 +2,17 @@ class PantallaCliente {
   constructor() {
     // Inicializamos el Gestor y los elementos del DOM
     this.header = document.getElementById("header");
+    this.botonMenu = document.getElementById("abrir-menu");
     this.imagenHeader = document.getElementById("imagen-header");
     this.tituloPagina = document.getElementById("titulo-pagina");
-    this.botonVolver = document.getElementById("boton-volver");
     this.infoExtra = document.getElementById("info-extra");
     this.gestor = new GestorCliente();
     this.listaArticulos = document.getElementById("lista-articulos");
     this.listaRubros = document.getElementById("lista-rubros");
     this.listaMarcas = document.getElementById("lista-marcas");
     this.listaProveedores = document.getElementById("lista-proveedores");
+    this.listaOfertas = document.getElementById("lista-ofertas");
+    this.botonListaOfertas = document.getElementById("boton-lista-ofertas");
     this.barraBusqueda = document.getElementById("barra-busqueda");
     this.listaVacia = document.getElementById("lista-vacia");
     this.contenedoresBarraCodigos = document.getElementById(
@@ -106,6 +108,22 @@ class PantallaCliente {
     this.agregarEventListeners();
   }
 
+  clickFueraCerrar(modal) {
+    let clickEmpezoAfuera = false;
+
+    modal.addEventListener("mousedown", (event) => {
+      clickEmpezoAfuera = event.target === modal;
+    });
+
+    modal.addEventListener("mouseup", (event) => {
+      const clickTerminoAfuera = event.target === modal;
+
+      if (clickEmpezoAfuera && clickTerminoAfuera) {
+        modal.classList.add("hidden");
+      }
+    });
+  }
+
   async init() {
     const data = await this.gestor.conocerEmpresa(this.conocerSlug(2));
     this.empresa = new EmpresaVista(data);
@@ -129,6 +147,7 @@ class PantallaCliente {
       this.botonEscaner.classList.add("hidden");
     }
 
+    this.botonMenu.onclick = () => this.abrirMenu();
     try {
       this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
     } catch (error) {
@@ -144,9 +163,6 @@ class PantallaCliente {
   }
 
   agregarEventListeners() {
-    this.botonVolver.removeEventListener("click", this.onClickVolver);
-    this.botonVolver.addEventListener("click", this.onClickVolver);
-
     window.removeEventListener("popstate", this.onPopState);
     window.addEventListener("popstate", this.onPopState);
   }
@@ -163,7 +179,6 @@ class PantallaCliente {
     this.listaArticulos.classList.add("hidden");
     this.listaRubros.classList.add("hidden");
     this.listaBotonesListas.classList.add("hidden");
-    this.botonVolver.classList.add("hidden");
     this.carrito.vaciarCarrito();
     this.botonCarrito.classList.add("hidden");
 
@@ -194,10 +209,15 @@ class PantallaCliente {
       this.botonListaProveedores.classList.remove("hidden");
       this.botonListaProveedores.onclick = () =>
         this.mostrarLista("proveedores");
+      this.botonMenu.classList.add("hidden");
+      this.botonListaOfertas.classList.add("hidden");
     }
     this.botonListaArticulos.onclick = () => this.mostrarLista("articulos");
+    this.botonListaOfertas.onclick = () => this.mostrarLista("ofertas");
 
     this.botonListaRubros.click();
+
+    window.addEventListener("scroll", this.handleScroll.bind(this));
   }
 
   async escanear() {
@@ -389,6 +409,7 @@ class PantallaCliente {
       this.listaRubros.innerHTML = "";
       this.listaMarcas.innerHTML = "";
       this.listaProveedores.innerHTML = "";
+      this.listaOfertas.innerHTML = "";
 
       const catalogos = await this.gestor.mostrarListaRubros(this.empresa.id);
 
@@ -401,6 +422,10 @@ class PantallaCliente {
       // Obtener y ordenar todos los artículos
       this.todosLosArticulos =
         await this.gestor.mostrarListaArticulosPorEmpresa(this.empresa.id);
+
+      this.todasLasOfertas = this.todosLosArticulos.filter(
+        (articulo) => articulo.oferta,
+      );
     } catch (error) {
       console.error(error);
     }
@@ -411,6 +436,7 @@ class PantallaCliente {
     this.listaMarcas.classList.add("hidden");
     this.listaProveedores.classList.add("hidden");
     this.listaArticulos.classList.add("hidden");
+    this.listaOfertas.classList.add("hidden");
     this.listaVacia.classList.add("hidden");
 
     this.contenedoresBarraCodigos.classList.add("hidden");
@@ -418,6 +444,7 @@ class PantallaCliente {
     this.botonListaRubros.classList.remove("activo-cliente");
     this.botonListaMarcas.classList.remove("activo-cliente");
     this.botonListaProveedores.classList.remove("activo-cliente");
+    this.botonListaOfertas.classList.remove("activo-cliente");
     this.botonListaArticulos.classList.remove("lupa-activa");
 
     switch (tipo) {
@@ -457,6 +484,14 @@ class PantallaCliente {
           this.buscarPorNombre(this.barraBusqueda.value);
         this.actualizarArticulos();
         break;
+
+      case "ofertas":
+        this.mostrarOferta("");
+        this.listaOfertas.classList.remove("hidden");
+        this.botonListaOfertas.classList.add("activo-cliente");
+        this.barraBusqueda.oninput = () =>
+          this.buscarPorNombre(this.barraBusqueda.value, "oferta");
+        break;
     }
   }
 
@@ -467,6 +502,7 @@ class PantallaCliente {
       abreviatura: tipo.abreviatura,
     };
     this.barraBusqueda.value = "";
+    this.botonBorrarBusquedaNombre.classList.add("hidden");
     this.actualizarFiltros();
     this.botonListaArticulos.click();
   }
@@ -518,6 +554,9 @@ class PantallaCliente {
         break;
       case "proveedor":
         this.mostrarProveedor(valor);
+        break;
+      case "oferta":
+        this.mostrarOferta(valor);
         break;
     }
   }
@@ -687,25 +726,55 @@ class PantallaCliente {
     this.listaProveedores.classList.add("hidden");
     this.listaMarcas.classList.add("hidden");
     this.listaRubros.classList.add("hidden");
+    this.listaOfertas.classList.add("hidden");
 
     window.history.pushState({ vista: "articulos" }, "", window.location.href);
+
     this.listaArticulos.innerHTML = "";
 
     if (articulos.length === 0) {
       this.listaArticulos.innerHTML = `
-            <p class="texto-vacio">
-                No se encontraron artículos.
-            </p>
-        `;
-
+      <p class="texto-vacio">
+        No se encontraron artículos.
+      </p>
+    `;
       return;
     }
 
-    articulos.forEach((articulo) => {
+    this.articulosActuales = articulos;
+    this.indiceActual = 0;
+    this.tamanoLote = 15;
+
+    this.cargarSiguienteLote();
+  }
+
+  handleScroll() {
+    if (this.listaArticulos.classList.contains("hidden")) {
+      return;
+    }
+
+    if (
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 100
+    ) {
+      this.cargarSiguienteLote();
+    }
+  }
+
+  cargarSiguienteLote() {
+    const fin = Math.min(
+      this.indiceActual + this.tamanoLote,
+      this.articulosActuales.length,
+    );
+
+    for (let i = this.indiceActual; i < fin; i++) {
+      const articulo = this.articulosActuales[i];
+
       const vista = new ArticuloVista(articulo);
-      const estaSeleccionado = this.listaArticulosSeleccionados.some((id) => {
-        if (id) return id === articulo.id;
-      });
+
+      const estaSeleccionado = this.listaArticulosSeleccionados.includes(
+        articulo.id,
+      );
 
       this.listaArticulos.appendChild(
         vista.mostrarUna(
@@ -716,7 +785,9 @@ class PantallaCliente {
           this.esInterno,
         ),
       );
-    });
+    }
+
+    this.indiceActual = fin;
   }
 
   mostrarRubro(valor) {
@@ -796,6 +867,39 @@ class PantallaCliente {
       elemento.onclick = () => this.seleccionarTipo(marca, "marca");
 
       this.listaMarcas.appendChild(elemento);
+    });
+  }
+
+  mostrarOferta(valor) {
+    this.botonListaOfertas.classList.add("activo-cliente");
+    this.listaOfertas.classList.remove("hidden");
+
+    window.history.pushState({ vista: "ofertas" }, "", window.location.href);
+    this.listaOfertas.innerHTML = "";
+
+    const palabras = valor.toLowerCase().trim().split(/\s+/).filter(Boolean);
+
+    const ofertas = this.todasLasOfertas.filter((m) => {
+      const nombre = (m.nombre ?? "").toLowerCase();
+
+      return palabras.every((palabra) => nombre.includes(palabra));
+    });
+
+    ofertas.forEach((oferta) => {
+      const vista = new ArticuloVista(oferta);
+      const estaSeleccionado = this.listaArticulosSeleccionados.some((id) => {
+        if (id) return id === oferta.id;
+      });
+
+      this.listaOfertas.appendChild(
+        vista.mostrarUna(
+          1,
+          true,
+          this.empresa.imagenesEnArticulos,
+          estaSeleccionado,
+          this.esInterno,
+        ),
+      );
     });
   }
 
@@ -891,13 +995,13 @@ class PantallaCliente {
   volverAtras() {
     // Hide the back button and search bar
     window.history.back();
-    this.botonVolver.classList.add("hidden");
     this.listaArticulos.classList.add("hidden");
     this.listaRubros.classList.remove("hidden");
     this.listaBotonesListas.classList.remove("hidden");
     this.listaVacia.classList.add("hidden");
     this.botonListaProveedores.classList.remove("activo-cliente");
     this.botonListaMarcas.classList.remove("activo-cliente");
+    this.botonListaArticulos.classList.remove("lupa-activa");
     this.botonListaRubros.classList.add("activo-cliente");
   }
 
@@ -1103,6 +1207,7 @@ class PantallaCliente {
     this.mostrarArticulos(this.todosLosArticulos);
     this.volverAtras();
     this.barraBusqueda.value = "";
+    this.botonBorrarBusquedaNombre.classList.add("hidden");
   }
 
   removerSeleccionVisual(idArticulo) {
@@ -1254,6 +1359,13 @@ class PantallaCliente {
       modal.remove();
     });
   }
+
+  abrirMenu() {
+    const modalMenu = document.getElementById("modal-menu");
+    modalMenu.classList.toggle("hidden");
+    const menu = document.getElementById("contenedor-menu");
+    this.clickFueraCerrar(modalMenu);
+  }
 }
 
 // --- Inicialización ---
@@ -1277,21 +1389,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     tituloPagina = document.getElementById("titulo-pagina");
     imagenHeader = document.getElementById("imagen-header");
     infoExtra = document.getElementById("info-extra");
-    botonVolver = document.getElementById("boton-volver");
     const posicionActual = window.scrollY;
 
     if (20 > posicionActual) {
       header.classList.remove("minimizado");
       tituloPagina.classList.remove("minimizado");
       imagenHeader.classList.remove("minimizado");
-      botonVolver.classList.remove("minimizado");
       infoExtra.classList.remove("minimizado");
       infoExtra.classList.remove("oculto");
     } else {
       header.classList.add("minimizado");
       tituloPagina.classList.add("minimizado");
       imagenHeader.classList.add("minimizado");
-      botonVolver.classList.add("minimizado");
       infoExtra.classList.add("oculto");
     }
 

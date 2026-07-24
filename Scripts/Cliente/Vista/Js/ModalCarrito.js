@@ -19,7 +19,7 @@ class ModalCarrito {
     this.wrapper = null;
     this.datosPersonales = {
       nombre: "",
-      telefono: "",
+      observaciones: "",
     };
     this.incluirHorario = incluirHorario;
     this.carritoSinPedidos = carritoSinPedidos;
@@ -621,14 +621,11 @@ class ModalCarrito {
       </div>
 
       <div class="form-group">
-        <label class="label required" for="input-telefono-cliente">Teléfono</label>
+        <label class="label" for="input-observaciones-cliente">Observaciones</label>
         <input
-          type="tel"
-          id="input-telefono-cliente"
-          placeholder="3534123456"
-          maxlength="12"
-          inputmode="numeric"
-          pattern="[0-9]*"
+          type="text"
+          id="input-observaciones-cliente"
+          placeholder="Información extra sobre el pedido"
           required
         >
       </div>
@@ -723,7 +720,9 @@ class ModalCarrito {
       return;
     }
     var mensaje = `Nombre: ${this.datosPersonales.nombre}\n`;
-    mensaje += `Celular: ${this.datosPersonales.telefono}\n\n`;
+    if (this.datosPersonales.observaciones)
+      mensaje += `Observación: ${this.datosPersonales.observaciones}\n\n`;
+    else mensaje += `\n`;
 
     mensaje += `+Fecha: ${new Date().toLocaleString()}\n`;
     mensaje += `\n`;
@@ -763,49 +762,6 @@ class ModalCarrito {
     this.listaCentral.classList.remove("hidden");
   }
 
-  pedirMesa() {
-    // Eliminar modal previo si existe
-    const viejo = document.getElementById("modal-datos-wrapper");
-    if (viejo) viejo.remove();
-
-    const wrapper = document.createElement("div");
-    wrapper.id = "modal-datos-wrapper";
-
-    wrapper.innerHTML = `
-      <div class="modal-datos">
-        <h2>Ingrese los datos</h2>
-
-        <label class="labels">Número de mesa*:</label>
-        <input type="number" id="input-numero-mesa" placeholder="Ej: 1" required>
-
-        <button id="btn-confirmar-datos" class="confirmar">Enviar pedido</button>
-      </div>
-    `;
-    document.body.appendChild(wrapper);
-    const modalContenido = wrapper.querySelector(".modal-datos");
-
-    // Cerrar modal al hacer click fuera
-    wrapper.addEventListener("click", (e) => {
-      if (!modalContenido.contains(e.target)) {
-        wrapper.remove();
-      }
-    });
-
-    document.getElementById("btn-confirmar-datos").onclick = () => {
-      this.datosPersonales.numeroMesa = document
-        .getElementById("input-numero-mesa")
-        .value.trim();
-
-      if (!this.datosPersonales.numeroMesa) return;
-      wrapper.remove();
-      this.enviarPedidoWhatsApp();
-      this.carrito.vaciarCarrito();
-      const modalCarrito = document.getElementById("modal-carrito-wrapper");
-      if (modalCarrito) modalCarrito.remove();
-      this.listaCentral.classList.remove("hidden");
-    };
-  }
-
   formatearObservacion(observaciones) {
     return observaciones
       .map((obs) => (obs || "").padEnd(50, " ").slice(0, 50))
@@ -820,11 +776,11 @@ class ModalCarrito {
         this.datosPersonales.nombre = e.target.value.trim();
       });
 
-    //Telefono
+    //Observaciones
     document
-      .getElementById("input-telefono-cliente")
+      .getElementById("input-observaciones-cliente")
       .addEventListener("input", (e) => {
-        this.datosPersonales.telefono = e.target.value.replace(/\D/g, "");
+        this.datosPersonales.observaciones = e.target.value.trim();
       });
   }
 
@@ -840,7 +796,7 @@ class ModalCarrito {
 
   renderizadorFormulario() {
     // Estado inicial
-    this.pendiente = ["nombre", "telefono"];
+    this.pendiente = ["nombre"];
     this.botonEnviar.classList.add("desactivado");
 
     // BOTÓN VOLVER
@@ -848,9 +804,6 @@ class ModalCarrito {
       this.volverAPaso1();
     };
 
-    // =========================
-    // INPUTS (nombre, telefono, direccion)
-    // =========================
     this.wrapperA.addEventListener("input", (e) => {
       const id = e.target.id;
       const valor = e.target.value.trim();
@@ -861,17 +814,6 @@ class ModalCarrito {
           this.pendiente = this.pendiente.filter((p) => p !== "nombre");
         } else if (!this.pendiente.includes("nombre")) {
           this.pendiente.push("nombre");
-        }
-      }
-
-      // TELEFONO
-      if (id === "input-telefono-cliente") {
-        const soloNumeros = valor.replace(/\D/g, "");
-
-        if (soloNumeros.length > 0) {
-          this.pendiente = this.pendiente.filter((p) => p !== "telefono");
-        } else if (!this.pendiente.includes("telefono")) {
-          this.pendiente.push("telefono");
         }
       }
 
@@ -904,19 +846,5 @@ class ModalCarrito {
     const url_segmentada = window.location.pathname.split("/");
     const slug = url_segmentada[texto];
     return slug;
-  }
-
-  conocerNumeroMesa() {
-    const slug = this.conocerSlug(4);
-    try {
-      if (parseInt(slug) < 500) return slug;
-    } catch {
-      return false;
-    }
-  }
-
-  esNumeroMesa() {
-    const slug = this.conocerSlug(4);
-    return slug && !isNaN(parseInt(slug));
   }
 }

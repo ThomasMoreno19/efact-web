@@ -1,8 +1,4 @@
 <?php
-//Scripts/Administrador/Modelo/Repositorio/RubroRepositorio.php
-
-require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Entidad/RubroEntidad.php';
-require_once $_SERVER['DOCUMENT_ROOT'] . '/c.php';
 class RubroRepositorio
 {
   private PDO $pdo;
@@ -19,7 +15,7 @@ class RubroRepositorio
     $rubro = [];
     try {
       $stmt = $this->pdo->prepare("
-                SELECT * FROM Rubro
+                SELECT * FROM rubro
                 WHERE id_empresa= :id_empresa
                 ORDER BY nombre ASC;
                 ");
@@ -44,7 +40,7 @@ class RubroRepositorio
     $rubros = [];
     try {
       $stmt = $this->pdo->prepare(
-        "SELECT id, nombre, abreviatura, logo_url FROM Rubro WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
+        "SELECT id, nombre, abreviatura, logo_url FROM rubro WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
@@ -93,7 +89,7 @@ class RubroRepositorio
       $i++;
     }
 
-    $sql = "INSERT INTO Rubro (id, id_empresa, nombre, abreviatura, aparece_en_csv, logo_url)
+    $sql = "INSERT INTO rubro (id, id_empresa, nombre, abreviatura, aparece_en_csv, logo_url)
           VALUES " . implode(', ', $values) . "
           ON DUPLICATE KEY UPDATE
               nombre = VALUES(nombre),
@@ -116,7 +112,7 @@ class RubroRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Rubro
+        "UPDATE rubro
                  SET nombre = :nombre,
                  logo_url = :logo_url
                  WHERE id = :id AND id_empresa = :id_empresa;"
@@ -140,7 +136,7 @@ class RubroRepositorio
   {
     try {
       $stmt = $this->pdo->prepare("
-                SELECT id FROM Rubro
+                SELECT id FROM rubro
                 WHERE nombre = :nombre AND id_empresa = :id_empresa
                 LIMIT 1;");
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
@@ -150,7 +146,7 @@ class RubroRepositorio
 
       if ($data) {
         $stmt = $this->pdo->prepare(
-          "UPDATE Rubro
+          "UPDATE rubro
                      SET aparece_en_csv = 1
                      WHERE nombre = :nombre AND id_empresa = :id_empresa;"
         );
@@ -170,7 +166,7 @@ class RubroRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "DELETE FROM Rubro 
+        "DELETE FROM rubro 
             WHERE aparece_en_csv = 0 AND id_empresa = :id_empresa;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
@@ -200,7 +196,7 @@ class RubroRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Rubro
+        "UPDATE rubro
                  SET aparece_en_csv = 0
                  WHERE id_empresa = :id_empresa;"
       );

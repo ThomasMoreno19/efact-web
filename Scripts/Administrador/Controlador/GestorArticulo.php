@@ -231,12 +231,18 @@ class GestorArticulo
         return;
       }
 
-      // Finalmente cargar artículos
-      $resultado = $this->articuloRepositorio->crearListaCsv($articulos, $id_empresa);
+      // Cargar artículos por lotes
+      $tamLote = 2000;
+
+      foreach (array_chunk($articulos, $tamLote) as $lote) {
+        $this->articuloRepositorio->crearListaCsv($lote, $id_empresa);
+      }
 
       $this->borrarCacheTodos($id_empresa);
 
-      echo json_encode($resultado);
+      echo json_encode([
+        'success' => true
+      ]);
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode([

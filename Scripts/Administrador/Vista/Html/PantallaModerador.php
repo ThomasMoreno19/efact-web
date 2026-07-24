@@ -34,6 +34,7 @@
   <div class="lista-central" id="lista-central">
     <div class="botones-lista">
       <button class="boton-lista activo" type="button" id="boton-mostrar-articulos">Artículos</button>
+      <button class="boton-lista" type="button" id="boton-mostrar-ofertas">Ofertas</button>
       <button class="boton-lista" type="button" id="boton-mostrar-rubros">Rubros</button>
       <button class="boton-lista" type="button" id="boton-mostrar-proveedores">Proveedores</button>
       <button class="boton-lista" type="button" id="boton-mostrar-marcas">Marcas</button>
@@ -43,6 +44,7 @@
     </div>
     <div class="listas">
       <div class="lista" id="lista-articulos"></div>
+      <div class="lista" id="lista-ofertas"></div>
       <div class="lista" id="lista-rubros"></div>
       <div class="lista" id="lista-proveedores"></div>
       <div class="lista" id="lista-marcas"></div>

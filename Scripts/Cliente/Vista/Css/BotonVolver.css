@@ -76,3 +76,41 @@
 #boton-siguiente-paso:hover svg {
   transform: translateX(4px);
 }
+
+#abrir-menu {
+  position: absolute;
+  top: 20px;
+  left: 8px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+#contenedor-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 225px;
+  height: 100vh;
+  background-color: #121212;
+  z-index: 9999;
+  touch-action: none;
+  padding: 30px 10px;
+  font-size: 19px;
+  overflow: none;
+}
+
+#texto-consulta-saldos {
+  color: white;
+  background: transparent;
+  border: none;
+}
+
+.boton-menu {
+  display: flex;
+  align-content: center;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}

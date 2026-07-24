@@ -19,7 +19,7 @@ class UsuarioRepositorio
     $contrasenaHasheada = password_hash($usuario->getContrasena(), PASSWORD_DEFAULT);
 
     $stmt = $this->pdo->prepare(
-      "INSERT INTO Usuario (nombre, contrasena) VALUES (:nombre, :contrasena)"
+      "INSERT INTO usuario (nombre, contrasena) VALUES (:nombre, :contrasena)"
     );
     $stmt->bindValue(':nombre', $usuario->getNombre());
     $stmt->bindValue(':contrasena', $contrasenaHasheada);
@@ -30,7 +30,7 @@ class UsuarioRepositorio
 
   public function findByNombre(string $nombre): ?Usuario
   {
-    $stmt = $this->pdo->prepare("SELECT * FROM Usuario WHERE nombre = :nombre LIMIT 1");
+    $stmt = $this->pdo->prepare("SELECT * FROM usuario WHERE nombre = :nombre LIMIT 1");
     $stmt->bindValue(':nombre', $nombre);
     $stmt->execute();
 

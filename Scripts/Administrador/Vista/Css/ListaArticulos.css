@@ -15,7 +15,7 @@
 }
 
 .rubro {
-  border-radius: 6px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,8 +62,9 @@
 }
 
 .articulo {
+  position: relative;
   background-color: transparent;
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   flex-direction: row;
   align-items: stretch; /* ← era center */
@@ -80,7 +81,7 @@
   align-self: stretch; /* abarca toda la altura */
   display: flex;
   align-items: stretch;
-  border-radius: 8px 0 0 8px;
+  border-radius: 4px 0 0 8px;
   overflow: hidden;
   background-color: #424242; /* color de fondo para el SVG */
 }
@@ -148,6 +149,24 @@ p.descripcion {
   width: 98%;
   height: 3px;
   background-color: rgba(255, 0, 0, 0.458);
+  pointer-events: none;
+}
+
+.badge-oferta {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+
+  padding: 3px 5px;
+
+  background-color: #22c55e; /* Verde */
+  color: white;
+
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+
+  z-index: 10;
   pointer-events: none;
 }
 

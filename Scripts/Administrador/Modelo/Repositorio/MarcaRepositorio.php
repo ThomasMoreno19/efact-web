@@ -13,7 +13,7 @@ class MarcaRepositorio
     $marcas = [];
     try {
       $stmt = $this->pdo->prepare(
-        "SELECT id, nombre, abreviatura, logo_url FROM Marca WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
+        "SELECT id, nombre, abreviatura, logo_url FROM marca WHERE id_empresa = :id_empresa ORDER BY nombre ASC;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
@@ -36,7 +36,7 @@ class MarcaRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "INSERT INTO Marca (id, id_empresa, nombre) VALUES (:id, :id_empresa, :nombre);"
+        "INSERT INTO marca (id, id_empresa, nombre) VALUES (:id, :id_empresa, :nombre);"
       );
       $stmt->bindParam(':id',        $id,        PDO::PARAM_INT);
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
@@ -77,7 +77,7 @@ class MarcaRepositorio
       $i++;
     }
 
-    $sql = "INSERT INTO Marca (id, id_empresa, nombre, abreviatura, aparece_en_csv)
+    $sql = "INSERT INTO marca (id, id_empresa, nombre, abreviatura, aparece_en_csv)
           VALUES " . implode(', ', $values) . "
           ON DUPLICATE KEY UPDATE
               nombre = VALUES(nombre),
@@ -100,7 +100,7 @@ class MarcaRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Marca
+        "UPDATE marca
                  SET aparece_en_csv = 0
                  WHERE id_empresa = :id_empresa;"
       );
@@ -117,7 +117,7 @@ class MarcaRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "DELETE FROM Marca 
+        "DELETE FROM marca 
             WHERE aparece_en_csv = 0 AND id_empresa = :id_empresa;"
       );
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
@@ -147,7 +147,7 @@ class MarcaRepositorio
   {
     try {
       $stmt = $this->pdo->prepare(
-        "UPDATE Marca
+        "UPDATE marca
                  SET nombre = :nombre,
                  logo_url = :logo_url
                  WHERE id = :id AND id_empresa = :id_empresa;"

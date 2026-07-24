@@ -192,12 +192,20 @@ class GestorModerador {
                 ? 1
                 : 0;
 
+            const oferta =
+              fila[16] === true ||
+              fila[16] === 1 ||
+              fila[16] === "1" ||
+              String(fila[13]).toUpperCase() === "VERDADERO"
+                ? 1
+                : 0;
+
             articulos.push({
               id_articulo: fila[0],
               codigo_interno: fila[1],
               nombre_articulo: fila[2]?.trim() ?? "",
               codigo_barra: fila[3] ?? "",
-              codigo_proveedor: fila[4]?.trim() ?? "",
+              codigo_proveedor: fila[4] ?? "",
               id_proveedor: fila[5] ?? null,
               id_rubro: fila[6] ?? null,
               id_marca: fila[7] ?? null,
@@ -207,6 +215,7 @@ class GestorModerador {
               existencia: parseFloat(fila[12]) || 0,
               abreviatura: fila[14]?.trim() ?? "",
               ubicacion: fila[15]?.trim() ?? "",
+              oferta: oferta,
               no_procesado: noProcesado,
             });
           }
@@ -614,6 +623,7 @@ class GestorModerador {
     incluirHorarios,
     incluirCodigoBarra,
     contrasenaInterno,
+    contrasenaExterno,
   ) {
     const bodyData = {
       id: id,
@@ -626,6 +636,9 @@ class GestorModerador {
     };
     if (contrasenaInterno) {
       bodyData.contrasenaInterno = contrasenaInterno;
+    }
+    if (contrasenaExterno) {
+      bodyData.contrasenaExterno = contrasenaExterno;
     }
 
     try {
@@ -658,6 +671,33 @@ class GestorModerador {
 
     try {
       const response = await fetch(`/interno/vaciar-contrasena`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bodyData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: "Error desconocido al vaciar contrasena" }));
+        throw new Error(
+          errorData.message ||
+            `Error al vaciar la contrasena: ${response.status}`,
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error al modificar el empresa:", error);
+      throw error;
+    }
+  }
+
+  async vaciarContrasenaExternos(id_empresa) {
+    const bodyData = { id_empresa: id_empresa };
+
+    try {
+      const response = await fetch(`/externo/vaciar-contrasena`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(bodyData),

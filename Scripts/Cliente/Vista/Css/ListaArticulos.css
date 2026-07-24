@@ -3,7 +3,7 @@
 /* --- Estilos para la tarjeta de empresa individual (.empresa-item) --- */
 .listas {
   background-color: #181818;
-  border-radius: 8px;
+  border-radius: 4px;
   margin-bottom: 5px;
   padding: 20px 0px;
 }
@@ -28,12 +28,13 @@
   padding: 10px 12px;
   border: none;
   margin-bottom: -2px;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 15px;
   box-shadow: none;
   display: flex;
   flex-direction: row;
+  align-items: center;
   gap: 2px;
 }
 
@@ -55,10 +56,28 @@
   margin-left: 15px;
 }
 
+.badge-oferta {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+
+  padding: 3px 5px;
+
+  background-color: #22c55e; /* Verde */
+  color: white;
+
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+
+  z-index: 10;
+  pointer-events: none;
+}
+
 #lista-vacia {
   background: #00000034;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 4px;
   color: #ffffffb7;
   font-size: 16px;
   text-align: center;
@@ -120,7 +139,7 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px; /* Espacio entre los elementos de la cuadrícula */
   padding: 10px; /* Añade un poco de padding para mejor presentación */
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 #lista-articulos {
@@ -167,7 +186,7 @@
 }
 
 .rubro {
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -227,8 +246,9 @@
 }
 
 .articulo {
+  position: relative;
   background-color: transparent;
-  border-radius: 8px;
+  border-radius: 4px;
   display: flex;
   flex-direction: row;
   align-items: stretch;
@@ -245,7 +265,7 @@
   align-self: stretch; /* abarca toda la altura */
   display: flex;
   align-items: stretch;
-  border-radius: 8px 0 0 8px;
+  border-radius: 4px 0 0 4px;
   overflow: hidden;
   background-color: #424242; /* color de fondo para el SVG */
 }
@@ -378,7 +398,7 @@ p.descripcion {
     width: 100%;
     max-height: 70vh;
     object-fit: contain;
-    border-radius: 8px;
+    border-radius: 4px;
   }
 }
 
@@ -427,4 +447,13 @@ p.descripcion {
 
 #nombre-articulo {
   overflow-wrap: break-word;
+}
+
+#modal-imagen {
+  background-color: #121212;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 80%;
+  position: relative;
+  animation: slideIn 0.3s ease-in-out;
 }

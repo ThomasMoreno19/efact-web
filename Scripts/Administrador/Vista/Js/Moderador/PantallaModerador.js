@@ -5,6 +5,7 @@ class PantallaModerador {
     this.listaRubros = document.getElementById("lista-rubros");
     this.listaProveedores = document.getElementById("lista-proveedores");
     this.listaMarcas = document.getElementById("lista-marcas");
+    this.listaOfertas = document.getElementById("lista-ofertas");
     this.listaCentral = document.getElementById("lista-central");
     this.articuloSeleccionado = null;
     this.horariosGuardados = [];
@@ -25,6 +26,8 @@ class PantallaModerador {
 
     this.botonListaMarcas = document.getElementById("boton-mostrar-marcas");
 
+    this.botonListaOfertas = document.getElementById("boton-mostrar-ofertas");
+
     this.botonModificarCafeteria = document.getElementById(
       "modificar-cafeteria",
     );
@@ -40,6 +43,8 @@ class PantallaModerador {
     this.todosLosRubros = [];
     this.todasLasMarcas = [];
     this.todosLosProveedores = [];
+
+    window.addEventListener("scroll", this.handleScroll.bind(this));
   }
 
   async init() {
@@ -116,6 +121,10 @@ class PantallaModerador {
     this.botonListaMarcas.onclick = () => {
       this.mostrarTipo("marca");
     };
+
+    this.botonListaOfertas.onclick = () => {
+      this.mostrarTipo("oferta");
+    };
     this.botonCargarArticulos.addEventListener("click", () => {
       if (this.empresa.deshabilitarExcel) return;
       this.abrirModalCargarArticulos();
@@ -155,6 +164,7 @@ class PantallaModerador {
       this.listaArticulos.innerHTML = "";
       this.listaProveedores.innerHTML = "";
       this.listaMarcas.innerHTML = "";
+      this.listaOfertas.innerHTML = "";
       const listaGrupos = await this.gestor.mostrarListaGrupos(this.empresa.id);
 
       this.todosLosRubros = listaGrupos.rubros ?? [];
@@ -193,6 +203,18 @@ class PantallaModerador {
         this.listaArticulos.appendChild(elemento);
       });
 
+      this.todasLasOfertas = this.todosLosArticulos.filter(
+        (articulo) => articulo.oferta,
+      );
+
+      this.todasLasOfertas.forEach((articulo) => {
+        const vista = new ArticuloVista(articulo);
+        const elemento = vista.mostrarUna(true);
+        elemento.onclick = () => this.mostrarConfigurar(articulo, "oferta");
+
+        this.listaOfertas.appendChild(elemento);
+      });
+
       if (tipo) this.mostrarTipo(tipo);
     } catch (error) {
       console.error("Error en mostrarLista:", error);
@@ -205,18 +227,20 @@ class PantallaModerador {
     this.listaArticulos.classList.add("hidden");
     this.listaProveedores.classList.add("hidden");
     this.listaMarcas.classList.add("hidden");
+    this.listaOfertas.classList.add("hidden");
 
     this.botonListaRubros.classList.remove("activo");
     this.botonListaArticulos.classList.remove("activo");
     this.botonListaProveedores.classList.remove("activo");
     this.botonListaMarcas.classList.remove("activo");
+    this.botonListaOfertas.classList.remove("activo");
 
     if (tipo === "rubro") {
       this.listaRubros.classList.remove("hidden");
       this.botonListaRubros.classList.add("activo");
     } else if (tipo === "articulo") {
-      this.listaArticulos.classList.remove("hidden");
       this.botonListaArticulos.classList.add("activo");
+      this.mostrarArticulos(this.todosLosArticulos);
     } else if (tipo === "proveedor") {
       this.listaProveedores.classList.remove("hidden");
       this.botonListaProveedores.classList.add("activo");
@@ -224,6 +248,71 @@ class PantallaModerador {
       this.listaMarcas.classList.remove("hidden");
       this.botonListaMarcas.classList.add("activo");
     }
+
+    if (tipo === "oferta") {
+      this.listaOfertas.classList.remove("hidden");
+      this.botonListaOfertas.classList.add("activo");
+    }
+  }
+
+  mostrarArticulos(articulos) {
+    this.listaArticulos.classList.remove("hidden");
+
+    window.history.pushState({ vista: "articulos" }, "", window.location.href);
+
+    this.listaArticulos.innerHTML = "";
+
+    if (articulos.length === 0) {
+      this.listaArticulos.innerHTML = `
+      <p class="texto-vacio">
+        No se encontraron artículos.
+      </p>
+    `;
+      return;
+    }
+
+    this.articulosActuales = articulos;
+    this.indiceActual = 0;
+    this.tamanoLote = 15;
+
+    this.cargarSiguienteLote();
+  }
+
+  handleScroll() {
+    if (this.listaArticulos.classList.contains("hidden")) {
+      return;
+    }
+
+    if (
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 100
+    ) {
+      this.cargarSiguienteLote();
+    }
+  }
+
+  cargarSiguienteLote() {
+    const fin = Math.min(
+      this.indiceActual + this.tamanoLote,
+      this.articulosActuales.length,
+    );
+
+    for (let i = this.indiceActual; i < fin; i++) {
+      const articulo = this.articulosActuales[i];
+
+      const vista = new ArticuloVista(articulo);
+      const elemento = vista.mostrarUna(
+        1,
+        false,
+        this.empresa.imagenesEnArticulos,
+      );
+
+      elemento.onclick = () => this.mostrarConfigurar(articulo, "articulo");
+
+      this.listaArticulos.appendChild(elemento);
+    }
+
+    this.indiceActual = fin;
   }
 
   async modalArticuloSeleccionado(articulo) {
@@ -676,6 +765,13 @@ class PantallaModerador {
       this.ConfirmarVaciarContrasenaInternos();
     });
 
+    const botonVaciarContrasenaExternos = document.getElementById(
+      "vaciar-contrasena-externo",
+    );
+    botonVaciarContrasenaExternos.addEventListener("click", () => {
+      this.ConfirmarVaciarContrasenaExternos();
+    });
+
     const form = document.getElementById("formModificarEmpresa");
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -690,6 +786,7 @@ class PantallaModerador {
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
       const contrasenaInternos = formData.get("contrasenaInternos");
+      const contrasenaExternos = formData.get("contrasenaExternos");
       const imagen = formData.get("imagen");
 
       try {
@@ -703,6 +800,7 @@ class PantallaModerador {
           incluirHorarios,
           incluirCodigoBarra,
           contrasenaInternos,
+          contrasenaExternos,
         );
         if (imagen && imagen.size > 0) {
           const empresaConNuevoLogo = await this.gestor.cambiarLogoEmpresa(
@@ -734,10 +832,20 @@ class PantallaModerador {
   ConfirmarVaciarContrasenaInternos() {
     if (
       confirm(
-        "¿Estás seguro de que deseas vaciar la contraseña de los moderadores internos? Esta acción no se puede deshacer.",
+        "¿Estás seguro de que deseas vaciar la contraseña de los usuarios internos? Esta acción no se puede deshacer.",
       )
     ) {
       this.gestor.vaciarContrasenaInternos(this.empresa.id);
+    }
+  }
+
+  ConfirmarVaciarContrasenaExternos() {
+    if (
+      confirm(
+        "¿Estás seguro de que deseas vaciar la contraseña de los usuarios externos? Esta acción no se puede deshacer.",
+      )
+    ) {
+      this.gestor.vaciarContrasenaExternos(this.empresa.id);
     }
   }
 

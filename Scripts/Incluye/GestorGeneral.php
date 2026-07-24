@@ -91,13 +91,35 @@ try {
           require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/LoginInterno.php';
           exit;
         } else {
-          require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/pantallaCliente.php';
+          require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/PantallaCliente.php';
+          exit;
+        }
+      } else {
+        // Obtener el número de empresa de la URL
+        $segmentos = explode('/', trim($porcionURL, '/'));
+        $idEmpresa = $segmentos[0] ?? null;
+
+        // Si no existe la sesión correspondiente
+        if (
+          !$idEmpresa ||
+          !isset($_SESSION['externo'][$idEmpresa]) ||
+          $_SESSION['externo'][$idEmpresa] !== true
+        ) {
+          require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/LoginExterno.php';
+          exit;
+        } else {
+          require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/PantallaCliente.php';
           exit;
         }
       }
 
     case 'interno':
       $controlador = new GestorInterno($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'externo':
+      $controlador = new GestorExterno($pdo);
       $controlador->derivarURL($porcionURL);
       break;
 

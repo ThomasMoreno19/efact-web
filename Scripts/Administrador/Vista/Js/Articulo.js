@@ -14,6 +14,7 @@ class ArticuloVista {
       precio2,
       precio3,
       no_procesado,
+      oferta,
       ubicacion = "",
       seleccionado = false,
       video_url = null,
@@ -34,6 +35,7 @@ class ArticuloVista {
     this.ubicacion = ubicacion;
     this.seleccionado = seleccionado;
     this.no_procesado = no_procesado;
+    this.oferta = oferta;
     this.video_url = video_url;
     this.logo_url = logo_url;
     this.videoSVG = `<svg width="35px" height="35px" viewBox="3 3 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -122,6 +124,13 @@ class ArticuloVista {
         else this.mostrarModalReproductor(this.video_url);
       });
       container2.appendChild(botonVideo);
+    }
+
+    if (this.oferta) {
+      const badgeOferta = document.createElement("div");
+      badgeOferta.classList.add("badge-oferta");
+      badgeOferta.textContent = "%OFF";
+      divArticulo.appendChild(badgeOferta);
     }
 
     const logoContainer = document.createElement("div");
@@ -246,10 +255,10 @@ class ArticuloVista {
                     <label for="input-precio3">Precio 3:</label>
                     <input type="number" name="precio3" id="input-precio3" value="${precioSinPuntos3}" required>
                 </div>
-                <div class="form-group"> 
-                    <label for="nombre">Imagen:</label> 
-                    <input type="file" id="imagen" name="imagen" accept="image/*"> 
-                </div> 
+                <div class="form-group">
+                    <label for="nombre">Imagen:</label>
+                    <input type="file" id="imagen" name="imagen" accept="image/*">
+                </div>
                 <button type="submit" class="submit-button">Guardar Cambios</button>
             </form>
         `;
@@ -674,9 +683,9 @@ class ArticuloVista {
     modal.id = "modal-imagen-articulo";
 
     modal.innerHTML = `
-      <div class="modal-content-partial" id="modal-imagen">
-        <span class="close-modal-btn" style="position: absolute; top: -20px; right: 0px; cursor: pointer; font-size: 50px;">&times;</span>
-        <h3 id="nombre-imagen" style="font-size: 22px; width: 75%; margin: auto;">${this.nombre}</h3>
+      <div id="modal-imagen">
+        <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 50px;">&times;</span>
+        <h3 id="nombre-imagen" style="font-size: 22px; width: 75%; margin: auto; background: transparent;">${this.nombre}</h3>
         <div class="reproductor-container">
           <img
             src="${srcFinal}"

@@ -1,20 +1,21 @@
 <?php
-// Scripts/Administrador/Controlador/GestorEmpresa.php
-
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/EmpresaRepositorio.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorInterno.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorExterno.php';
 
 class GestorEmpresa
 {
   private PDO $pdo;
   private empresaRepositorio $empresaRepositorio;
   private GestorInterno $gestorInterno;
+  private GestorExterno $gestorExterno;
 
   public function __construct(PDO $pdo)
   {
     $this->pdo = $pdo;
     $this->empresaRepositorio = new EmpresaRepositorio($pdo);
     $this->gestorInterno = new GestorInterno($pdo);
+    $this->gestorExterno = new GestorExterno($pdo);
   }
 
   public function derivarURL(string $porcionURL): void
@@ -119,7 +120,8 @@ class GestorEmpresa
     $ubicacion = $_POST['ubicacion'];
     $tieneCarrito   = filter_var($_POST['tieneCarrito'], FILTER_VALIDATE_BOOLEAN);
     $deshabilitar_excel = filter_var($_POST['deshabilitarExcel'], FILTER_VALIDATE_BOOLEAN);
-    $contrasenaInternos = $_POST['contrasenaInternos'];
+    $contrasenaInternos = $_POST['contrasenaInternos'] ?? '';
+    $contrasenaExternos = $_POST['contrasenaExternos'] ?? '';
     $imagen = null;
 
     if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -143,6 +145,7 @@ class GestorEmpresa
       // 4️⃣ Crear la empresa en la base de datos
       $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $deshabilitar_excel);
 
+      $this->gestorExterno->crear($empresa['id'], $contrasenaExternos);
       $this->gestorInterno->crear($empresa['id'], $contrasenaInternos);
       // 5️⃣ Devolver respuesta
       http_response_code(200);
@@ -225,6 +228,7 @@ class GestorEmpresa
     $incluirHorarios = $datos['incluirHorarios'];
     $incluirCodigoBarra = $datos['incluirCodigoBarra'];
     $contrasenaInterno = $datos['contrasenaInterno'] ?? null;
+    $contrasenaExterno = $datos['contrasenaExterno'] ?? null;
 
     if (empty($id_empresa) || empty($nombre)) {
       http_response_code(400);
@@ -238,6 +242,10 @@ class GestorEmpresa
 
       if ($contrasenaInterno !== null && $contrasenaInterno !== '') {
         $this->gestorInterno->modificar($id_empresa, $contrasenaInterno);
+      }
+
+      if ($contrasenaExterno !== null && $contrasenaExterno !== '') {
+        $this->gestorExterno->modificar($id_empresa, $contrasenaExterno);
       }
       // 🔥 Borrar caché para esta empresa
       $this->borrarCacheEmpresa($id_empresa);
