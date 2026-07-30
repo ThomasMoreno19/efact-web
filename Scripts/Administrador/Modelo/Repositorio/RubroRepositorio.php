@@ -85,7 +85,7 @@ class RubroRepositorio
       $params[":id_empresa$i"] = $id_empresa;
       $params[":nombre$i"] = $r['nombre'];
       $params[":abreviatura$i"] = $r['abreviatura'];
-      $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
+      $params[":logo_url$i"] = '/Archivos/Logos/Vacio.png';
       $i++;
     }
 
@@ -105,6 +105,52 @@ class RubroRepositorio
       return $stmt->execute();
     } catch (PDOException $e) {
       throw $e;
+    }
+  }
+
+  public function actualizarCatalogo(array $rubros, int $id_empresa): void
+  {
+    if (empty($rubros)) {
+      return;
+    }
+
+    $rubrosAlta = [];
+    $idsBaja = [];
+
+    foreach ($rubros as $rubro) {
+
+      if (!empty($rubro['baja'])) {
+        $idsBaja[] = $rubro['id_rubro'];
+      } else {
+        $rubrosAlta[] = $rubro;
+      }
+    }
+
+    // Eliminar rubros
+    if (!empty($idsBaja)) {
+
+      $placeholders = implode(',', array_fill(0, count($idsBaja), '?'));
+
+      $sql = "
+            DELETE FROM rubro
+            WHERE id_empresa = ?
+              AND id IN ($placeholders)
+        ";
+
+      $stmt = $this->pdo->prepare($sql);
+
+      $stmt->bindValue(1, $id_empresa, PDO::PARAM_INT);
+
+      foreach ($idsBaja as $i => $id) {
+        $stmt->bindValue($i + 2, $id);
+      }
+
+      $stmt->execute();
+    }
+
+    // Insertar / Actualizar
+    if (!empty($rubrosAlta)) {
+      $this->crearListaCsv($rubrosAlta, $id_empresa);
     }
   }
 

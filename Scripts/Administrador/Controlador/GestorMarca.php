@@ -113,6 +113,24 @@ class GestorMarca
     }
   }
 
+  public function actualizarCatalogo(array $marcas, int $id_empresa): bool
+  {
+    if (empty($marcas)) {
+      return true;
+    }
+
+    $tamLote = 2000;
+
+    foreach (array_chunk($marcas, $tamLote) as $lote) {
+      $this->marcaRepositorio->actualizarCatalogo(
+        $lote,
+        $id_empresa
+      );
+    }
+
+    return true;
+  }
+
   private function borrarCacheTodos(int $id_empresa): void
   {
     $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/";

@@ -95,11 +95,27 @@ try {
           exit;
         }
       } else {
+
         // Obtener el número de empresa de la URL
         $segmentos = explode('/', trim($porcionURL, '/'));
         $idEmpresa = $segmentos[0] ?? null;
 
-        // Si no existe la sesión correspondiente
+        // Obtener el hash de la contraseña de externos
+        $stmt = $pdo->prepare("
+      SELECT contrasena
+      FROM Externo
+      WHERE id_empresa = ?
+    ");
+        $stmt->execute([$idEmpresa]);
+        $hash = $stmt->fetchColumn();
+
+        // Si la contraseña configurada es la cadena vacía, ingresar directamente
+        if ($hash !== false && password_verify('', $hash)) {
+          require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cliente/Vista/Html/PantallaCliente.php';
+          exit;
+        }
+
+        // Si tiene contraseña, verificar la sesión
         if (
           !$idEmpresa ||
           !isset($_SESSION['externo'][$idEmpresa]) ||

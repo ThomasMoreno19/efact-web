@@ -96,6 +96,52 @@ class MarcaRepositorio
     }
   }
 
+  public function actualizarCatalogo(array $marcas, int $id_empresa): void
+  {
+    if (empty($marcas)) {
+      return;
+    }
+
+    $marcasAlta = [];
+    $idsBaja = [];
+
+    foreach ($marcas as $marca) {
+
+      if (!empty($marca['baja'])) {
+        $idsBaja[] = $marca['id_marca'];
+      } else {
+        $marcasAlta[] = $marca;
+      }
+    }
+
+    // Eliminar marcas
+    if (!empty($idsBaja)) {
+
+      $placeholders = implode(',', array_fill(0, count($idsBaja), '?'));
+
+      $sql = "
+            DELETE FROM marca
+            WHERE id_empresa = ?
+              AND id IN ($placeholders)
+        ";
+
+      $stmt = $this->pdo->prepare($sql);
+
+      $stmt->bindValue(1, $id_empresa, PDO::PARAM_INT);
+
+      foreach ($idsBaja as $i => $id) {
+        $stmt->bindValue($i + 2, $id);
+      }
+
+      $stmt->execute();
+    }
+
+    // Insertar / Actualizar
+    if (!empty($marcasAlta)) {
+      $this->crearListaCsv($marcasAlta, $id_empresa);
+    }
+  }
+
   public function setearCSVEn0(int $id_empresa): bool
   {
     try {

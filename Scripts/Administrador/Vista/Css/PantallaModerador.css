@@ -150,7 +150,7 @@ body {
 #titulo-pagina {
   text-align: center;
   color: white;
-  padding: 26px 0px 0px; /* 👈 para darle espacio vertical */
+  padding: 45px 0px 0px; /* 👈 para darle espacio vertical */
   margin: 0% auto 3.5%;
   height: 100%;
   transition:
@@ -158,7 +158,7 @@ body {
     transform 0.4s ease,
     opacity 0.8s ease;
   transform-origin: top center;
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 600;
 }
 
@@ -272,6 +272,12 @@ h3 {
   background: #e89e13;
 }
 
+.modal-actualizar {
+  color: white;
+  display: flex;
+  flex-direction: column;
+}
+
 .moderador-dashboard {
   flex-grow: 1; /* Allow the dashboard to take up available space */
   width: 100%;
@@ -281,6 +287,33 @@ h3 {
   display: flex;
   flex-direction: column;
   align-items: center; /* Center content horizontally within dashboard */
+}
+
+.confirm-actions {
+  display: flex;
+}
+
+.confirm-message {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.boton-modal-confirmacion {
+  background-color: #e89e13;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  justify-content: space-around;
+  margin: auto;
+  display: flex;
+  flex-direction: row;
+}
+
+#cancelar-confirmacion {
+  background: red;
 }
 
 #form-cargar-excel {
@@ -487,6 +520,8 @@ br {
 }
 
 .disabled {
+  pointer-events: none;
+  background-color: #ccc;
   opacity: 0.5;
   cursor: not-allowed;
 }

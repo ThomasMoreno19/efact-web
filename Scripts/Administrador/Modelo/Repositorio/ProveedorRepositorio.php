@@ -96,6 +96,52 @@ class ProveedorRepositorio
     }
   }
 
+  public function actualizarCatalogo(array $proveedores, int $id_empresa): void
+  {
+    if (empty($proveedores)) {
+      return;
+    }
+
+    $proveedoresAlta = [];
+    $idsBaja = [];
+
+    foreach ($proveedores as $proveedor) {
+
+      if (!empty($proveedor['baja'])) {
+        $idsBaja[] = $proveedor['id_proveedor'];
+      } else {
+        $proveedoresAlta[] = $proveedor;
+      }
+    }
+
+    // Eliminar proveedores
+    if (!empty($idsBaja)) {
+
+      $placeholders = implode(',', array_fill(0, count($idsBaja), '?'));
+
+      $sql = "
+            DELETE FROM proveedor
+            WHERE id_empresa = ?
+              AND id IN ($placeholders)
+        ";
+
+      $stmt = $this->pdo->prepare($sql);
+
+      $stmt->bindValue(1, $id_empresa, PDO::PARAM_INT);
+
+      foreach ($idsBaja as $i => $id) {
+        $stmt->bindValue($i + 2, $id);
+      }
+
+      $stmt->execute();
+    }
+
+    // Insertar / Actualizar
+    if (!empty($proveedoresAlta)) {
+      $this->crearListaCsv($proveedoresAlta, $id_empresa);
+    }
+  }
+
   public function setearCSVEn0(int $id_empresa): bool
   {
     try {

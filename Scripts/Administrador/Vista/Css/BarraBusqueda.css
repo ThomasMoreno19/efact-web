@@ -13,21 +13,51 @@
   outline: none;
 }
 
+.barra {
+  font-size: 16px;
+  border: none;
+  padding: 9px 5px;
+  border-radius: 8px;
+  background-color: transparent;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+  color: white;
+  width: 100%;
+  outline: none;
+}
+
 .contenedor-busqueda {
   position: relative;
   border-radius: 8px;
   display: flex;
   padding: 0px 5px;
-  max-width: 270px;
-  margin: 15px auto 10px;
+  max-width: 340px;
+  margin: 5px auto;
   flex-direction: row;
-  background-color: #181818;
+  background-color: #00000042;
 }
 
 .icono-busqueda {
   width: 20px;
   color: #777;
   pointer-events: none;
+}
+
+#contenedores-codigos {
+  display: flex;
+  flex-direction: row;
+  max-width: 90%;
+  margin: auto;
+  gap: 10px;
+}
+
+#contenedor-busqueda-codigo-proveedor {
+  max-width: 180px;
+}
+
+#contenedor-busqueda-codigo-interno {
+  max-width: 130px;
 }
 
 /* Estilos para el texto de ejemplo (placeholder) */

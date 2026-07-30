@@ -1,6 +1,5 @@
 .lista {
   display: grid;
-  gap: 10px;
   padding: 10px 0px;
 }
 
@@ -76,14 +75,14 @@
 
 .articulo-logo {
   flex-shrink: 0;
-  width: 90px; /* el ancho que quieras */
-  height: 70px; /* altura fija para mantener proporción cuadrada */
-  align-self: stretch; /* abarca toda la altura */
+  width: 90px;
+  max-height: 100%;
+  align-self: stretch;
   display: flex;
   align-items: stretch;
-  border-radius: 4px 0 0 8px;
+  border-radius: 4px 0 0 4px;
   overflow: hidden;
-  background-color: #424242; /* color de fondo para el SVG */
+  background-color: #424242;
 }
 
 .articulo-logo svg {
@@ -178,7 +177,7 @@ p.descripcion {
   .articulo {
     width: 380px;
     margin: 0 auto;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
 
   .articulo p {
@@ -195,8 +194,28 @@ p.descripcion {
   }
 }
 
-#lista-rubros {
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+#modal-imagen {
+  background-color: #212121;
+  padding: 30px;
+  border-radius: 10px;
+  max-width: 80%;
+  position: relative;
+  animation: slideIn 0.3s ease-in-out;
+  color: white;
+}
+
+@media screen and (max-width: 600px) {
+  .datos-articulo-modal {
+    font-size: 15px;
+  }
+
+  .nombre-imagen {
+    font-size: 16px;
+  }
+}
+
+.lista-grupos {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 /* Elementos IMPARES (1, 3, 5...) */

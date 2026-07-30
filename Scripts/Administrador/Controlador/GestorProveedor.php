@@ -112,6 +112,24 @@ class GestorProveedor
     }
   }
 
+  public function actualizarCatalogo(array $proveedores, int $id_empresa): bool
+  {
+    if (empty($proveedores)) {
+      return true;
+    }
+
+    $tamLote = 2000;
+
+    foreach (array_chunk($proveedores, $tamLote) as $lote) {
+      $this->proveedorRepositorio->actualizarCatalogo(
+        $lote,
+        $id_empresa
+      );
+    }
+
+    return true;
+  }
+
   private function borrarCacheTodos(int $id_empresa): void
   {
     $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/";

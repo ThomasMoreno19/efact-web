@@ -18,7 +18,7 @@ class GestorModerador {
 
   async mostrarListaArticulosPorEmpresa(id_empresa) {
     return await this.llamadaAlBackend(
-      `/articulo/mostrar/empresa`,
+      `/articulo/mostrar/para-cliente`,
       { id_empresa },
       id_empresa,
     );
@@ -130,18 +130,15 @@ class GestorModerador {
     }
   }
 
-  async cargarListaArticulos(archivo, id_empresa) {
+  async leerCatalogoExcel(archivo) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      reader.onload = async (event) => {
+      reader.onload = (event) => {
         try {
           const data = new Uint8Array(event.target.result);
           const workbook = XLSX.read(data, { type: "array" });
 
-          // ==========================
-          // Obtener hojas
-          // ==========================
           const hojaArticulos = workbook.Sheets["Articulo"];
           const hojaProveedores = workbook.Sheets["Proveedor"];
           const hojaRubros = workbook.Sheets["Rubro"];
@@ -151,35 +148,21 @@ class GestorModerador {
             throw new Error("No existe la hoja 'Articulo'.");
           }
 
-          const datosArticulos = XLSX.utils.sheet_to_json(hojaArticulos, {
-            header: 1,
-          });
-          const datosProveedores = hojaProveedores
-            ? XLSX.utils.sheet_to_json(hojaProveedores, { header: 1 })
-            : [];
-          const datosRubros = hojaRubros
-            ? XLSX.utils.sheet_to_json(hojaRubros, { header: 1 })
-            : [];
-          const datosMarcas = hojaMarcas
-            ? XLSX.utils.sheet_to_json(hojaMarcas, { header: 1 })
-            : [];
-
-          // Si hay dos filas de encabezado usar slice(2)
-          // Si hay una sola usar slice(1)
           const articulos = [];
           const proveedores = [];
           const rubros = [];
           const marcas = [];
 
-          // ==========================
-          // Artículos
-          // ==========================
-          const filasArticulos = datosArticulos.slice(1);
+          // -------------------------
+          // ARTICULOS
+          // -------------------------
+          const datosArticulos = XLSX.utils.sheet_to_json(hojaArticulos, {
+            header: 1,
+          });
 
-          for (const fila of filasArticulos) {
+          for (const fila of datosArticulos.slice(1)) {
             if (!fila || fila.length === 0) continue;
 
-            // Si no hay id_articulo, termina la lectura
             if (fila[0] == null || String(fila[0]).trim() === "") {
               break;
             }
@@ -188,17 +171,19 @@ class GestorModerador {
               fila[13] === true ||
               fila[13] === 1 ||
               fila[13] === "1" ||
-              String(fila[13]).toUpperCase() === "VERDADERO"
-                ? 1
-                : 0;
+              String(fila[13]).toUpperCase() === "VERDADERO";
 
             const oferta =
               fila[16] === true ||
               fila[16] === 1 ||
               fila[16] === "1" ||
-              String(fila[13]).toUpperCase() === "VERDADERO"
-                ? 1
-                : 0;
+              String(fila[16]).toUpperCase() === "VERDADERO";
+
+            const baja =
+              fila[17] === true ||
+              fila[17] === 1 ||
+              fila[17] === "1" ||
+              String(fila[17]).toUpperCase() === "VERDADERO";
 
             articulos.push({
               id_articulo: fila[0],
@@ -215,84 +200,177 @@ class GestorModerador {
               existencia: parseFloat(fila[12]) || 0,
               abreviatura: fila[14]?.trim() ?? "",
               ubicacion: fila[15]?.trim() ?? "",
-              oferta: oferta,
+              oferta,
               no_procesado: noProcesado,
+              baja,
             });
           }
 
-          // ==========================
-          // Proveedores
-          // ==========================
-          datosProveedores.slice(1).forEach((fila) => {
-            if (!fila || fila.length === 0) return;
-
-            proveedores.push({
-              id_proveedor: fila[0],
-              nombre_proveedor: fila[1]?.trim() ?? "",
-              abreviatura_proveedor: fila[2]?.trim() ?? "",
+          // -------------------------
+          // PROVEEDORES
+          // -------------------------
+          if (hojaProveedores) {
+            const datos = XLSX.utils.sheet_to_json(hojaProveedores, {
+              header: 1,
             });
-          });
 
-          // ==========================
-          // Rubros
-          // ==========================
-          datosRubros.slice(1).forEach((fila) => {
-            if (!fila || fila.length === 0) return;
+            datos.slice(1).forEach((fila) => {
+              if (!fila || fila.length === 0) return;
 
-            rubros.push({
-              id_rubro: fila[0],
-              nombre_rubro: fila[1]?.trim() ?? "",
-              abreviatura_rubro: fila[2]?.trim() ?? "",
+              const baja =
+                fila[3] === true ||
+                fila[3] === 1 ||
+                fila[3] === "1" ||
+                String(fila[3]).toUpperCase() === "VERDADERO";
+
+              proveedores.push({
+                id_proveedor: fila[0],
+                nombre_proveedor: fila[1]?.trim() ?? "",
+                abreviatura_proveedor: fila[2]?.trim() ?? "",
+                baja,
+              });
             });
-          });
-
-          // ==========================
-          // Marcas
-          // ==========================
-          datosMarcas.slice(1).forEach((fila) => {
-            if (!fila || fila.length === 0) return;
-
-            marcas.push({
-              id_marca: fila[0],
-              nombre_marca: fila[1]?.trim() ?? "",
-              abreviatura_marca: fila[2]?.trim() ?? "",
-            });
-          });
-
-          await this.setearEn0(id_empresa);
-
-          const resultadoCarga = await this.cargarArticulos(
-            {
-              articulos,
-              proveedores,
-              rubros,
-              marcas,
-            },
-            id_empresa,
-          );
-
-          if (!resultadoCarga) {
-            return reject(new Error("Error al cargar la información."));
           }
 
-          const resultado = await this.borrarRubrosYArtNoUtilizados(id_empresa);
+          // -------------------------
+          // RUBROS
+          // -------------------------
+          if (hojaRubros) {
+            const datos = XLSX.utils.sheet_to_json(hojaRubros, {
+              header: 1,
+            });
+
+            datos.slice(1).forEach((fila) => {
+              if (!fila || fila.length === 0) return;
+
+              const baja =
+                fila[3] === true ||
+                fila[3] === 1 ||
+                fila[3] === "1" ||
+                String(fila[3]).toUpperCase() === "VERDADERO";
+
+              rubros.push({
+                id_rubro: fila[0],
+                nombre_rubro: fila[1]?.trim() ?? "",
+                abreviatura_rubro: fila[2]?.trim() ?? "",
+                baja,
+              });
+            });
+          }
+
+          // -------------------------
+          // MARCAS
+          // -------------------------
+          if (hojaMarcas) {
+            const datos = XLSX.utils.sheet_to_json(hojaMarcas, {
+              header: 1,
+            });
+
+            datos.slice(1).forEach((fila) => {
+              if (!fila || fila.length === 0) return;
+
+              const baja =
+                fila[3] === true ||
+                fila[3] === 1 ||
+                fila[3] === "1" ||
+                String(fila[3]).toUpperCase() === "VERDADERO";
+
+              marcas.push({
+                id_marca: fila[0],
+                nombre_marca: fila[1]?.trim() ?? "",
+                abreviatura_marca: fila[2]?.trim() ?? "",
+                baja,
+              });
+            });
+          }
 
           resolve({
-            articulos: resultadoCarga,
-            resultado,
+            articulos,
+            proveedores,
+            rubros,
+            marcas,
           });
         } catch (error) {
-          console.error(error);
           reject(new Error(`Error al procesar el archivo: ${error.message}`));
         }
       };
 
-      reader.onerror = () => {
-        reject(new Error("Error al leer el archivo."));
-      };
+      reader.onerror = () => reject(new Error("Error al leer el archivo."));
 
       reader.readAsArrayBuffer(archivo);
     });
+  }
+
+  async cargarListaArticulos(archivo, id_empresa) {
+    const catalogo = await this.leerCatalogoExcel(archivo);
+
+    await this.setearEn0(id_empresa);
+
+    const resultadoCarga = await this.cargarArticulos(catalogo, id_empresa);
+
+    if (!resultadoCarga) {
+      throw new Error("Error al cargar la información.");
+    }
+
+    const resultado = await this.borrarRubrosYArtNoUtilizados(id_empresa);
+
+    return {
+      articulos: resultadoCarga,
+      resultado,
+    };
+  }
+
+  async actualizarCatalogo(archivo, id_empresa, hojasSeleccionadas) {
+    const catalogo = await this.leerCatalogoExcel(archivo);
+
+    const catalogoActualizacion = this.armarCatalogoActualizacion(
+      catalogo,
+      hojasSeleccionadas,
+      id_empresa,
+    );
+
+    return await this.actualizarCatalogoBackend(catalogoActualizacion);
+  }
+
+  armarCatalogoActualizacion(catalogo, hojasSeleccionadas, id_empresa) {
+    const catalogoActualizacion = {
+      id_empresa,
+    };
+
+    if (hojasSeleccionadas.articulos) {
+      catalogoActualizacion.articulos = catalogo.articulos;
+    }
+
+    if (hojasSeleccionadas.proveedores) {
+      catalogoActualizacion.proveedores = catalogo.proveedores;
+    }
+
+    if (hojasSeleccionadas.rubros) {
+      catalogoActualizacion.rubros = catalogo.rubros;
+    }
+
+    if (hojasSeleccionadas.marcas) {
+      catalogoActualizacion.marcas = catalogo.marcas;
+    }
+
+    return catalogoActualizacion;
+  }
+
+  async actualizarCatalogoBackend(catalogo) {
+    const response = await fetch(`/articulo/actualizar-catalogo`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(catalogo),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message);
+    }
+
+    return await response.json();
   }
 
   async cargarArticulos(datos, id_empresa) {

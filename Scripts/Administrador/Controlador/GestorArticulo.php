@@ -60,6 +60,10 @@ class GestorArticulo
         $this->cargarLista();
         break;
 
+      case 'actualizar-catalogo':
+        $this->actualizarCatalogo();
+        break;
+
       case 'subir-logo':
         $this->subirLogo();
         break;
@@ -245,6 +249,71 @@ class GestorArticulo
       ]);
     } catch (Exception $e) {
       http_response_code(500);
+      echo json_encode([
+        'error' => $e->getMessage()
+      ]);
+    }
+  }
+
+  private function actualizarCatalogo(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id_empresa = $datos['id_empresa'] ?? null;
+
+    if (empty($id_empresa)) {
+      http_response_code(400);
+      echo json_encode([
+        'error' => 'Debe indicar la empresa.'
+      ]);
+      return;
+    }
+
+    try {
+
+      if (isset($datos['rubros'])) {
+        $this->gestorRubro->actualizarCatalogo(
+          $datos['rubros'],
+          $id_empresa
+        );
+      }
+
+      if (isset($datos['marcas'])) {
+        $this->gestorMarca->actualizarCatalogo(
+          $datos['marcas'],
+          $id_empresa
+        );
+      }
+
+      if (isset($datos['proveedores'])) {
+        $this->gestorProveedor->actualizarCatalogo(
+          $datos['proveedores'],
+          $id_empresa
+        );
+      }
+
+      if (isset($datos['articulos'])) {
+
+        $tamLote = 2000;
+
+        foreach (array_chunk($datos['articulos'], $tamLote) as $lote) {
+
+          $this->articuloRepositorio->actualizarCatalogo(
+            $lote,
+            $id_empresa
+          );
+        }
+      }
+
+      $this->borrarCacheTodos($id_empresa);
+
+      echo json_encode([
+        'success' => true
+      ]);
+    } catch (Exception $e) {
+
+      http_response_code(500);
+
       echo json_encode([
         'error' => $e->getMessage()
       ]);

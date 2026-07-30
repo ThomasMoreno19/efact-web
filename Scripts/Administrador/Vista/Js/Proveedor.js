@@ -7,7 +7,7 @@ class ProveedorVista {
     this.nombre = nombre;
     this.abreviatura = abreviatura;
     this.cantidad = cantidad;
-    this.logo_url = logo_url ?? "Archivos/Logos/Vacio.png";
+    this.logo_url = logo_url ?? "/Archivos/Logos/Vacio.png";
   }
 
   mostrarUno(paraCliente = false) {

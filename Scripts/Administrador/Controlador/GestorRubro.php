@@ -172,6 +172,24 @@ class GestorRubro
     }
   }
 
+  public function actualizarCatalogo(array $rubros, int $id_empresa): bool
+  {
+    if (empty($rubros)) {
+      return true;
+    }
+
+    $tamLote = 2000;
+
+    foreach (array_chunk($rubros, $tamLote) as $lote) {
+      $this->rubroRepositorio->actualizarCatalogo(
+        $lote,
+        $id_empresa
+      );
+    }
+
+    return true;
+  }
+
   private function borrarCacheTodos(int $id_empresa): bool
   {
     $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/";

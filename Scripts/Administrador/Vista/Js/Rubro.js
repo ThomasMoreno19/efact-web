@@ -5,7 +5,7 @@ class RubroVista {
     this.id_empresa = id_empresa;
     this.nombre = nombre;
     this.abreviatura = abreviatura;
-    this.logo_url = logo_url;
+    this.logo_url = logo_url ?? "/Archivos/Logos/Vacio.png";
     this.cantidad = cantidad;
   }
 

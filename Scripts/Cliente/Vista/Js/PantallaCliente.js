@@ -88,15 +88,37 @@ class PantallaCliente {
 
     this.esInterno = new URLSearchParams(window.location.search).has("interno");
     this.filtros = {
-      rubro: null,
-      marca: null,
-      proveedor: null,
+      rubro: [],
+      marca: [],
+      proveedor: [],
 
       nombre: "",
       codigoProveedor: "",
       codigoInterno: "",
       abreviatura: "",
     };
+
+    this.svgRubro = `<svg id="svg-rubro" class="svg" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 122.88 122.54" fill="#ffffffcf" width="16px" height="16px">
+            <title>search-categories</title>
+            <path d="M4.69,0H46.22a4.71,4.71,0,0,1,4.69,4.69V46a4.69,4.69,0,0,1-4.69,4.69H4.69a4.65,4.65,0,0,1-3.31-1.38l-.09-.09A4.67,4.67,0,0,1,0,46V4.69A4.71,4.71,0,0,1,4.69,0ZM89.44,61.94a26.56,26.56,0,0,1,10.18,2l.07,0a26.61,26.61,0,0,1,15.25,32.16,26.18,26.18,0,0,1-2.7,6.11l10.3,11.24a1.27,1.27,0,0,1-.07,1.8l-7.57,6.9a1.27,1.27,0,0,1-1.79-.07l-9.86-10.85a26.36,26.36,0,0,1-6.1,2.74,26.87,26.87,0,0,1-7.71,1.13,26.51,26.51,0,0,1-10.17-2l-.07,0A26.64,26.64,0,0,1,64.85,78.37l0-.07A26.6,26.6,0,0,1,89.44,61.94Zm15,11.59a21.38,21.38,0,0,0-6.89-4.61l-.06,0a21.22,21.22,0,0,0-23.07,4.64l-.07.07a21.25,21.25,0,0,0-4.54,6.83l0,.06a21.32,21.32,0,0,0-1.58,8.06,21.26,21.26,0,0,0,29.35,19.62,21.54,21.54,0,0,0,6.89-4.61l.07-.07a21.09,21.09,0,0,0,4.54-6.83l0-.06a21.35,21.35,0,0,0,0-16.17,21.34,21.34,0,0,0-4.62-6.9ZM4.69,63.2H46.22a4.71,4.71,0,0,1,4.69,4.7v41.34a4.68,4.68,0,0,1-4.69,4.69H4.69A4.69,4.69,0,0,1,0,109.24V67.9a4.71,4.71,0,0,1,4.69-4.7ZM68.78,0h41.53A4.71,4.71,0,0,1,115,4.69V46a4.71,4.71,0,0,1-4.69,4.69H68.78A4.71,4.71,0,0,1,64.09,46V4.69a4.69,4.69,0,0,1,1.37-3.31l.1-.09A4.67,4.67,0,0,1,68.78,0Z" />
+          </svg>`;
+
+    this.svgProveedor = `<svg version="1.1" id="svg-proveedor" class="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="16px" height="16px" viewBox="0 0 121.52 122.88" style="enable-background:new 0 0 121.52 122.88" xml:space="preserve" fill="#ffffff">
+            <style type=" text/css">
+              .st0 {
+                fill-rule: evenodd;
+                clip-rule: evenodd;
+              }
+            </style>
+            <g>
+              <path class="st0" d="M49.91,26.09l53.86-13.45c1.52-0.38,3.08,0.56,3.46,2.08l13.45,53.86c0.38,1.52-0.56,3.08-2.08,3.46 L64.75,85.49c-1.52,0.38-3.08-0.56-3.46-2.08L47.83,29.55C47.45,28.03,48.39,26.47,49.91,26.09L49.91,26.09L49.91,26.09z M54.59,90.54c8.93,0,16.17,7.24,16.17,16.17c0,8.93-7.24,16.17-16.17,16.17c-8.93,0-16.17-7.24-16.17-16.17 C38.42,97.78,45.66,90.54,54.59,90.54L54.59,90.54z M74,92.69l41.87-11.22l2.51-0.67l0.67,2.51l1.8,6.72l0.67,2.51l-2.51,0.67 l-41.87,11.22l-2.51,0.67l-0.67-2.51l-1.8-6.72l-0.67-2.51L74,92.69L74,92.69L74,92.69z M4.21,0.04l8.34,1.45 c9.58,1.67,14.41,2.63,17.54,5.12c3.37,2.68,4.13,6.28,5.59,13.26c0.27,1.27,0.56,2.69,0.96,4.4c0.36,1.58,0.82,3.43,1.42,5.64 l14.87,54.67c0.38,1.39-0.44,2.81-1.83,3.19c-0.04,0.01-0.08,0.02-0.12,0.03l-6.61,1.79c-1.38,0.37-2.81-0.45-3.18-1.83l0,0 l-6.76-24.85l-8.11-29.82c-0.56-2.08-1.05-4.08-1.47-5.94l-0.02-0.12c-0.41-1.8-0.73-3.33-1.02-4.7c-0.73-3.47-1.1-5.27-2.23-6.08 c-1.47-1.07-4.67-1.67-11.06-2.79l-3.23-0.56l-5.11-0.89c-1.42-0.24-2.37-1.58-2.12-3l1.17-6.86C1.45,0.75,2.79-0.2,4.21,0.04 L4.21,0.04z" />
+            </g>
+          </svg>`;
+    this.svgMarca = `<svg version="1.1" id="svg-marca" class="svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="16px" height="16px" viewBox="0 0 122.879 122.891" enable-background="new 0 0 122.879 122.891" xml:space="preserve" fill="#ffffff">
+            <g>
+              <path d="M89.767,18.578c3.848,0,7.332,1.561,9.854,4.082c2.521,2.522,4.082,6.007,4.082,9.855s-1.561,7.332-4.082,9.854 c-2.522,2.522-6.007,4.082-9.854,4.082c-3.849,0-7.333-1.56-9.854-4.082c-2.522-2.522-4.082-6.006-4.082-9.854 s1.56-7.333,4.082-9.855C82.434,20.138,85.918,18.578,89.767,18.578L89.767,18.578z M122.04,56.704l-65.337,65.337 c-1.132,1.133-2.969,1.133-4.101,0L0.849,70.287c-1.132-1.131-1.132-2.967,0-4.1L66.186,0.85C66.752,0.284,67.494,0,68.236,0v0 h50.051c1.602,0,2.9,1.298,2.9,2.9c0,0.048-0.002,0.097-0.004,0.145l1.694,51.517c0.026,0.83-0.301,1.589-0.845,2.134 L122.04,56.704L122.04,56.704z M54.652,115.889l62.406-62.407L115.49,5.8H69.438L7.001,68.238L54.652,115.889L54.652,115.889z M96.244,26.037c-1.657-1.657-3.948-2.683-6.478-2.683c-2.53,0-4.82,1.025-6.478,2.683c-1.658,1.657-2.684,3.948-2.684,6.478 s1.025,4.82,2.684,6.478c1.657,1.658,3.947,2.683,6.478,2.683c2.529,0,4.82-1.025,6.478-2.683s2.683-3.948,2.683-6.478 S97.901,27.694,96.244,26.037L96.244,26.037z" />
+            </g>
+          </svg>`;
 
     this.listaGruposSeleccionados = {
       rubros: [],
@@ -187,9 +209,6 @@ class PantallaCliente {
       this.buscarPorCodigoInterno(this.barraBusquedaCodigoInterno.value);
     this.barraBusquedaCodigoProveedor.oninput = () =>
       this.buscarPorCodigoProveedor(this.barraBusquedaCodigoProveedor.value);
-    this.eliminarFiltroMarca.onclick = () => this.quitarFiltro("marca");
-    this.eliminarFiltroRubro.onclick = () => this.quitarFiltro("rubro");
-    this.eliminarFiltroProveedor.onclick = () => this.quitarFiltro("proveedor");
     this.botonBorrarBusquedaCodigoInterno.onclick = () =>
       this.borrarBusqueda("codigoInterno");
     this.botonBorrarBusquedaCodigoProveedor.onclick = () =>
@@ -414,10 +433,16 @@ class PantallaCliente {
       const catalogos = await this.gestor.mostrarListaRubros(this.empresa.id);
 
       this.todosLosRubros = catalogos.rubros ?? [];
+      if (this.todosLosRubros.length === 0)
+        this.botonListaRubros.classList.add("hidden");
 
       this.todasLasMarcas = catalogos.marcas ?? [];
+      if (this.todasLasMarcas.length === 0)
+        this.botonListaMarcas.classList.add("hidden");
 
       this.todosLosProveedores = catalogos.proveedores ?? [];
+      if (this.todosLosProveedores.length === 0)
+        this.botonListaProveedores.classList.add("hidden");
 
       // Obtener y ordenar todos los artículos
       this.todosLosArticulos =
@@ -426,6 +451,8 @@ class PantallaCliente {
       this.todasLasOfertas = this.todosLosArticulos.filter(
         (articulo) => articulo.oferta,
       );
+      if (this.todasLasOfertas.length === 0)
+        this.botonListaOfertas.classList.add("hidden");
     } catch (error) {
       console.error(error);
     }
@@ -496,51 +523,45 @@ class PantallaCliente {
   }
 
   seleccionarTipo(tipo, tipoSeleccionado) {
-    this.filtros[tipoSeleccionado] = {
-      id: tipo.id,
-      nombre: tipo.nombre,
-      abreviatura: tipo.abreviatura,
-    };
+    const lista = this.filtros[tipoSeleccionado];
+
+    const existe = lista.some((item) => item.id === tipo.id);
+
+    if (existe) {
+      this.filtros[tipoSeleccionado] = lista.filter(
+        (item) => item.id !== tipo.id,
+      );
+    } else {
+      this.filtros[tipoSeleccionado].push({
+        id: tipo.id,
+        nombre: tipo.nombre,
+        abreviatura: tipo.abreviatura,
+      });
+    }
+
     this.barraBusqueda.value = "";
     this.botonBorrarBusquedaNombre.classList.add("hidden");
+
     this.actualizarFiltros();
-    this.botonListaArticulos.click();
   }
 
-  actualizarFiltros(actualizarArticulos = false, tipo = null) {
+  actualizarFiltros(tipo = null) {
+    this.botonListaArticulos.classList.remove("lupa-activa");
+    this.botonListaMarcas.classList.remove("activo-cliente");
+    this.botonListaProveedores.classList.remove("activo-cliente");
+    this.botonListaRubros.classList.remove("activo-cliente");
+    this.botonListaOfertas.classList.remove("activo-cliente");
+
     this.contenedoresBarraCodigos.classList.add("hidden");
-    this.botonFiltroMarca.classList.toggle("hidden", !this.filtros.marca);
-    this.botonFiltroRubro.classList.toggle("hidden", !this.filtros.rubro);
-    this.botonFiltroProveedor.classList.toggle(
-      "hidden",
-      !this.filtros.proveedor,
-    );
 
-    if (!this.filtros.rubro) this.nombreFiltroRubro.textContent = "";
-    else this.nombreFiltroRubro.textContent = this.filtros.rubro.abreviatura;
-    if (!this.filtros.marca) this.nombreFiltroMarca.textContent = "";
-    else this.nombreFiltroMarca.textContent = this.filtros.marca.abreviatura;
-    if (!this.filtros.proveedor) this.nombreFiltroProveedor.textContent = "";
-    else
-      this.nombreFiltroProveedor.textContent =
-        this.filtros.proveedor.abreviatura;
-
-    if (actualizarArticulos) this.actualizarArticulos();
+    this.renderizarFiltros();
     if (tipo) {
+      this.botonListaArticulos.classList.remove("lupa-activa");
       this.mostrarGrupo(tipo);
-      return;
-    }
-    if (!this.filtros.marca && !this.filtros.rubro && !this.filtros.proveedor) {
-      this.botonListaArticulos.click();
     }
   }
 
   mostrarGrupo(tipo, valor = "") {
-    this.botonListaMarcas.classList.remove("activo-cliente");
-    this.botonListaProveedores.classList.remove("activo-cliente");
-    this.botonListaRubros.classList.remove("activo-cliente");
-    this.botonListaArticulos.classList.remove("lupa-activa");
-
     this.listaArticulos.classList.add("hidden");
     this.listaRubros.classList.add("hidden");
     this.listaProveedores.classList.add("hidden");
@@ -596,10 +617,12 @@ class PantallaCliente {
     this.actualizarArticulos();
   }
 
-  quitarFiltro(tipo) {
-    this.filtros[tipo] = null;
+  quitarFiltroIndividual(tipo, id) {
+    this.filtros[tipo] = this.filtros[tipo].filter(
+      (filtro) => filtro.id !== id,
+    );
 
-    this.actualizarFiltros(false, tipo);
+    this.actualizarFiltros(tipo);
   }
 
   borrarBusqueda(tipo, tipoGrupo = null) {
@@ -622,7 +645,7 @@ class PantallaCliente {
       this.mostrarGrupo(tipoGrupo);
       return;
     }
-    this.actualizarFiltros(true);
+    this.actualizarFiltros();
   }
 
   crearBotonFiltro(tipo, texto, onclick) {
@@ -637,8 +660,56 @@ class PantallaCliente {
     return boton;
   }
 
+  renderizarFiltros(tipo = null) {
+    const contenedor = document.getElementById("lista-botones-filtros");
+
+    contenedor.innerHTML = "";
+
+    const crearBotonFiltro = (grupo, filtro, icono) => {
+      const boton = document.createElement("button");
+      boton.classList.add("boton-filtro", "boton-lista-cliente");
+
+      boton.innerHTML = `
+      ${icono}
+
+      <p class="filtro nombre-filtro">
+        ${filtro.abreviatura}
+      </p>
+
+      <p class="filtro eliminar">
+        ✕
+      </p>
+    `;
+
+      boton.querySelector(".eliminar").addEventListener("click", (e) => {
+        e.stopPropagation();
+
+        this.quitarFiltroIndividual(grupo, filtro.id);
+      });
+
+      contenedor.appendChild(boton);
+    };
+
+    this.filtros.rubro.forEach((rubro) => {
+      crearBotonFiltro("rubro", rubro, this.svgRubro);
+    });
+
+    this.filtros.marca.forEach((marca) => {
+      crearBotonFiltro("marca", marca, this.svgMarca);
+    });
+
+    this.filtros.proveedor.forEach((proveedor) => {
+      crearBotonFiltro("proveedor", proveedor, this.svgProveedor);
+    });
+
+    if (!tipo) this.actualizarArticulos();
+  }
+
   actualizarArticulos() {
+    this.articulosActuales = [];
     let articulos = [...this.todosLosArticulos];
+    this.botonListaArticulos.classList.add("lupa-activa");
+    this.contenedoresBarraCodigos.classList.remove("hidden");
 
     this.listaArticulos.classList.add("hidden");
     this.listaVacia.classList.add("hidden");
@@ -654,9 +725,9 @@ class PantallaCliente {
       !codigoInterno &&
       !nombre &&
       !codigoProveedor &&
-      !this.filtros.rubro &&
-      !this.filtros.marca &&
-      !this.filtros.proveedor
+      this.filtros.rubro.length === 0 &&
+      this.filtros.marca.length === 0 &&
+      this.filtros.proveedor.length === 0
     ) {
       this.listaVacia.classList.remove("hidden");
       return;
@@ -671,26 +742,24 @@ class PantallaCliente {
       return;
     }
 
-    // ===========
-    // FILTRO RUBRO
-    // ===========
-    if (this.filtros.rubro) {
-      articulos = articulos.filter((a) => a.id_rubro === this.filtros.rubro.id);
+    // RUBROS (OR)
+    if (this.filtros.rubro.length) {
+      articulos = articulos.filter((a) =>
+        this.filtros.rubro.some((r) => r.id === a.id_rubro),
+      );
     }
 
-    // ===========
-    // FILTRO MARCA
-    // ===========
-    if (this.filtros.marca) {
-      articulos = articulos.filter((a) => a.id_marca === this.filtros.marca.id);
+    // MARCAS (OR)
+    if (this.filtros.marca.length) {
+      articulos = articulos.filter((a) =>
+        this.filtros.marca.some((m) => m.id === a.id_marca),
+      );
     }
 
-    // =================
-    // FILTRO PROVEEDOR
-    // =================
-    if (this.filtros.proveedor) {
-      articulos = articulos.filter(
-        (a) => a.id_proveedor === this.filtros.proveedor.id,
+    // PROVEEDORES (OR)
+    if (this.filtros.proveedor.length) {
+      articulos = articulos.filter((a) =>
+        this.filtros.proveedor.some((p) => p.id === a.id_proveedor),
       );
     }
 
@@ -983,15 +1052,6 @@ class PantallaCliente {
     return listaPlana;
   }
 
-  /* Inserta la lista plana en el DOM y elimina la anterior si existía */
-  mostrarListaPlana(listaPlana) {
-    const listaPlanaAnterior =
-      this.listaArticulos.querySelector(".lista-plana");
-    if (listaPlanaAnterior) listaPlanaAnterior.remove();
-
-    this.listaArticulos.appendChild(listaPlana);
-  }
-
   volverAtras() {
     // Hide the back button and search bar
     window.history.back();
@@ -1003,6 +1063,7 @@ class PantallaCliente {
     this.botonListaMarcas.classList.remove("activo-cliente");
     this.botonListaArticulos.classList.remove("lupa-activa");
     this.botonListaRubros.classList.add("activo-cliente");
+    this.botonListaOfertas.classList.remove("activo-cliente");
   }
 
   conocerSlug(texto) {
@@ -1198,6 +1259,7 @@ class PantallaCliente {
       this.empresa.tieneCarrito,
       this.empresa.incluirHorarios,
       this.carritoSinPedidos,
+      this.esInterno,
     );
     this.listaCentral.classList.add("hidden");
     this.modalCarrito.abrirModalCarrito();

@@ -170,8 +170,8 @@ class ArticuloRepositorio
       $params[":precio3$i"] = (string) $a['precio3'];
 
       $params[":existencia$i"] = (string) $a['existencia'];
-      $params[":no_procesado$i"] = $a['no_procesado'] ?? 0;
-      $params[":oferta$i"] = $a['oferta'] ?? 0;
+      $params[":no_procesado$i"] = !empty($a['no_procesado']) ? 1 : 0;
+      $params[":oferta$i"] = !empty($a['oferta']) ? 1 : 0;
 
       $params[":abreviatura$i"] = $a['abreviatura'] ?: null;
       $params[":ubicacion$i"] = $a['ubicacion'] ?: null;
@@ -239,6 +239,52 @@ class ArticuloRepositorio
       return $articulos;
     } catch (PDOException $e) {
       throw $e;
+    }
+  }
+
+  public function actualizarCatalogo(array $articulos, int $id_empresa): void
+  {
+    if (empty($articulos)) {
+      return;
+    }
+
+    $articulosAlta = [];
+    $idsBaja = [];
+
+    foreach ($articulos as $articulo) {
+
+      if (!empty($articulo['baja'])) {
+        $idsBaja[] = $articulo['id_articulo'];
+      } else {
+        $articulosAlta[] = $articulo;
+      }
+    }
+
+    // Eliminar artículos
+    if (!empty($idsBaja)) {
+
+      $placeholders = implode(',', array_fill(0, count($idsBaja), '?'));
+
+      $sql = "
+            DELETE FROM articulo
+            WHERE id_empresa = ?
+              AND id IN ($placeholders)
+        ";
+
+      $stmt = $this->pdo->prepare($sql);
+
+      $stmt->bindValue(1, $id_empresa, PDO::PARAM_INT);
+
+      foreach ($idsBaja as $i => $id) {
+        $stmt->bindValue($i + 2, $id);
+      }
+
+      $stmt->execute();
+    }
+
+    // Insertar / Actualizar
+    if (!empty($articulosAlta)) {
+      $this->crearListaCsv($articulosAlta, $id_empresa);
     }
   }
 

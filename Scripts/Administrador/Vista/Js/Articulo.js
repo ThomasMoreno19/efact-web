@@ -156,7 +156,7 @@ class ArticuloVista {
     contentGroup.classList.add("articulo-content");
     contentGroup.appendChild(container2);
 
-    if (!this.no_procesado && !esInterno) {
+    if (!this.no_procesado) {
       divArticulo.addEventListener("click", () => {
         const event = new CustomEvent("articuloSeleccionado", { detail: this });
         document.dispatchEvent(event);
@@ -672,7 +672,6 @@ class ArticuloVista {
   }
 
   mostrarModalImagen(url) {
-    // Si la URL es el string del SVG, se codifica como Data URI para que el <img> lo interprete
     const esSVGString = url && url.trim().startsWith("<svg");
     const srcFinal = esSVGString
       ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(url)}`
@@ -683,23 +682,44 @@ class ArticuloVista {
     modal.id = "modal-imagen-articulo";
 
     modal.innerHTML = `
-      <div id="modal-imagen">
-        <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 50px;">&times;</span>
-        <h3 id="nombre-imagen" style="font-size: 22px; width: 75%; margin: auto; background: transparent;">${this.nombre}</h3>
-        <div class="reproductor-container">
-          <img
-            src="${srcFinal}"
-            alt="Imagen de ${this.nombre}"
-            style="
-              max-width: 100%;
-              max-height: 80vh;
-              border-radius: 8px;
-              object-fit: contain;
-            "
-          />
-        </div>
+    <div id="modal-imagen">
+      <span class="close-modal-btn" 
+        style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 50px;">
+        &times;
+      </span>
+
+      ${this.oferta ? `<div class="badge-oferta"> %OFF </div>` : ""}
+
+      <div class="reproductor-container">
+        <img
+          src="${srcFinal}"
+          alt="Imagen"
+          style="
+            max-width: 90%;
+            max-height: 250px;
+            border-radius: 8px;
+            object-fit: contain;
+            margin:auto;
+            display: flex;
+          "
+        />
       </div>
-    `;
+
+      <h3 id="nombre-imagen" 
+        style="font-size: 20px; width: 95%; margin: auto; background: transparent;">
+        ${this.nombre}
+      </h3>
+
+      <div class="datos-articulo-modal">
+        <p><strong>Marca:</strong> ${this.marca ?? "N/A"}</p>
+        <p><strong>Proveedor:</strong> ${this.proveedor ?? "N/A"}</p>
+        <p><strong>Código proveedor:</strong> ${this.codigo_proveedor ?? "N/A"}</p>
+        <p><strong>Existencia:</strong> ${this.existencia ?? "N/A"}</p>
+      </div>
+
+      
+    </div>
+  `;
 
     document.body.appendChild(modal);
 

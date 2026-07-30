@@ -8,6 +8,7 @@ class ModalCarrito {
     moduloCarrito,
     incluirHorario,
     carritoSinPedidos,
+    esInterno,
   ) {
     this.carrito = carrito;
     this.empresa = empresa;
@@ -23,6 +24,7 @@ class ModalCarrito {
     };
     this.incluirHorario = incluirHorario;
     this.carritoSinPedidos = carritoSinPedidos;
+    this.esInterno = esInterno;
     this.horarios = horarios || [];
     this.handleEnviarClick = this.enviarPedidoWhatsApp.bind(this);
 
@@ -193,7 +195,7 @@ class ModalCarrito {
   }
 
   estaAbiertoPorHorarioAhora() {
-    if (!this.incluirHorario) return true;
+    if (!this.incluirHorario || this.esInterno) return true;
     const ahora = new Date();
 
     const jsDay = ahora.getDay(); // 0 domingo..6 sábado
@@ -523,7 +525,14 @@ class ModalCarrito {
 
           <div class="col-cantidad">
             <button class="btn-cant menos" data-id="${articulo.id}">-</button>
-            <span id="cantidad-articulo" class="cantidad" data-id="${articulo.id}">${articulo.cantidad}</span>
+            <input
+              type="number"
+              class="cantidad-input"
+              data-id="${articulo.id}"
+              min="1"
+              max="99"
+              value="${articulo.cantidad}"
+            >
             <button class="btn-cant mas" data-id="${articulo.id}">+</button>
           </div>
         </div>
@@ -543,6 +552,27 @@ class ModalCarrito {
 
     totalSpan.textContent = this.carrito.obtenerTotal();
 
+    cuerpo.addEventListener("keydown", (e) => {
+      const input = e.target.closest(".cantidad-input");
+      if (!input) return;
+
+      if (e.key === "Enter") {
+        e.preventDefault();
+        this.actualizarCantidadInput(input);
+        input.blur();
+      }
+    });
+
+    cuerpo.addEventListener(
+      "blur",
+      (e) => {
+        const input = e.target.closest(".cantidad-input");
+        if (!input) return;
+
+        this.actualizarCantidadInput(input);
+      },
+      true,
+    );
     // Listener para textarea
     cuerpo.querySelectorAll(".observacion-textarea").forEach((textarea) => {
       // ✅ Keydown solo una vez
@@ -588,6 +618,29 @@ class ModalCarrito {
         }
       });
     });
+  }
+
+  actualizarCantidadInput(input) {
+    const id = input.dataset.id;
+
+    const articulo = this.carrito
+      .mostrarArticulos()
+      .find((a) => String(a.id) === String(id));
+
+    if (!articulo) return;
+
+    let cantidad = Number(input.value);
+
+    // Si dejó vacío, mantener la cantidad anterior
+    if (input.value === "" || isNaN(cantidad)) {
+      cantidad = articulo.cantidad;
+    }
+
+    cantidad = Math.max(1, Math.min(99, cantidad));
+
+    articulo.cantidad = cantidad;
+
+    this.renderCarrito();
   }
 
   renderDatosPersonales() {
@@ -672,7 +725,7 @@ class ModalCarrito {
             .find((a) => String(a.id) === String(id));
           if (!articulo) return;
 
-          if (btnCant.classList.contains("mas") && articulo.cantidad < 15)
+          if (btnCant.classList.contains("mas") && articulo.cantidad < 99)
             articulo.cantidad = (Number(articulo.cantidad) || 0) + 1;
           else if (
             btnCant.classList.contains("menos") &&
@@ -696,6 +749,7 @@ class ModalCarrito {
 
     this.botonSigPaso?.addEventListener("click", () => {
       if (this.botonSigPaso.desactivado) return;
+      this.renderCarrito();
       window.history.pushState(
         { vista: "modal", paso: 2 },
         "",
@@ -719,7 +773,9 @@ class ModalCarrito {
       alert("El carrito está vacío.");
       return;
     }
-    var mensaje = `Nombre: ${this.datosPersonales.nombre}\n`;
+    var mensaje = this.esInterno ? "Movimiento de existencia" : "Pedido";
+
+    mensaje += `\n\nNombre: ${this.datosPersonales.nombre}\n`;
     if (this.datosPersonales.observaciones)
       mensaje += `Observación: ${this.datosPersonales.observaciones}\n\n`;
     else mensaje += `\n`;
@@ -728,12 +784,19 @@ class ModalCarrito {
     mensaje += `\n`;
 
     articulos.forEach((a) => {
-      const id = String(a.id).padEnd(6).slice(0, 6);
-      const nombre = String(a.nombre).padEnd(30).slice(0, 30);
-      const cant = String(a.cantidad).padEnd(10).slice(0, 10);
-      const obs = this.formatearObservacion(a.observaciones || ["", "", ""]);
+      const id = String(a.id);
+      const nombre = String(a.nombre);
+      const cant = String(a.cantidad);
+      const precioUnitario = Number(this.carrito.eliminarPuntoPrecio(a.precio));
+      const obs = this.formatearObservacion(a.observaciones || []);
 
-      mensaje += `${id}${nombre}${cant}${obs}\n`;
+      mensaje += `#codi:${id} #cant:${cant} #subt:$${this.carrito.insertarPuntoPrecio(String(precioUnitario * a.cantidad))} #desc:${nombre}`;
+
+      if (obs.trim()) {
+        mensaje += ` #obse:${obs}`;
+      }
+
+      mensaje += "\n";
     });
 
     // Teléfono del cliente
@@ -763,9 +826,7 @@ class ModalCarrito {
   }
 
   formatearObservacion(observaciones) {
-    return observaciones
-      .map((obs) => (obs || "").padEnd(50, " ").slice(0, 50))
-      .join("");
+    return observaciones.filter((obs) => obs && obs.trim() !== "").join(" | ");
   }
 
   tomarDatosPersonales() {
