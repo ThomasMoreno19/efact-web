@@ -138,12 +138,25 @@ class GestorEmpresa
     try {
       // 3️⃣ Si hay imagen, la subimos y obtenemos la URL
       $logo_url = 'Archivo/Logos/Vacio.png';
-      if ($imagen) {
-        $logo_url = $this->subirLogo($nombre, $imagen);
-      }
 
       // 4️⃣ Crear la empresa en la base de datos
       $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $deshabilitar_excel);
+
+      if ($imagen) {
+
+        $logo_url = $this->subirLogo(
+          $empresa['id'],
+          $imagen
+        );
+
+
+        if ($logo_url) {
+          $this->empresaRepositorio->modificarLogo(
+            $empresa['id'],
+            $logo_url
+          );
+        }
+      }
 
       $this->gestorExterno->crear($empresa['id'], $contrasenaExternos);
       $this->gestorInterno->crear($empresa['id'], $contrasenaInternos);
@@ -169,7 +182,6 @@ class GestorEmpresa
 
   private function modificar(): void
   {
-    $datos = json_decode(file_get_contents('php://input'), true);
 
     $id_empresa = (int)($_POST['id'] ?? 0);
     $nombre = $_POST['nombre'];
@@ -197,7 +209,7 @@ class GestorEmpresa
       // 3️⃣ Si hay imagen, la subimos y obtenemos la URL
       $logo_url = '';
       if ($imagen) {
-        $logo_url = $this->subirLogo($nombre, $imagen);
+        $logo_url = $this->subirLogo($id_empresa, $imagen);
       }
 
       $empresaModificada = $this->empresaRepositorio->modificar($id_empresa, $nombre, $ubicacion, $telefono, $tieneCarrito, $deshabilitar_excel, $logo_url);
@@ -261,58 +273,71 @@ class GestorEmpresa
 
   private function modificarLogo(): void
   {
+    $id = (int)$_POST['id_empresa'];
 
-    $id = $_POST['id_empresa'];
-    $nombre = $_POST['nombre'];
-    $imagen = $_FILES['imagen'];
-
-    $logo_url = $this->subirLogo($nombre, $imagen);
-
-    if (is_null($logo_url)) {
+    if (!isset($_FILES['imagen'])) {
       http_response_code(400);
-      echo json_encode(['error' => 'Faltan datos válidos para modificar la empresa con el id recibido']);
+      echo json_encode([
+        'error' => 'No se recibió imagen'
+      ]);
       return;
     }
 
-    try {
-      $empresaModificada = $this->empresaRepositorio->modificarLogo($id, $logo_url);
-      $this->borrarCacheEmpresa((int)$id);
-      echo json_encode($empresaModificada);
-    } catch (Exception $e) {
+
+    $logo_url = $this->subirLogo(
+      $id,
+      $_FILES['imagen']
+    );
+
+
+    if (!$logo_url) {
       http_response_code(500);
-      echo json_encode(['error' => 'Error al modificar la empresa: ' . $e->getMessage()]);
+      echo json_encode([
+        'error' => 'No se pudo guardar la imagen'
+      ]);
+      return;
     }
+
+
+    $empresaModificada = $this->empresaRepositorio
+      ->modificarLogo($id, $logo_url);
+
+
+    echo json_encode($empresaModificada);
   }
 
-  private function subirLogo(string $nombre, array $archivoImagen): string
+  private function subirLogo(int $id_empresa, array $imagen): ?string
   {
-    // 1️⃣ Definir el directorio donde se guardarán los logos
-    $directorioDestino = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/Empresa/';
+    if (!$id_empresa) {
+      return null;
+    }
 
-    // 2️⃣ Extensión del archivo original
-    $extension = strtolower(pathinfo($archivoImagen['name'], PATHINFO_EXTENSION));
+    if (empty($imagen['tmp_name'])) {
+      return null;
+    }
 
-    // 3️⃣ Definir el nombre final del archivo
-    // Reemplazamos espacios por guiones bajos para evitar problemas
-    $nombreLimpio = preg_replace('/[^a-zA-Z0-9_-]/', '_', $nombre);
-    $nombreArchivo = $nombreLimpio . '.' . $extension;
+    $directorioBase = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/Empresa/';
+
+    $directorioDestino = $directorioBase . $id_empresa . '/';
+
+    if (!is_dir($directorioDestino)) {
+      if (!mkdir($directorioDestino, 0755, true)) {
+        return null;
+      }
+    }
+
+    $nombreOriginal = basename($imagen['name']);
+    $nombreSinEspacios = str_replace(' ', '-', $nombreOriginal);
+    $nombreArchivo = uniqid() . '-' . $nombreSinEspacios;
 
     $rutaDestino = $directorioDestino . $nombreArchivo;
 
-    // 4️⃣ Si ya existe un archivo con ese nombre, lo eliminamos
-    if (file_exists($rutaDestino)) {
-      unlink($rutaDestino);
+    if (!move_uploaded_file($imagen['tmp_name'], $rutaDestino)) {
+      return null;
     }
 
-    // 5️⃣ Mover el archivo subido desde el temporal a la carpeta final
-    if (!move_uploaded_file($archivoImagen['tmp_name'], $rutaDestino)) {
-      throw new Exception('No se pudo mover el archivo subido.');
-    }
 
-    // 6️⃣ Construir la URL pública que se devolverá
-    $logo_url = '/Archivos/Logos/Empresa/' . $nombreArchivo;
-
-    return $logo_url;
+    return '/Archivos/Logos/Empresa/' . $id_empresa . '/' . $nombreArchivo;
   }
 
 
@@ -379,18 +404,81 @@ class GestorEmpresa
 
     if (empty($id_empresa)) {
       http_response_code(400);
-      echo json_encode(['error' => 'Falta id_empresa para eliminar la empresa.']);
+      echo json_encode([
+        'error' => 'Falta id_empresa para eliminar la empresa.'
+      ]);
       return;
     }
 
     try {
+
+      // Primero eliminamos archivos físicos
+      $this->eliminarArchivosEmpresa($id_empresa);
+
+      // Después eliminamos la empresa de BD
       $this->empresaRepositorio->eliminar($id_empresa);
+
+      // Eliminamos cache
       $this->borrarCacheEmpresa($id_empresa);
+
+
       http_response_code(200);
-      echo json_encode(['message' => 'Empresa eliminada correctamente.']);
+      echo json_encode([
+        'message' => 'Empresa eliminada correctamente.'
+      ]);
     } catch (Exception $e) {
+
       http_response_code(500);
-      echo json_encode(['error' => 'Error al eliminar la empresa: ' . $e->getMessage()]);
+      echo json_encode([
+        'error' => 'Error al eliminar la empresa: ' . $e->getMessage()
+      ]);
     }
+  }
+
+  private function eliminarArchivosEmpresa(int $id_empresa): void
+  {
+    $carpetas = [
+      'Empresa',
+      'Articulo',
+      'Marca',
+      'Proveedor',
+      'Rubro'
+    ];
+
+    foreach ($carpetas as $carpeta) {
+
+      $ruta = $_SERVER['DOCUMENT_ROOT'] .
+        "/Archivos/Logos/{$carpeta}/{$id_empresa}/";
+
+      if (is_dir($ruta)) {
+        $this->eliminarDirectorio($ruta);
+      }
+    }
+  }
+
+  private function eliminarDirectorio(string $directorio): void
+  {
+    if (!is_dir($directorio)) {
+      return;
+    }
+
+    $archivos = scandir($directorio);
+
+    foreach ($archivos as $archivo) {
+
+      if ($archivo === '.' || $archivo === '..') {
+        continue;
+      }
+
+      $rutaArchivo = $directorio . DIRECTORY_SEPARATOR . $archivo;
+
+      if (is_dir($rutaArchivo)) {
+        $this->eliminarDirectorio($rutaArchivo);
+      } else {
+        unlink($rutaArchivo);
+      }
+    }
+
+    rmdir($directorio);
   }
 }

@@ -346,6 +346,13 @@ class GestorArticulo
 
   private function subirLogo(): void
   {
+    $id_empresa = $_POST['id_empresa'] ?? null;
+
+    if (!$id_empresa) {
+      http_response_code(400);
+      echo json_encode(['error' => 'No se recibió el id_empresa.']);
+      return;
+    }
 
     if (empty($_FILES['imagen']['tmp_name'])) {
       http_response_code(400);
@@ -353,16 +360,35 @@ class GestorArticulo
       return;
     }
 
-    $directorioDestino = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/Articulo/';
+    // Carpeta base
+    $directorioBase = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/Articulo/';
+
+    // Carpeta de la empresa
+    $directorioDestino = $directorioBase . $id_empresa . '/';
+
+    // Crear la carpeta si no existe
+    if (!is_dir($directorioDestino)) {
+      if (!mkdir($directorioDestino, 0755, true)) {
+        http_response_code(500);
+        echo json_encode(['error' => 'No se pudo crear el directorio de la empresa.']);
+        return;
+      }
+    }
+
     $nombreOriginal = basename($_FILES['imagen']['name']);
-    $nombreSinEspacios = str_replace(' ', '-', $nombreOriginal); // Reemplaza espacios por guiones
+    $nombreSinEspacios = str_replace(' ', '-', $nombreOriginal);
     $nombreArchivo = uniqid() . '-' . $nombreSinEspacios;
+
     $rutaDestino = $directorioDestino . $nombreArchivo;
 
     if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
-      //Devuelve la ruta donde se guardó la imagen, para que la guarden en la BD
-      $url = '/Archivos/Logos/Articulo/' . $nombreArchivo;
-      echo json_encode(['url' => $url]);
+
+      // Ruta que guardarás en la BD
+      $url = '/Archivos/Logos/Articulo/' . $id_empresa . '/' . $nombreArchivo;
+
+      echo json_encode([
+        'url' => $url
+      ]);
     } else {
       http_response_code(500);
       echo json_encode(['error' => 'Error al mover el archivo subido.']);

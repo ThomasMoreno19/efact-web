@@ -32,15 +32,16 @@ class GestorModerador {
     );
   }
 
-  async subirImagen(archivoImagen, logo_url) {
+  async subirImagen(id_empresa, archivoImagen, logo_url, grupo) {
     if (!archivoImagen) {
       return logo_url;
     }
     const formData = new FormData();
     formData.append("imagen", archivoImagen);
+    formData.append("id_empresa", id_empresa);
 
     try {
-      const response = await fetch(`/rubro/subir-logo`, {
+      const response = await fetch(`/${grupo}/subir-logo`, {
         method: "POST",
         body: formData,
       });
@@ -65,12 +66,13 @@ class GestorModerador {
     }
   }
 
-  async subirImagenArticulo(archivoImagen, logo_url) {
+  async subirImagenArticulo(id_empresa, archivoImagen, logo_url) {
     if (!archivoImagen) {
       return logo_url;
     }
     const formData = new FormData();
     formData.append("imagen", archivoImagen);
+    formData.append("id_empresa", id_empresa);
 
     try {
       const response = await fetch(`/articulo/subir-logo`, {
@@ -478,7 +480,7 @@ class GestorModerador {
 
     // Solo subir imagen si se proporcionó una nueva
     if (imagen) {
-      urlLogo = await this.subirImagenArticulo(imagen, logo_url);
+      urlLogo = await this.subirImagenArticulo(id_empresa, imagen, logo_url);
     }
 
     const bodyData = {
@@ -523,7 +525,12 @@ class GestorModerador {
 
     // Solo subir imagen si se proporcionó una nueva
     if (archivoImagen) {
-      urlLogoEmpresa = await this.subirImagen(archivoImagen, logo_url);
+      urlLogoEmpresa = await this.subirImagen(
+        id_empresa,
+        archivoImagen,
+        logo_url,
+        "rubro",
+      );
     }
 
     const bodyData = {
@@ -563,7 +570,12 @@ class GestorModerador {
 
     // Solo subir imagen si se proporcionó una nueva
     if (archivoImagen) {
-      urlLogoEmpresa = await this.subirImagen(archivoImagen, logo_url);
+      urlLogoEmpresa = await this.subirImagen(
+        id_empresa,
+        archivoImagen,
+        logo_url,
+        "marca",
+      );
     }
 
     const bodyData = {
@@ -609,7 +621,12 @@ class GestorModerador {
 
     // Solo subir imagen si se proporcionó una nueva
     if (archivoImagen) {
-      urlLogoEmpresa = await this.subirImagen(archivoImagen, logo_url);
+      urlLogoEmpresa = await this.subirImagen(
+        id_empresa,
+        archivoImagen,
+        logo_url,
+        "proveedor",
+      );
     }
 
     const bodyData = {
