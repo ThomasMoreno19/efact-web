@@ -129,10 +129,37 @@ class ArticuloRepositorio
       return [];
     }
 
+    $unicos = [];
+    $bajas = [];
+
+    foreach ($articulos as $a) {
+      if (empty($a['id_articulo'])) continue;
+
+      if (!empty($a['baja'])) {
+        $bajas[] = $a['id_articulo'];
+        continue;
+      }
+
+      $unicos[] = $a;
+    }
+
+    // Borrar los artículos dados de baja (si existen)
+    if (!empty($bajas)) {
+      $placeholders = implode(',', array_fill(0, count($bajas), '?'));
+      $stmtDelete = $this->pdo->prepare(
+        "DELETE FROM articulo WHERE id_empresa = ? AND id IN ($placeholders)"
+      );
+      $stmtDelete->execute(array_merge([$id_empresa], $bajas));
+    }
+
+    if (empty($unicos)) {
+      return [];
+    }
+
     $values = [];
     $params = [];
 
-    foreach ($articulos as $i => $a) {
+    foreach ($unicos as $i => $a) {
 
       $values[] = "(
             :id$i,
@@ -236,7 +263,7 @@ class ArticuloRepositorio
 
       $stmt->execute();
 
-      return $articulos;
+      return $unicos;
     } catch (PDOException $e) {
       throw $e;
     }

@@ -102,10 +102,10 @@ try {
 
         // Obtener el hash de la contraseña de externos
         $stmt = $pdo->prepare("
-      SELECT contrasena
-      FROM Externo
-      WHERE id_empresa = ?
-    ");
+          SELECT contrasena
+          FROM externo
+          WHERE id_empresa = ?
+        ");
         $stmt->execute([$idEmpresa]);
         $hash = $stmt->fetchColumn();
 

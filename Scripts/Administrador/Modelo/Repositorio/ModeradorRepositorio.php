@@ -1,5 +1,4 @@
 <?php
-//Scripts/Administrador/Modelo/Repositorio/ModeradorRepositorio.php
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Entidad/ModeradorEntidad.php';
 
@@ -61,7 +60,7 @@ class ModeradorRepositorio
 
   public function obtenerPorNombre(string $nombre): ?array
   {
-    $stmt = $this->pdo->prepare("SELECT id, id_empresa, nombre, contrasena FROM Moderador WHERE nombre = :nombre");
+    $stmt = $this->pdo->prepare("SELECT id, id_empresa, nombre, contrasena FROM moderador WHERE nombre = :nombre");
     $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
     $stmt->execute();
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);

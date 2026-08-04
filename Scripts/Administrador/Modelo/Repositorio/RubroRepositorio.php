@@ -59,13 +59,19 @@ class RubroRepositorio
     return $rubros;
   }
 
-  public function crearListaCsv(array $articulos, int $id_empresa): bool
+  public function crearListaCsv(array $rubros, int $id_empresa): bool
   {
     $unicos = [];
-    foreach ($articulos as $a) {
+    $bajas = [];
+
+    foreach ($rubros as $a) {
       if (empty($a['id_rubro'])) continue;
 
-      // Al usar el id_rubro como key, evitamos duplicados en el lote SQL
+      if (!empty($a['baja'])) {
+        $bajas[] = $a['id_rubro'];
+        continue;
+      }
+
       $unicos[$a['id_rubro']] = [
         'id' => $a['id_rubro'],
         'nombre' => $a['nombre_rubro'],
@@ -74,22 +80,30 @@ class RubroRepositorio
       ];
     }
 
+    // Borrar las marcadas como baja (si existen)
+    if (!empty($bajas)) {
+      $placeholders = implode(',', array_fill(0, count($bajas), '?'));
+      $stmtDelete = $this->pdo->prepare(
+        "DELETE FROM rubro WHERE id_empresa = ? AND id IN ($placeholders)"
+      );
+      $stmtDelete->execute(array_merge([$id_empresa], $bajas));
+    }
+
     if (empty($unicos)) return true;
 
     $values = [];
     $params = [];
     $i = 0;
     foreach ($unicos as $r) {
-      $values[] = "(:id$i, :id_empresa$i, :nombre$i, :abreviatura$i, 1, :logo_url$i)";
+      $values[] = "(:id$i, :id_empresa$i, :nombre$i, :abreviatura$i, 1)";
       $params[":id$i"] = $r['id'];
       $params[":id_empresa$i"] = $id_empresa;
       $params[":nombre$i"] = $r['nombre'];
       $params[":abreviatura$i"] = $r['abreviatura'];
-      $params[":logo_url$i"] = '/Archivos/Logos/Vacio.png';
       $i++;
     }
 
-    $sql = "INSERT INTO rubro (id, id_empresa, nombre, abreviatura, aparece_en_csv, logo_url)
+    $sql = "INSERT INTO rubro (id, id_empresa, nombre, abreviatura, aparece_en_csv)
           VALUES " . implode(', ', $values) . "
           ON DUPLICATE KEY UPDATE
               nombre = VALUES(nombre),

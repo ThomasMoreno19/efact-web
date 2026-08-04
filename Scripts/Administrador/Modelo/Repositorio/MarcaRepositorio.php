@@ -48,19 +48,34 @@ class MarcaRepositorio
     }
   }
 
-  public function crearListaCsv(array $articulos, int $id_empresa): bool
+  public function crearListaCsv(array $marcas, int $id_empresa): bool
   {
     $unicos = [];
-    foreach ($articulos as $a) {
+    $bajas = [];
+
+    foreach ($marcas as $a) {
       if (empty($a['id_marca'])) continue;
 
-      // Al usar el id_marca como key, evitamos duplicados en el lote SQL
+      if (!empty($a['baja'])) {
+        $bajas[] = $a['id_marca'];
+        continue;
+      }
+
       $unicos[$a['id_marca']] = [
         'id' => $a['id_marca'],
         'nombre' => $a['nombre_marca'],
         'abreviatura' => $a['abreviatura_marca'],
         'id_empresa' => $id_empresa
       ];
+    }
+
+    // Borrar las marcadas como baja (si existen)
+    if (!empty($bajas)) {
+      $placeholders = implode(',', array_fill(0, count($bajas), '?'));
+      $stmtDelete = $this->pdo->prepare(
+        "DELETE FROM marca WHERE id_empresa = ? AND id IN ($placeholders)"
+      );
+      $stmtDelete->execute(array_merge([$id_empresa], $bajas));
     }
 
     if (empty($unicos)) return true;

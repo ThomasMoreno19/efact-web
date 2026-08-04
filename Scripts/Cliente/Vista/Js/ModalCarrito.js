@@ -790,7 +790,11 @@ class ModalCarrito {
       const precioUnitario = Number(this.carrito.eliminarPuntoPrecio(a.precio));
       const obs = this.formatearObservacion(a.observaciones || []);
 
-      mensaje += `#codi:${id} #cant:${cant} #subt:$${this.carrito.insertarPuntoPrecio(String(precioUnitario * a.cantidad))} #desc:${nombre}`;
+      mensaje += `#codi:${id}`;
+      mensaje += ` #cant:${cant}`;
+      if (!this.esInterno)
+        mensaje += ` #subt:$${this.carrito.insertarPuntoPrecio(String(precioUnitario * a.cantidad))}`;
+      mensaje += ` #desc:${nombre}`;
 
       if (obs.trim()) {
         mensaje += ` #obse:${obs}`;

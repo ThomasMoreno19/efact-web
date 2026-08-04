@@ -7,5 +7,5 @@ if ($version === 'local') {
   $version = getenv('VERSION');
 }
 
-define('CACHE_TIME', 2400); // Cache de 40 minutos
+define('CACHE_TIME', 1800); // Cache de 30 minutos
 define('APP_VERSION', $version); // Versión de la aplicación

@@ -48,19 +48,34 @@ class ProveedorRepositorio
     }
   }
 
-  public function crearListaCsv(array $articulos, int $id_empresa): bool
+  public function crearListaCsv(array $proveedores, int $id_empresa): bool
   {
     $unicos = [];
-    foreach ($articulos as $a) {
+    $bajas = [];
+
+    foreach ($proveedores as $a) {
       if (empty($a['id_proveedor'])) continue;
 
-      // Al usar el id_proveedor como key, evitamos duplicados en el lote SQL
+      if (!empty($a['baja'])) {
+        $bajas[] = $a['id_proveedor'];
+        continue;
+      }
+
       $unicos[$a['id_proveedor']] = [
         'id' => $a['id_proveedor'],
         'nombre' => $a['nombre_proveedor'],
         'abreviatura' => $a['abreviatura_proveedor'],
         'id_empresa' => $id_empresa
       ];
+    }
+
+    // Borrar las marcadas como baja (si existen)
+    if (!empty($bajas)) {
+      $placeholders = implode(',', array_fill(0, count($bajas), '?'));
+      $stmtDelete = $this->pdo->prepare(
+        "DELETE FROM proveedor WHERE id_empresa = ? AND id IN ($placeholders)"
+      );
+      $stmtDelete->execute(array_merge([$id_empresa], $bajas));
     }
 
     if (empty($unicos)) return true;

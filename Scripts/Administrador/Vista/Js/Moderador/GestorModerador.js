@@ -190,7 +190,7 @@ class GestorModerador {
             articulos.push({
               id_articulo: fila[0],
               codigo_interno: fila[1],
-              nombre_articulo: fila[2]?.trim() ?? "",
+              nombre_articulo: fila[2] != null ? String(fila[2]).trim() : "",
               codigo_barra: fila[3] ?? "",
               codigo_proveedor: fila[4] ?? "",
               id_proveedor: fila[5] ?? null,
@@ -227,8 +227,9 @@ class GestorModerador {
 
               proveedores.push({
                 id_proveedor: fila[0],
-                nombre_proveedor: fila[1]?.trim() ?? "",
-                abreviatura_proveedor: fila[2]?.trim() ?? "",
+                nombre_proveedor: fila[1] != null ? String(fila[1]).trim() : "",
+                abreviatura_proveedor:
+                  fila[2] != null ? String(fila[2]).trim() : "",
                 baja,
               });
             });
@@ -253,8 +254,9 @@ class GestorModerador {
 
               rubros.push({
                 id_rubro: fila[0],
-                nombre_rubro: fila[1]?.trim() ?? "",
-                abreviatura_rubro: fila[2]?.trim() ?? "",
+                nombre_rubro: fila[1] != null ? String(fila[1]).trim() : "",
+                abreviatura_rubro:
+                  fila[2] != null ? String(fila[2]).trim() : "",
                 baja,
               });
             });
@@ -279,8 +281,9 @@ class GestorModerador {
 
               marcas.push({
                 id_marca: fila[0],
-                nombre_marca: fila[1]?.trim() ?? "",
-                abreviatura_marca: fila[2]?.trim() ?? "",
+                nombre_marca: fila[1] != null ? String(fila[1]).trim() : "",
+                abreviatura_marca:
+                  fila[2] != null ? String(fila[2]).trim() : "",
                 baja,
               });
             });

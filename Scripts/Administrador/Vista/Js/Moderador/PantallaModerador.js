@@ -224,14 +224,17 @@ class PantallaModerador {
       this.todosLosRubros = listaGrupos.rubros ?? [];
       if (this.todosLosRubros.length === 0)
         this.botonListaRubros.classList.add("hidden");
+      else this.botonListaRubros.classList.remove("hidden");
 
       this.todasLasMarcas = listaGrupos.marcas ?? [];
       if (this.todasLasMarcas.length === 0)
         this.botonListaMarcas.classList.add("hidden");
+      else this.botonListaMarcas.classList.remove("hidden");
 
       this.todosLosProveedores = listaGrupos.proveedores ?? [];
       if (this.todosLosProveedores.length === 0)
         this.botonListaProveedores.classList.add("hidden");
+      else this.botonListaProveedores.classList.remove("hidden");
 
       this.todosLosArticulos =
         await this.gestor.mostrarListaArticulosPorEmpresa(this.empresa.id);
@@ -241,6 +244,7 @@ class PantallaModerador {
       );
       if (this.todasLasOfertas.length === 0)
         this.botonListaOfertas.classList.add("hidden");
+      else this.botonListaOfertas.classList.remove("hidden");
 
       if (tipo) this.mostrarTipo(tipo);
       else this.mostrarTipo("articulo");
