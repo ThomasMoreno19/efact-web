@@ -36,6 +36,10 @@ class GestorProveedor
         $this->subirLogo();
         break;
 
+      case 'eliminar':
+        $this->eliminar();
+        break;
+
       default:
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Proveedor.']);
@@ -133,7 +137,7 @@ class GestorProveedor
   private function borrarCacheTodos(int $id_empresa): void
   {
     $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/";
-    $pattern = $cacheDir . "catalogos_empresa_{$id_empresa}.json";
+    $pattern = $cacheDir . "grupos_empresa_{$id_empresa}.json";
 
     $archivos = glob($pattern);
     if ($archivos) {
@@ -144,13 +148,9 @@ class GestorProveedor
       }
     }
 
-    $cacheEmpresa = $cacheDir . "catalogos_empresa_{$id_empresa}.json";
-    $cacheCliente = $cacheDir . "catalogos_empresa_{$id_empresa}_cliente.json";
+    $cacheEmpresa = $cacheDir . "grupos_empresa_{$id_empresa}.json";
     if (file_exists($cacheEmpresa)) {
       @unlink($cacheEmpresa);
-    }
-    if (file_exists($cacheCliente)) {
-      @unlink($cacheCliente);
     }
   }
 
@@ -227,6 +227,22 @@ class GestorProveedor
     } else {
       http_response_code(500);
       echo json_encode(['error' => 'Error al mover el archivo subido.']);
+    }
+  }
+
+  private function eliminar(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id = $datos['id'];
+    $id_empresa = $datos['id_empresa'];
+    try {
+      $this->proveedorRepositorio->eliminar($id, $id_empresa);
+      $this->borrarCacheTodos($id_empresa);
+      echo json_encode(['success' => true]);
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al eliminar la empresa: ' . $e->getMessage()]);
     }
   }
 }

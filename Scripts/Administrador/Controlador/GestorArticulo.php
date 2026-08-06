@@ -76,6 +76,10 @@ class GestorArticulo
         $this->eliminarVideo();
         break;
 
+      case 'eliminar':
+        $this->eliminar();
+        break;
+
       default:
         http_response_code(404);
         echo json_encode(['error' => 'Acción no encontrada para Articulo.']);
@@ -173,7 +177,7 @@ class GestorArticulo
       return;
     }
 
-    $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/articulos_empresa_{$id_empresa}_cliente.json";
+    $cacheFile = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/catalogos_empresa_{$id_empresa}.json";
 
     if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < CACHE_TIME) {
       http_response_code(200);
@@ -323,7 +327,7 @@ class GestorArticulo
   private function borrarCacheTodos(int $id_empresa): void
   {
     $cacheDir = $_SERVER['DOCUMENT_ROOT'] . "/Scripts/Cache/";
-    $pattern = $cacheDir . "articulos_rubro_*_empresa_{$id_empresa}.json";
+    $pattern = $cacheDir . "catalogos_empresa_{$id_empresa}.json";
 
     $archivos = glob($pattern);
     if ($archivos) {
@@ -334,13 +338,9 @@ class GestorArticulo
       }
     }
 
-    $cacheEmpresa = $cacheDir . "articulos_empresa_{$id_empresa}.json";
-    $cacheCliente = $cacheDir . "articulos_empresa_{$id_empresa}_cliente.json";
+    $cacheEmpresa = $cacheDir . "catalogos_empresa_{$id_empresa}.json";
     if (file_exists($cacheEmpresa)) {
       @unlink($cacheEmpresa);
-    }
-    if (file_exists($cacheCliente)) {
-      @unlink($cacheCliente);
     }
   }
 
@@ -529,8 +529,6 @@ class GestorArticulo
     $id_empresa = $datos['id_empresa'];
     $nombre = $datos['nombre'];
     $precio1 = $datos['precio1'];
-    $precio2 = $datos['precio2'];
-    $precio3 = $datos['precio3'];
     $logo_url = $datos['logo_url'] ?? null;
 
 
@@ -546,12 +544,34 @@ class GestorArticulo
     }
 
     try {
-      $articuloModificado = $this->articuloRepositorio->modificar($id, $id_empresa, $nombre, $precio1, $precio2, $precio3, $logo_url);
+      $articuloModificado = $this->articuloRepositorio->modificar($id, $id_empresa, $nombre, $precio1, $logo_url);
       $this->borrarCacheTodos($id_empresa);
       echo json_encode($articuloModificado);
     } catch (Exception $e) {
       http_response_code(500);
       echo json_encode(['error' => 'Error al modificar el articulo: ' . $e->getMessage()]);
+    }
+  }
+
+  private function eliminar(): void
+  {
+    $datos = json_decode(file_get_contents('php://input'), true);
+
+    $id = $datos['id'];
+    $id_empresa = $datos['id_empresa'];
+    try {
+      $eliminado = $this->articuloRepositorio->eliminar($id, $id_empresa);
+      if ($eliminado) {
+        $this->borrarCacheTodos($id_empresa);
+        http_response_code(200);
+        echo json_encode(['success' => true]);
+      } else {
+        http_response_code(404);
+        echo json_encode(['error' => 'Artículo no encontrado o ya eliminado.']);
+      }
+    } catch (Exception $e) {
+      http_response_code(500);
+      echo json_encode(['error' => 'Error al eliminar el artículo: ' . $e->getMessage()]);
     }
   }
 }

@@ -43,6 +43,7 @@ class MarcaVista {
     modalModificarContenido.classList.add("modal-content-partial");
 
     const htmlContent = `
+    <span class="boton-eliminar" id="eliminar-marca">Eliminar</span>
     <span class="close-modal-btn" style="position: absolute; top: 5px; right: 5px; cursor: pointer; font-size: 30px;">&times;</span>
             <form id="form-modificar-marca" method="POST" enctype="multipart/form-data">
                 <h2 id ="titulo-modal">Modificar Marca</h2>

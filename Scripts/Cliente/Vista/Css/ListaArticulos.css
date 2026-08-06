@@ -88,6 +88,9 @@
 }
 
 .botones-lista-cliente {
+  position: sticky;
+  top: 110px;
+  z-index: 9;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;

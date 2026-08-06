@@ -733,7 +733,7 @@ class PantallaCliente {
       return;
     }
 
-    if (codigoInterno !== "") {
+    if (codigoInterno) {
       articulos = articulos.filter(
         (a) => String(a.codigo_interno ?? "") === codigoInterno,
       );
@@ -767,11 +767,20 @@ class PantallaCliente {
     // BÚSQUEDA POR NOMBRE
     // ==================
 
-    if (nombre !== "") {
-      const palabras = nombre.split(/\s+/).filter(Boolean);
+    if (this.filtros.nombre.trim() !== "") {
+      // Helper para eliminar tildes y convertir a minúsculas
+      const normalizar = (texto) =>
+        String(texto ?? "")
+          .normalize("NFD")
+          .replace(/\p{Diacritic}/gu, "")
+          .toLowerCase();
+
+      const palabras = normalizar(this.filtros.nombre)
+        .split(/\s+/)
+        .filter(Boolean);
 
       articulos = articulos.filter((a) => {
-        const nombreArticulo = (a.nombre ?? "").toLowerCase();
+        const nombreArticulo = normalizar(a.nombre);
 
         return palabras.every((palabra) => nombreArticulo.includes(palabra));
       });
@@ -859,6 +868,13 @@ class PantallaCliente {
     this.indiceActual = fin;
   }
 
+  normalizar(texto) {
+    return String(texto ?? "")
+      .normalize("NFD")
+      .replace(/\p{Diacritic}/gu, "")
+      .toLowerCase();
+  }
+
   mostrarRubro(valor) {
     this.botonListaRubros.classList.add("activo-cliente");
     this.listaRubros.classList.remove("hidden");
@@ -866,11 +882,10 @@ class PantallaCliente {
     window.history.pushState({ vista: "rubros" }, "", window.location.href);
     this.listaRubros.innerHTML = "";
 
-    const palabras = valor.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const palabras = this.normalizar(valor).split(/\s+/).filter(Boolean);
 
     const rubros = this.todosLosRubros.filter((r) => {
-      const nombre = (r.nombre ?? "").toLowerCase();
-
+      const nombre = this.normalizar(r.nombre);
       return palabras.every((palabra) => nombre.includes(palabra));
     });
 
@@ -896,11 +911,10 @@ class PantallaCliente {
     );
     this.listaProveedores.innerHTML = "";
 
-    const palabras = valor.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const palabras = this.normalizar(valor).split(/\s+/).filter(Boolean);
 
     const proveedores = this.todosLosProveedores.filter((p) => {
-      const nombre = (p.nombre ?? "").toLowerCase();
-
+      const nombre = this.normalizar(p.nombre);
       return palabras.every((palabra) => nombre.includes(palabra));
     });
 
@@ -920,11 +934,10 @@ class PantallaCliente {
     window.history.pushState({ vista: "marcas" }, "", window.location.href);
     this.listaMarcas.innerHTML = "";
 
-    const palabras = valor.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const palabras = this.normalizar(valor).split(/\s+/).filter(Boolean);
 
     const marcas = this.todasLasMarcas.filter((m) => {
-      const nombre = (m.nombre ?? "").toLowerCase();
-
+      const nombre = this.normalizar(m.nombre);
       return palabras.every((palabra) => nombre.includes(palabra));
     });
 
@@ -946,11 +959,10 @@ class PantallaCliente {
     window.history.pushState({ vista: "ofertas" }, "", window.location.href);
     this.listaOfertas.innerHTML = "";
 
-    const palabras = valor.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    const palabras = this.normalizar(valor).split(/\s+/).filter(Boolean);
 
     const ofertas = this.todasLasOfertas.filter((m) => {
-      const nombre = (m.nombre ?? "").toLowerCase();
-
+      const nombre = this.normalizar(m.nombre);
       return palabras.every((palabra) => nombre.includes(palabra));
     });
 
@@ -1274,20 +1286,33 @@ class PantallaCliente {
 
   removerSeleccionVisual(idArticulo) {
     idArticulo = Number(idArticulo);
-    // sacar de listaArticulosSeleccionados
     this.listaArticulosSeleccionados = this.listaArticulosSeleccionados.filter(
       (id) => id !== idArticulo,
     );
 
-    // actualizar contador del carrito
     this.cantidadArticulosCarrito.textContent =
       this.listaArticulosSeleccionados.length;
-    // ocultar botón si no quedan artículos
+
     if (this.listaArticulosSeleccionados.length === 0) {
       this.botonCarrito.classList.add("hidden");
     }
 
-    this.mostrarArticulos(this.todosLosArticulos);
+    this.decrementarGrupo(
+      this.listaGruposSeleccionados.rubros,
+      this.todosLosArticulos.find((a) => a.id === idArticulo)?.id_rubro,
+    );
+
+    this.decrementarGrupo(
+      this.listaGruposSeleccionados.marcas,
+      this.todosLosArticulos.find((a) => a.id === idArticulo)?.id_marca,
+    );
+
+    this.decrementarGrupo(
+      this.listaGruposSeleccionados.proveedores,
+      this.todosLosArticulos.find((a) => a.id === idArticulo)?.id_proveedor,
+    );
+
+    this.botonListaArticulos.click();
   }
 
   eventClickVolver(e) {

@@ -315,15 +315,13 @@ class ArticuloRepositorio
     }
   }
 
-  public function modificar(int $id, int $id_empresa, string $nombre, string $precio1, string $precio2, string $precio3, string $logo_url): bool
+  public function modificar(int $id, int $id_empresa, string $nombre, string $precio1, string $logo_url): bool
   {
     try {
       $stmt = $this->pdo->prepare(
         "UPDATE articulo
                  SET nombre = :nombre,
                     precio1 = :precio1,
-                    precio2 = :precio2,
-                    precio3 = :precio3,
                     logo_url = :logo_url
                  WHERE id = :id AND id_empresa = :id_empresa"
       );
@@ -332,8 +330,6 @@ class ArticuloRepositorio
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->bindParam(':nombre', $nombre, PDO::PARAM_STR);
       $stmt->bindParam(':precio1', $precio1, PDO::PARAM_STR);
-      $stmt->bindParam(':precio2', $precio2, PDO::PARAM_STR);
-      $stmt->bindParam(':precio3', $precio3, PDO::PARAM_STR);
       $stmt->bindParam(':logo_url', $logo_url, PDO::PARAM_STR);
 
       if ($stmt->execute()) {
@@ -431,6 +427,26 @@ class ArticuloRepositorio
       }
     } catch (PDOException $e) {
       error_log("Error al eliminar URL de video del artículo: " . $e->getMessage());
+    }
+    return false;
+  }
+
+  public function eliminar(int $id, int $id_empresa): bool
+  {
+    try {
+      $stmt = $this->pdo->prepare(
+        "DELETE FROM articulo
+             WHERE id = :id AND id_empresa = :id_empresa;"
+      );
+
+      $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+      $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
+
+      if ($stmt->execute()) {
+        return true;
+      }
+    } catch (PDOException $e) {
+      error_log("Error al eliminar artículo: " . $e->getMessage());
     }
     return false;
   }

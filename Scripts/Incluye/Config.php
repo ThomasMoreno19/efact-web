@@ -2,10 +2,10 @@
 $version = getenv('APP_ENV');
 
 if ($version === 'local') {
-  $version = time(); // timestamp dinámico
+  $version = time();
 } else {
   $version = getenv('VERSION');
 }
 
-define('CACHE_TIME', 1800); // Cache de 30 minutos
-define('APP_VERSION', $version); // Versión de la aplicación
+define('CACHE_TIME', 1800); // 30 min
+define('APP_VERSION', $version);

@@ -185,43 +185,6 @@ class ArticuloVista {
     return divArticulo;
   }
 
-  modalConfigurar() {
-    const modalConfigurarArticulo = document.createElement("div");
-    modalConfigurarArticulo.classList.add("modal");
-    modalConfigurarArticulo.id = "modal-configurar-articulo";
-
-    const modalContenido = document.createElement("div");
-    modalContenido.classList.add("modal-content-partial");
-
-    const htmlContent = `
-    <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 30px;">&times;</span>
-            <form id="form-configurar-articulo">
-                <h2 id="nombre-articulo-modal">${this.nombre}</h2>
-                <h2 id="id-articulo">Precio 1: $${this.precio1}</h2>
-                <h2 id="id-articulo2">Precio 2: $${this.precio2}</h2>
-                <h2 id="id-articulo3">Precio 3: $${this.precio3}</h2>
-                <button type="button" class="submit-button" id="modificar">Modificar</button>
-                <button type="button" class="submit-button" id="boton-subir-video-articulo">Subir video/imagen</button>
-            </form>`;
-
-    const modal = document.getElementById("modal-configurar-articulo");
-
-    modalContenido.innerHTML = htmlContent;
-    modalConfigurarArticulo.appendChild(modalContenido);
-
-    const closeBtn = modalConfigurarArticulo.querySelector(".close-modal-btn");
-
-    if (closeBtn) {
-      closeBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        modalConfigurarArticulo.remove();
-      });
-    }
-
-    return modalConfigurarArticulo;
-  }
-
   modalModificar() {
     const modal = document.createElement("div");
     modal.classList.add("modal");
@@ -230,35 +193,26 @@ class ArticuloVista {
     const contenido = document.createElement("div");
     contenido.classList.add("modal-content-partial");
 
-    // Quitar puntos del precio (si lo guardas con formato 1.234, etc.)
     const precioSinPuntos = this.sacarPuntosPrecio(this.precio1);
-    const precioSinPuntos2 = this.sacarPuntosPrecio(this.precio2);
-    const precioSinPuntos3 = this.sacarPuntosPrecio(this.precio3);
 
     contenido.innerHTML = `
+    <span class="boton-eliminar" id="eliminar-articulo">Eliminar</span>
     <span class="close-modal-btn" style="position: absolute; top: 0px; right: 10px; cursor: pointer; font-size: 30px;">&times;</span>
             <form id="form-modificar-articulo">
-                <h2>Modificar Artículo</h2>
+                <h2 class="titulo-modificar">Modificar Artículo</h2>
                 <div class="form-group">
                     <label for="input-nombre">Nombre:</label>
                     <input type="text" name="nombre" id="input-nombre" value="${this.nombre}" required>
                 </div>
                 <div class="form-group">
-                    <label for="input-precio1">Precio 1:</label>
+                    <label for="input-precio1">Precio:</label>
                     <input type="number" name="precio1" id="input-precio1" value="${precioSinPuntos}" required>
-                </div>
-                <div class="form-group">
-                    <label for="input-precio2">Precio 2:</label>
-                    <input type="number" name="precio2" id="input-precio2" value="${precioSinPuntos2}" required>
-                </div>
-                <div class="form-group">
-                    <label for="input-precio3">Precio 3:</label>
-                    <input type="number" name="precio3" id="input-precio3" value="${precioSinPuntos3}" required>
                 </div>
                 <div class="form-group">
                     <label for="nombre">Imagen:</label>
                     <input type="file" id="imagen" name="imagen" accept="image/*">
                 </div>
+                <button type="button" class="submit-button" id="boton-subir-video-articulo">Subir video</button>
                 <button type="submit" class="submit-button">Guardar Cambios</button>
             </form>
         `;

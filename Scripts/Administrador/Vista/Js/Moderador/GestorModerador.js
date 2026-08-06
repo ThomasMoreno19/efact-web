@@ -474,8 +474,6 @@ class GestorModerador {
     id_empresa,
     nombre,
     precio1,
-    precio2,
-    precio3,
     imagen,
     logo_url = "",
   ) {
@@ -492,8 +490,6 @@ class GestorModerador {
       id_empresa: id_empresa,
       nombre: nombre,
       precio1: precio1,
-      precio2: precio2,
-      precio3: precio3,
       logo_url: urlLogo,
     };
 
@@ -662,6 +658,16 @@ class GestorModerador {
       console.error("Error al modificar articulo:", error);
       throw error;
     }
+  }
+
+  async eliminarEntidad(id, tipo, id_empresa) {
+    const bodyData = { id };
+
+    return await this.llamadaAlBackend(
+      `/${tipo}/eliminar`,
+      bodyData,
+      id_empresa,
+    );
   }
 
   async conocerEmpresa(id_empresa) {

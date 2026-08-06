@@ -136,6 +136,10 @@ h3 {
   background-color: #ffc116;
 }
 
+.titulo-modificar {
+  margin-bottom: 15px;
+}
+
 .form-group {
   margin-bottom: 20px;
 }
@@ -145,6 +149,7 @@ h3 {
   margin-bottom: 8px;
   font-weight: bold;
   color: white;
+  font-size: 14px;
 }
 
 .lista-botones {
@@ -229,6 +234,7 @@ option {
   .form-group input[type="text"],
   .form-group input[type="file"],
   .form-group input[type="numeric"],
+  .form-group input[type="number"],
   .form-group input[type="password"],
   select {
     width: 250px;

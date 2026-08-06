@@ -7,7 +7,6 @@ class PantallaModerador {
     this.listaMarcas = document.getElementById("lista-marcas");
     this.listaOfertas = document.getElementById("lista-ofertas");
     this.listaCentral = document.getElementById("lista-central");
-    this.articuloSeleccionado = null;
     this.horariosGuardados = [];
     this.horarios = [];
     this.MINUTOS_DIA = 1440;
@@ -74,7 +73,7 @@ class PantallaModerador {
     this.tituloPagina = document.getElementById("titulo-pagina");
     this.loader = document.getElementById("loader");
     window.gestorDeArticulosCallback = (articulo) =>
-      this.modalArticuloSeleccionado(articulo);
+      this.abrirModalModificarArticulo(articulo);
 
     this.agregarEventListeners();
     this.todosLosArticulos = [];
@@ -612,40 +611,29 @@ class PantallaModerador {
     this.indiceActual = fin;
   }
 
-  async modalArticuloSeleccionado(articulo) {
-    if (this.empresa.deshabilitarExcel) return;
-    const modal = articulo.modalConfigurar();
-    this.articuloSeleccionado = articulo;
-    // Agregamos un ID al modal para poder identificarlo
-    document.body.appendChild(modal);
-
-    const botonSubirVideoArticulo = document.getElementById(
-      "boton-subir-video-articulo",
-    );
-    const botonModificarArticulo = document.getElementById("modificar");
-
-    this.clickFuera(modal);
-
-    botonSubirVideoArticulo.addEventListener("click", () => {
-      this.abrirModalSubirVideoArticulo(articulo);
-    });
-
-    botonModificarArticulo.addEventListener("click", () => {
-      this.abrirModalModificarArticulo(modal);
-    });
-  }
-
-  abrirModalModificarArticulo(modalPadre) {
-    const articulo = this.articuloSeleccionado;
+  abrirModalModificarArticulo(articulo) {
     if (!articulo) return;
-    const padre = modalPadre;
-    const modal = this.articuloSeleccionado.modalModificar();
+    const modal = articulo.modalModificar();
     document.body.appendChild(modal);
 
     modal.addEventListener("click", (e) => {
       if (e.target === modal) {
         document.body.removeChild(modal);
       }
+    });
+
+    const botonSubirVideo = document.getElementById(
+      "boton-subir-video-articulo",
+    );
+    botonSubirVideo.addEventListener("click", () => {
+      this.abrirModalSubirVideoArticulo(articulo);
+      document.body.removeChild(modal);
+    });
+
+    const botonEliminar = document.getElementById("eliminar-articulo");
+    botonEliminar.addEventListener("click", () => {
+      this.confirmarEliminar(articulo, "articulo");
+      document.body.removeChild(modal);
     });
 
     const form = modal.querySelector("#form-modificar-articulo");
@@ -664,19 +652,37 @@ class PantallaModerador {
           this.empresa.id,
           formData.get("nombre"),
           formData.get("precio1"),
-          formData.get("precio2"),
-          formData.get("precio3"),
           imagen,
         );
 
         document.body.removeChild(modal);
-        document.body.removeChild(padre);
-        this.articuloSeleccionado = null;
         await this.habilitarVentanaPrincipal();
       } catch (error) {
         alert("Error al modificar: " + error.message);
       }
     });
+  }
+
+  async confirmarEliminar(entidad, tipo) {
+    if (
+      confirm(
+        "Seguro que desea eliminar?",
+        tipo === "articulo"
+          ? ""
+          : "Se eliminarán todos los artículos asociados.",
+      )
+    ) {
+      const respuesta = await this.gestor.eliminarEntidad(
+        entidad.id,
+        tipo,
+        this.empresa.id,
+      );
+
+      if (respuesta?.success) {
+        await this.mostrarLista();
+        this.botonListaArticulos.click();
+      }
+    }
   }
 
   abrirModalModificarRubro(rubro) {
@@ -687,6 +693,12 @@ class PantallaModerador {
       if (e.target === modal) {
         document.body.removeChild(modal);
       }
+    });
+
+    const botonEliminar = document.getElementById("eliminar-rubro");
+    botonEliminar.addEventListener("click", () => {
+      this.confirmarEliminar(rubro, "rubro");
+      document.body.removeChild(modal);
     });
 
     const form = modal.querySelector("#form-modificar-rubro");
@@ -725,6 +737,12 @@ class PantallaModerador {
       }
     });
 
+    const botonEliminar = document.getElementById("eliminar-marca");
+    botonEliminar.addEventListener("click", () => {
+      this.confirmarEliminar(marca, "marca");
+      document.body.removeChild(modal);
+    });
+
     const form = modal.querySelector("#form-modificar-marca");
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -759,6 +777,12 @@ class PantallaModerador {
       if (e.target === modal) {
         document.body.removeChild(modal);
       }
+    });
+
+    const botonEliminar = document.getElementById("eliminar-proveedor");
+    botonEliminar.addEventListener("click", () => {
+      this.confirmarEliminar(proveedor, "proveedor");
+      document.body.removeChild(modal);
     });
 
     const form = modal.querySelector("#form-modificar-proveedor");
@@ -1259,17 +1283,15 @@ class PantallaModerador {
       try {
         this.insertarLoader(modalContent);
 
-        // Llamada al método correspondiente en tu gestor (adaptar según tu backend)
         const respuesta = await this.gestor.subirVideoArticulo(
           archivo,
           articulo.id,
           this.empresa.id,
-          articulo.video_url, // O el id del artículo si disponés de él aquí
+          articulo.video_url,
         );
 
         this.mensajeExitoso(modalContent, "Video/GIF cargado exitosamente.");
 
-        // Actualización de la vista si es necesario
         this.loader.classList.remove("hidden");
         this.listaArticulos.classList.add("hidden");
         await this.mostrarLista();
@@ -1298,17 +1320,15 @@ class PantallaModerador {
       try {
         this.insertarLoader(modalContent);
 
-        // Llamada al método correspondiente en tu gestor (adaptar según tu backend)
         const respuesta = await this.gestor.subirVideoRubro(
           archivo,
           rubro.id,
           this.empresa.id,
-          rubro.video_url, // O el id del artículo si disponés de él aquí
+          rubro.video_url,
         );
 
         this.mensajeExitoso(modalContent, "Video/GIF cargado exitosamente.");
 
-        // Actualización de la vista si es necesario
         this.loader.classList.remove("hidden");
         this.listaRubros.classList.add("hidden");
         await this.mostrarLista();
@@ -1451,7 +1471,6 @@ class PantallaModerador {
   async configurarEmpresa() {
     const modal = this.empresa.modalConfigurarEmpresa();
 
-    // Agregamos un ID al modal para poder identificarlo
     document.body.appendChild(modal);
     const botonEliminar = document.getElementById("btn-eliminar-empresa");
     botonEliminar.classList.add("hidden");
@@ -1521,7 +1540,7 @@ class PantallaModerador {
     }
 
     const botonesDias = modal.querySelectorAll(".toggle-btn");
-    // Listener para los botones de dias de la semana
+
     botonesDias.forEach((btn) => {
       btn.addEventListener("click", () => {
         btn.classList.toggle("active");
@@ -1548,7 +1567,6 @@ class PantallaModerador {
         return;
       }
 
-      // Armamos nuevos horarios
       const nuevosHorarios = Array.from(botonesActivos).map((btn) => {
         const diaNombre = btn.textContent.trim();
 
@@ -1564,8 +1582,6 @@ class PantallaModerador {
         };
       });
 
-      // Validar choque
-
       const horariosExistentesPlano = this.aplanarHorariosGuardados();
 
       const error = this.validarNoSuperposicion(
@@ -1578,20 +1594,17 @@ class PantallaModerador {
         return;
       }
 
-      // Guardar (agrupando por día)
       nuevosHorarios.forEach((nuevo) => {
         const existente = this.horariosGuardados.find(
           (h) => h.diaIndex === nuevo.diaIndex,
         );
 
         if (existente) {
-          // Si ya existe el día, agregamos un rango nuevo
           existente.rangos.push({
             apertura: nuevo.apertura,
             cierre: nuevo.cierre,
           });
         } else {
-          // Si no existe, creamos el día con su primer rango
           this.horariosGuardados.push({
             dia: nuevo.dia,
             nombre: nuevo.nombre,
@@ -1606,12 +1619,10 @@ class PantallaModerador {
         }
       });
 
-      // Reset del formulario (para seguir cargando más)
       botonesActivos.forEach((btn) => btn.classList.remove("active"));
       document.getElementById("horaApertura").value = "";
       document.getElementById("horaCierre").value = "";
 
-      // Render
       this.renderHorariosEnModal(modal);
     });
 
@@ -1622,7 +1633,6 @@ class PantallaModerador {
         return;
       }
 
-      // 🔥 Payload recomendado
       const horarios = this.horariosGuardados.map((d) => ({
         diaIndex: d.diaIndex,
         dia: d.dia,
@@ -1635,7 +1645,7 @@ class PantallaModerador {
       try {
         await this.gestor.guardarHorarios(horarios, this.empresa.id);
         alert("Horarios guardados correctamente ✔️");
-        this.horarios = await this.gestor.obtenerHorarios(this.empresa.id); // Actualizamos los horarios con lo que se guardó
+        this.horarios = await this.gestor.obtenerHorarios(this.empresa.id);
         this.horariosGuardados = Array.isArray(this.horarios.horarios)
           ? this.horarios.horarios.map((h) => {
               const diaIndex = Number(h.diaIndex);
@@ -1648,7 +1658,6 @@ class PantallaModerador {
               };
             })
           : [];
-        // limpiar progreso
         this.renderHorariosEnModal(modal);
       } catch (error) {
         alert(`Error guardando horarios: ${error.message}`);
@@ -1675,7 +1684,6 @@ class PantallaModerador {
       throw new Error(`Formato de fecha inválido: ${fecha}`);
     }
 
-    // UTC para evitar problemas de zona horaria
     const timestamp = Date.UTC(y, m - 1, d);
 
     return Math.floor(timestamp / 60000);
