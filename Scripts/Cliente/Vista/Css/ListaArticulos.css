@@ -129,6 +129,12 @@
   cursor: pointer;
 }
 
+.btn-horario-eliminar {
+  background-color: #eb2a2a;
+  border: none;
+  color: white;
+}
+
 #titulo-rubros {
   color: #e9b44c;
   font-size: 22px;

@@ -1363,6 +1363,10 @@ class PantallaModerador {
           document.getElementById("incluirHorarios").value = activo;
         }
 
+        if (btn.id === "btnPedidosFueraHorario") {
+          document.getElementById("pedidosFueraHorario").value = activo;
+        }
+
         if (btn.id === "btnIncluirCodigoBarra") {
           document.getElementById("incluirCodigoBarra").value = activo;
         }
@@ -1401,6 +1405,8 @@ class PantallaModerador {
       const imagenesEnArticulos =
         formData.get("imagenesEnArticulos") === "true";
       const incluirHorarios = formData.get("incluirHorarios") === "true";
+      const pedidosFueraHorario =
+        formData.get("pedidosFueraHorario") === "true";
       const incluirCodigoBarra = formData.get("incluirCodigoBarra") === "true";
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
@@ -1417,6 +1423,7 @@ class PantallaModerador {
           ubicacion,
           imagenesEnArticulos,
           incluirHorarios,
+          pedidosFueraHorario,
           incluirCodigoBarra,
           contrasenaInternos,
           contrasenaExternos,
@@ -1437,6 +1444,8 @@ class PantallaModerador {
           ubicacion,
           imagenesEnArticulos,
           incluirHorarios,
+          pedidosFueraHorario,
+          incluirCodigoBarra,
         );
         this.mostrarLista();
         modal.classList.add("hidden");

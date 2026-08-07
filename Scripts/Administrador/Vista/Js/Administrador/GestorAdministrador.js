@@ -89,7 +89,6 @@ class GestorAdministrador {
         );
       }
 
-      // El backend debe devolver el objeto del nuevo moderador creado.
       const moderador = await response.json();
       return moderador;
     } catch (error) {

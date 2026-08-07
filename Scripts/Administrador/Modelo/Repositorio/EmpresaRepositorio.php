@@ -32,6 +32,7 @@ class EmpresaRepositorio
         'fecha_creacion' => $data['fecha_creacion'],
         'imagenesEnArticulos' => $data['imagenesEnArticulos'],
         'incluirHorarios' => $data['incluirHorarios'],
+        'pedidosFueraHorario' => $data['pedidosFueraHorario'],
         'incluirCodigoBarra' => $data['incluirCodigoBarra'],
       ];
     }
@@ -58,6 +59,7 @@ class EmpresaRepositorio
           'fecha_creacion' => $data['fecha_creacion'],
           'imagenesEnArticulos' => $data['imagenesEnArticulos'],
           'incluirHorarios' => $data['incluirHorarios'],
+          'pedidosFueraHorario' => $data['pedidosFueraHorario'],
           'incluirCodigoBarra' => $data['incluirCodigoBarra'],
         ];
       }
@@ -103,7 +105,7 @@ class EmpresaRepositorio
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $imagenesEnArticulos, bool $incluirHorarios, bool $incluirCodigoBarra): bool
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $imagenesEnArticulos, bool $incluirHorarios, bool $pedidosFueraHorario, bool $incluirCodigoBarra): bool
   {
     try {
       $sql = "UPDATE empresa
@@ -112,6 +114,7 @@ class EmpresaRepositorio
           ubicacion = :ubicacion,
           imagenesEnArticulos = :imagenesEnArticulos,
           incluirHorarios = :incluirHorarios,
+          pedidosFueraHorario = :pedidosFueraHorario,
           incluirCodigoBarra = :incluirCodigoBarra";
 
       $sql .= " WHERE id = :id;";
@@ -124,6 +127,7 @@ class EmpresaRepositorio
       $stmt->bindParam(':ubicacion', $ubicacion, PDO::PARAM_STR);
       $stmt->bindParam(':imagenesEnArticulos', $imagenesEnArticulos, PDO::PARAM_BOOL);
       $stmt->bindParam(':incluirHorarios', $incluirHorarios, PDO::PARAM_BOOL);
+      $stmt->bindParam(':pedidosFueraHorario', $pedidosFueraHorario, PDO::PARAM_BOOL);
       $stmt->bindParam(':incluirCodigoBarra', $incluirCodigoBarra, PDO::PARAM_BOOL);
       return $stmt->execute();
     } catch (PDOException $e) {

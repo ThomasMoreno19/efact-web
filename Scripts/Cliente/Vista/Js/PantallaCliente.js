@@ -1270,6 +1270,7 @@ class PantallaCliente {
       this.horarios,
       this.empresa.tieneCarrito,
       this.empresa.incluirHorarios,
+      this.empresa.pedidosFueraHorario,
       this.carritoSinPedidos,
       this.esInterno,
     );

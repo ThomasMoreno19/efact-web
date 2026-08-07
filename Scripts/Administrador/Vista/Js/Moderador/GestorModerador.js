@@ -725,6 +725,7 @@ class GestorModerador {
     ubicacion,
     imagenesEnArticulos,
     incluirHorarios,
+    pedidosFueraHorario,
     incluirCodigoBarra,
     contrasenaInterno,
     contrasenaExterno,
@@ -736,6 +737,7 @@ class GestorModerador {
       ubicacion: ubicacion,
       imagenesEnArticulos: imagenesEnArticulos,
       incluirHorarios: incluirHorarios,
+      pedidosFueraHorario: pedidosFueraHorario,
       incluirCodigoBarra: incluirCodigoBarra,
     };
     if (contrasenaInterno) {

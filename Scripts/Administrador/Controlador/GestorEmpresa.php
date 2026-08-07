@@ -238,6 +238,7 @@ class GestorEmpresa
     $telefono = $datos['telefono'];
     $imagenesEnArticulos = $datos['imagenesEnArticulos'];
     $incluirHorarios = $datos['incluirHorarios'];
+    $pedidosFueraHorario = $datos['pedidosFueraHorario'];
     $incluirCodigoBarra = $datos['incluirCodigoBarra'];
     $contrasenaInterno = $datos['contrasenaInterno'] ?? null;
     $contrasenaExterno = $datos['contrasenaExterno'] ?? null;
@@ -250,7 +251,7 @@ class GestorEmpresa
 
 
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $imagenesEnArticulos, $incluirHorarios, $incluirCodigoBarra);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $imagenesEnArticulos, $incluirHorarios, $pedidosFueraHorario, $incluirCodigoBarra);
 
       if ($contrasenaInterno !== null && $contrasenaInterno !== '') {
         $this->gestorInterno->modificar($id_empresa, $contrasenaInterno);

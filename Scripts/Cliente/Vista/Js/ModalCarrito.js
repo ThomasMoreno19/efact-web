@@ -7,6 +7,7 @@ class ModalCarrito {
     horarios,
     moduloCarrito,
     incluirHorario,
+    pedidosFueraHorario,
     carritoSinPedidos,
     esInterno,
   ) {
@@ -23,6 +24,7 @@ class ModalCarrito {
       observaciones: "",
     };
     this.incluirHorario = incluirHorario;
+    this.pedidosFueraHorario = pedidosFueraHorario;
     this.carritoSinPedidos = carritoSinPedidos;
     this.esInterno = esInterno;
     this.horarios = horarios || [];
@@ -41,9 +43,9 @@ class ModalCarrito {
 
     window.addEventListener("popstate", () => {
       if (this.wrapper) {
-        this.wrapper.remove(); // Cierra el modal eliminándolo del DOM
-        this.wrapper = null; // Limpia la referencia
-        this.listaCentral.classList.remove("hidden"); // Muestra la lista central nuevamente
+        this.wrapper.remove();
+        this.wrapper = null;
+        this.listaCentral.classList.remove("hidden");
       }
     });
 
@@ -51,14 +53,13 @@ class ModalCarrito {
   }
 
   abrirModalCarrito() {
-    this.crearModal(); // crea el HTML del modal en el DOM
+    this.crearModal();
     this.botonEnviar = this.wrapper.querySelector("#boton-finalizar-compra");
-    this.renderCarrito(); // dibuja las filas en base al carrito actual
-    this.inicializarEventos(); // agrega delegación de eventos sobre elementos ya presentes
+    this.renderCarrito();
+    this.inicializarEventos();
   }
 
   crearModal() {
-    // Elimino modal previo si existe (evita duplicados)
     this.wrapper = document.getElementById("modal-carrito-wrapper");
     if (this.wrapper) this.wrapper.remove();
 
@@ -145,21 +146,19 @@ class ModalCarrito {
   }
 
   confirmarEliminarCarrito() {
-    // Crear el HTML del modal
     const overlay = document.createElement("div");
     overlay.id = "modal-overlay";
 
     overlay.innerHTML = `
-    <div class="modal-box">
-      <p>¿Desea eliminar todos los artículos del carrito?</p>
-      <div class="modal-actions">
-        <button id="modal-cancelar">Cancelar</button>
-        <button id="modal-confirmar">Eliminar</button>
+      <div class="modal-box">
+        <p>¿Desea eliminar todos los artículos del carrito?</p>
+        <div class="modal-actions">
+          <button id="modal-cancelar">Cancelar</button>
+          <button id="modal-confirmar">Eliminar</button>
+        </div>
       </div>
-    </div>
-  `;
+    `;
 
-    // Agregar al body
     document.body.appendChild(overlay);
 
     const btnConfirmar = overlay.querySelector("#modal-confirmar");
@@ -198,9 +197,8 @@ class ModalCarrito {
     if (!this.incluirHorario || this.esInterno) return true;
     const ahora = new Date();
 
-    const jsDay = ahora.getDay(); // 0 domingo..6 sábado
+    const jsDay = ahora.getDay();
 
-    // Tu sistema: 0 lunes..6 domingo
     const diaIndexHoy = jsDay === 0 ? 6 : jsDay;
     const diaIndexAyer = diaIndexHoy === 0 ? 6 : diaIndexHoy;
 
@@ -224,24 +222,20 @@ class ModalCarrito {
       const apertura = ha * 60 + ma;
       const cierre = hc * 60 + mc;
 
-      // Normal
       if (cierre > apertura) {
         return minutosActuales >= apertura && minutosActuales < cierre;
       }
 
-      // Cruza medianoche
       if (!permitirCruce) return false;
 
       return minutosActuales >= apertura || minutosActuales < cierre;
     };
 
-    // 1) Horarios del día de hoy
     const abiertoHoy = (registroHoy?.rangos || []).some((r) =>
       estaEnRango(r, true),
     );
     if (abiertoHoy) return true;
 
-    // 2) Horarios del día anterior que cruzan medianoche
     const abiertoPorAyer = (registroAyer?.rangos || []).some((r) => {
       if (!r?.apertura || !r?.cierre) return false;
 
@@ -251,10 +245,8 @@ class ModalCarrito {
       const apertura = ha * 60 + ma;
       const cierre = hc * 60 + mc;
 
-      // Solo si cruza medianoche
       if (cierre > apertura) return false;
 
-      // En el día siguiente solo vale la parte 00:00 -> cierre
       return minutosActuales < cierre;
     });
 
@@ -266,7 +258,7 @@ class ModalCarrito {
     if (!mensaje) return;
 
     const abierto =
-      this.estaAbiertoPorHorarioAhora() &&
+      (this.estaAbiertoPorHorarioAhora() || this.pedidosFueraHorario) &&
       this.moduloCarrito &&
       !this.carritoSinPedidos;
 
@@ -395,7 +387,6 @@ class ModalCarrito {
 
     if (grupoActual) grupos.push(grupoActual);
 
-    // 🔥 PARTE IMPORTANTE: unión circular (sábado + domingo)
     if (grupos.length >= 2) {
       const primero = grupos[0];
       const ultimo = grupos[grupos.length - 1];
@@ -408,9 +399,8 @@ class ModalCarrito {
         ultimoEsSabado &&
         primero.firma === ultimo.firma
       ) {
-        // Unimos: el grupo final absorbe el primero
-        ultimo.hasta = primero.hasta; // normalmente 0
-        grupos.shift(); // sacamos el primero
+        ultimo.hasta = primero.hasta;
+        grupos.shift();
       }
     }
 
@@ -573,9 +563,8 @@ class ModalCarrito {
       },
       true,
     );
-    // Listener para textarea
+
     cuerpo.querySelectorAll(".observacion-textarea").forEach((textarea) => {
-      // ✅ Keydown solo una vez
       textarea.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -583,7 +572,6 @@ class ModalCarrito {
         }
       });
 
-      // ✅ Input para actualizar observaciones
       textarea.addEventListener("input", () => {
         const id = textarea.dataset.id;
         const index = Number(textarea.dataset.index);
@@ -599,7 +587,6 @@ class ModalCarrito {
         const wrapper = textarea.closest(".observacion-wrapper");
         const textareas = wrapper.querySelectorAll(".observacion-textarea");
 
-        // Obs 2
         if (textareas[0].value.length > 35)
           textareas[1].classList.remove("hidden");
         else {
@@ -608,7 +595,6 @@ class ModalCarrito {
           articulo.observaciones[1] = "";
         }
 
-        // Obs 3
         if (textareas[1].value.length > 35)
           textareas[2].classList.remove("hidden");
         else {
@@ -631,7 +617,6 @@ class ModalCarrito {
 
     let cantidad = Number(input.value);
 
-    // Si dejó vacío, mantener la cantidad anterior
     if (input.value === "" || isNaN(cantidad)) {
       cantidad = articulo.cantidad;
     }
@@ -700,23 +685,19 @@ class ModalCarrito {
     if (!cuerpo) return;
 
     if (!cuerpo._listenerAttached) {
-      // Delegación: un solo listener en el tbody para manejar +, -, eliminar
       cuerpo.addEventListener("click", (e) => {
-        // Buscamos si el click vino de (o dentro de) un btn-eliminar
         const btnEliminar = e.target.closest(".btn-eliminar");
         if (btnEliminar) {
           const id = btnEliminar.dataset.id;
 
           this.carrito.eliminarArticulo(id);
 
-          // notificar a PantallaCliente
           if (this.onEliminarArticulo) this.onEliminarArticulo(id);
 
           this.renderCarrito();
           return;
         }
 
-        // Aumentar / Disminuir
         const btnCant = e.target.closest(".btn-cant");
         if (btnCant && cuerpo.contains(btnCant)) {
           const id = btnCant.dataset.id;
@@ -743,8 +724,10 @@ class ModalCarrito {
 
     this.botonEnviar?.addEventListener("click", () => {
       if (this.botonEnviar.desactivado) return;
-
-      this.enviarPedidoWhatsApp();
+      if (this.pedidosFueraHorario && !this.estaAbiertoPorHorarioAhora()) {
+        this.alertaFueraHorario();
+        return;
+      } else this.enviarPedidoWhatsApp();
     });
 
     this.botonSigPaso?.addEventListener("click", () => {
@@ -758,13 +741,93 @@ class ModalCarrito {
       this.renderDatosPersonales();
     });
 
-    // Listener para cerrar
     if (botonCerrar) {
       botonCerrar.addEventListener("click", () => {
         this.listaCentral.classList.remove("hidden");
         if (this.wrapper) this.wrapper.remove();
       });
     }
+  }
+
+  alertaFueraHorario() {
+    const overlay = document.createElement("div");
+    overlay.id = "modal-overlay";
+
+    const grupos = this.agruparHorariosPorRangos(this.horarios.horarios);
+    const items = (grupos || [])
+      .map((g) => {
+        const titulo =
+          g.desde === g.hasta
+            ? this.diaIndexToNombre(g.desde)
+            : g.desde < g.hasta
+              ? `De ${this.diaIndexToNombre(g.desde)} a ${this.diaIndexToNombre(g.hasta)}`
+              : `De ${this.diaIndexToNombre(g.desde)} a ${this.diaIndexToNombre(g.hasta)}`;
+
+        const rangosHTML = (g.rangos || [])
+          .map(
+            (r) =>
+              `<div class="rango-horario">${r.apertura} - ${r.cierre}</div>`,
+          )
+          .join("");
+
+        return `
+          <li class="dia-horario-item" style="margin-bottom: 8px; background: rgba(0, 0, 0, 0.1); padding: 8px; border-radius: 4px; border: none;">
+            <strong class="dia-horario-titulo">${titulo}</strong>
+            <div class="rangos-horario">
+              ${rangosHTML || `<div class="rango-horario">Cerrado</div>`}
+            </div>
+          </li>
+        `;
+      })
+      .join("");
+
+    overlay.innerHTML = `
+      <div class="modal-box">
+        <h2 style="margin-top: 0;">Fuera de horario</h2>
+        <p style="padding: 8px 0;">Se te contestará cuando vuelvan a abrir.</p>
+        
+        <div class="modal-mostrar-horarios">
+          <div id="toggle-horarios" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(0, 0, 0, 0.1); border-radius: 5px; margin-bottom: 10px;">
+            <strong>Mostrar horarios</strong>
+            <span id="flecha-horarios" style="transition: transform 0.3s; transform: rotate(0deg);">▼</span>
+          </div>
+          
+          <div id="contenedor-horarios" style="display: none; max-height: 200px; overflow-y: auto; padding: 0 10px;">
+            <ul class="horarios-cafeteria" style="list-style: none; padding: 0; margin: 0;">
+              ${items || "<li>No hay horarios configurados</li>"}
+            </ul>
+          </div>
+        </div>
+
+        <div class="modal-actions" >
+          <button id="cerrar-modal-fuera-horario" class="boton-modal btn-horario-eliminar">Cerrar</button>
+          <button id="enviar-modal-fuera-horario" class="boton-modal" >Enviar pedido</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const btnCerrar = overlay.querySelector("#cerrar-modal-fuera-horario");
+    const btnEnviar = overlay.querySelector("#enviar-modal-fuera-horario");
+    const toggleHorarios = overlay.querySelector("#toggle-horarios");
+    const contenedorHorarios = overlay.querySelector("#contenedor-horarios");
+    const flechaHorarios = overlay.querySelector("#flecha-horarios");
+
+    btnCerrar?.addEventListener("click", () => overlay.remove());
+
+    btnEnviar?.addEventListener("click", () => {
+      overlay.remove();
+      this.enviarPedidoWhatsApp();
+    });
+
+    toggleHorarios?.addEventListener("click", () => {
+      const estaOculto = contenedorHorarios.style.display === "none";
+      contenedorHorarios.style.display = estaOculto ? "block" : "none";
+      flechaHorarios.style.transform = estaOculto
+        ? "rotate(180deg)"
+        : "rotate(0deg)";
+    });
   }
 
   enviarPedidoWhatsApp() {
@@ -803,22 +866,18 @@ class ModalCarrito {
       mensaje += "\n";
     });
 
-    // Teléfono del cliente
     const numeroWhatsApp = this.empresa.telefono.replace(/[^0-9]/g, "");
 
-    // Codifico el mensaje para URL
     const mensajeCodificado = encodeURIComponent(mensaje);
 
     const esMovil = /Android|iPhone|iPad|iPod|Windows Phone/i.test(
       navigator.userAgent,
     );
 
-    // Seleccionar la URL según el dispositivo
     const url = esMovil
-      ? `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}` // Si el dispositivo es móvil
-      : `https://web.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensajeCodificado}`; // Si el dispositivo es escritorio
+      ? `https://wa.me/${numeroWhatsApp}?text=${mensajeCodificado}`
+      : `https://web.whatsapp.com/send?phone=${numeroWhatsApp}&text=${mensajeCodificado}`;
 
-    // Abrir WhatsApp
     window.open(url, "_blank");
 
     articulos.forEach((articulo) => {
@@ -834,14 +893,12 @@ class ModalCarrito {
   }
 
   tomarDatosPersonales() {
-    //Nombre
     document
       .getElementById("input-nombre-cliente")
       .addEventListener("input", (e) => {
         this.datosPersonales.nombre = e.target.value.trim();
       });
 
-    //Observaciones
     document
       .getElementById("input-observaciones-cliente")
       .addEventListener("input", (e) => {
@@ -860,11 +917,9 @@ class ModalCarrito {
   }
 
   renderizadorFormulario() {
-    // Estado inicial
     this.pendiente = ["nombre"];
     this.botonEnviar.classList.add("desactivado");
 
-    // BOTÓN VOLVER
     this.botonVolver.onclick = () => {
       this.volverAPaso1();
     };
@@ -873,7 +928,6 @@ class ModalCarrito {
       const id = e.target.id;
       const valor = e.target.value.trim();
 
-      // NOMBRE
       if (id === "input-nombre-cliente") {
         if (valor !== "") {
           this.pendiente = this.pendiente.filter((p) => p !== "nombre");
@@ -885,9 +939,6 @@ class ModalCarrito {
       this.verificarPendientes();
     });
 
-    // =========================
-    // CLICKS (entrega + pago)
-    // =========================
     this.wrapperA.addEventListener("click", (e) => {
       const btn = e.target.closest("button");
       if (!btn) return;
@@ -901,7 +952,12 @@ class ModalCarrito {
 
     if (this.pendiente.length === 0) {
       this.botonEnviar.classList.remove("desactivado");
-      this.botonEnviar.addEventListener("click", this.handleEnviarClick);
+      if (this.pedidosFueraHorario && !this.estaAbiertoPorHorarioAhora()) {
+        this.botonEnviar.addEventListener(
+          "click",
+          this.alertaFueraHorario.bind(this),
+        );
+      } else this.botonEnviar.addEventListener("click", this.handleEnviarClick);
     } else {
       this.botonEnviar.classList.add("desactivado");
     }

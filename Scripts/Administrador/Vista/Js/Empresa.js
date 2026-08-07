@@ -8,6 +8,7 @@ class EmpresaVista {
     this.deshabilitarExcel = empresa.deshabilitarExcel ?? false;
     this.imagenesEnArticulos = empresa.imagenesEnArticulos ?? true;
     this.incluirHorarios = empresa.incluirHorarios ?? false;
+    this.pedidosFueraHorario = empresa.pedidosFueraHorario ?? false;
     this.incluirCodigoBarra = empresa.incluirCodigoBarra ?? false;
     this.logo_url = empresa.logo_url;
   }
@@ -18,6 +19,7 @@ class EmpresaVista {
     ubicacion,
     imagenesEnArticulos,
     incluirHorarios,
+    pedidosFueraHorario,
     incluirCodigoBarra,
   ) {
     this.nombre = nombre;
@@ -25,6 +27,7 @@ class EmpresaVista {
     this.ubicacion = ubicacion;
     this.imagenesEnArticulos = imagenesEnArticulos;
     this.incluirHorarios = incluirHorarios;
+    this.pedidosFueraHorario = pedidosFueraHorario;
     this.incluirCodigoBarra = incluirCodigoBarra;
   }
 
@@ -50,6 +53,7 @@ class EmpresaVista {
           empresaLogoUrl: this.logo_url,
           empresaImagenesEnArticulos: this.imagenesEnArticulos ?? true,
           empresaIncluirHorarios: this.incluirHorarios ?? false,
+          empresaPedidosFueraHorario: this.pedidosFueraHorario ?? false,
           empresaIncluirCodigoBarra: this.incluirCodigoBarra ?? false,
         },
       });
@@ -413,6 +417,12 @@ class EmpresaVista {
           </button>
           <button
               type="button"
+              id="btnPedidosFueraHorario"
+              class="toggle-btn ${this.pedidosFueraHorario ? "active" : ""}">
+            Pedidos fuera de horario
+          </button>
+          <button
+              type="button"
               id="btnIncluirCodigoBarra"
               class="toggle-btn ${this.incluirCodigoBarra ? "active" : ""}">
             Lector de códigos de barras
@@ -430,6 +440,12 @@ class EmpresaVista {
           name="incluirHorarios"
           id="incluirHorarios"
           value="${!!this.incluirHorarios}">
+
+        <input
+          type="hidden"
+          name="pedidosFueraHorario"
+          id="pedidosFueraHorario"
+          value="${!!this.pedidosFueraHorario}">
 
         <input
           type="hidden"
