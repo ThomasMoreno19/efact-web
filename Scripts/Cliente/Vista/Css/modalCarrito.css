@@ -347,6 +347,11 @@
   cursor: not-allowed !important;
 }
 
+.disabled {
+  fill: #7b7b7b !important;
+  cursor: not-allowed !important;
+}
+
 .mensaje-fuera-horario {
   color: #ff4d4d;
   font-weight: bold;

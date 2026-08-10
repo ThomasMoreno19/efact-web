@@ -497,7 +497,7 @@ class PantallaModerador {
           true,
           this.empresa.imagenesEnArticulos,
           estaSeleccionado,
-          this.esInterno,
+          true,
         ),
       );
     });
@@ -604,7 +604,13 @@ class PantallaModerador {
       const vista = new ArticuloVista(articulo);
 
       this.listaArticulos.appendChild(
-        vista.mostrarUna(1, true, this.empresa.imagenesEnArticulos),
+        vista.mostrarUna(
+          1,
+          true,
+          this.empresa.imagenesEnArticulos,
+          false,
+          true,
+        ),
       );
     }
 

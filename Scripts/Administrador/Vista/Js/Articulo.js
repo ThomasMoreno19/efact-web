@@ -4,6 +4,7 @@ class ArticuloVista {
       id,
       id_rubro,
       id_marca,
+      codigo_interno,
       nombre_marca,
       id_proveedor,
       nombre_proveedor,
@@ -24,6 +25,7 @@ class ArticuloVista {
     this.id_rubro = id_rubro;
     this.id_marca = id_marca;
     this.id_proveedor = id_proveedor;
+    this.codigo_interno = codigo_interno;
     this.marca = nombre_marca;
     this.proveedor = nombre_proveedor;
     this.codigo_proveedor = codigo_proveedor;
@@ -150,7 +152,8 @@ class ArticuloVista {
     logoContainer.addEventListener("click", (e) => {
       e.stopPropagation();
       // Deberás implementar este método en la clase ArticuloVista
-      this.mostrarModalImagen(this.logo_url);
+      console.log("mostrarModalImagen", !esInterno);
+      this.mostrarModalImagen(this.logo_url, !esInterno);
     });
     const contentGroup = document.createElement("div");
     contentGroup.classList.add("articulo-content");
@@ -625,7 +628,7 @@ class ArticuloVista {
     });
   }
 
-  mostrarModalImagen(url) {
+  mostrarModalImagen(url, externo = false) {
     const esSVGString = url && url.trim().startsWith("<svg");
     const srcFinal = esSVGString
       ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(url)}`
@@ -665,9 +668,10 @@ class ArticuloVista {
       </h3>
 
       <div class="datos-articulo-modal">
+        <p><strong>Código:</strong> ${this.codigo_interno ?? "N/A"}</p>
         <p><strong>Marca:</strong> ${this.marca ?? "N/A"}</p>
         <p><strong>Proveedor:</strong> ${this.proveedor ?? "N/A"}</p>
-        <p><strong>Código proveedor:</strong> ${this.codigo_proveedor ?? "N/A"}</p>
+        ${!externo ? `<p><strong>Código proveedor:</strong> ${this.codigo_proveedor ?? "N/A"}</p>` : ""}
         <p><strong>Existencia:</strong> ${this.existencia ?? "N/A"}</p>
       </div>
 

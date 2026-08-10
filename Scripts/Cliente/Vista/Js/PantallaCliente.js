@@ -15,6 +15,9 @@ class PantallaCliente {
     this.botonListaOfertas = document.getElementById("boton-lista-ofertas");
     this.barraBusqueda = document.getElementById("barra-busqueda");
     this.listaVacia = document.getElementById("lista-vacia");
+    this.esMovil = /Android|iPhone|iPad|iPod|Windows Phone/i.test(
+      navigator.userAgent,
+    );
     this.contenedoresBarraCodigos = document.getElementById(
       "contenedores-codigos",
     );
@@ -265,47 +268,53 @@ class PantallaCliente {
     };
 
     btnCerrar?.addEventListener("click", detener);
+    if (this.esMovil) {
+      boton.addEventListener("click", async () => {
+        contenedor.style.display = "block";
+        void contenedor.offsetHeight;
 
-    boton.addEventListener("click", async () => {
-      contenedor.style.display = "block";
-      void contenedor.offsetHeight;
+        if (html5QrCode?.isScanning) {
+          await html5QrCode.stop();
+        }
 
-      if (html5QrCode?.isScanning) {
-        await html5QrCode.stop();
-      }
+        html5QrCode = new Html5Qrcode("video-escaner");
 
-      html5QrCode = new Html5Qrcode("video-escaner");
-
-      const config = {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        videoConstraints: {
-          facingMode: "environment",
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          advanced: [{ focusMode: "continuous" }],
-        },
-      };
-
-      try {
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          config,
-          (decodedText) => {
-            if (this._procesandoEscaneo) return;
-
-            this._procesandoEscaneo = true;
-
-            this.manejarResultadoEscaneo(decodedText);
+        const config = {
+          fps: 10,
+          qrbox: { width: 250, height: 250 },
+          videoConstraints: {
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            advanced: [{ focusMode: "continuous" }],
           },
-          () => {},
-        );
-      } catch (err) {
-        console.error("Error detallado:", err);
-        contenedor.style.display = "none";
-        alert("No se pudo acceder a la cámara: " + err.message);
-      }
-    });
+        };
+
+        try {
+          await html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) => {
+              if (this._procesandoEscaneo) return;
+
+              this._procesandoEscaneo = true;
+
+              this.manejarResultadoEscaneo(decodedText);
+            },
+            () => {},
+          );
+        } catch (err) {
+          console.error("Error detallado:", err);
+          contenedor.style.display = "none";
+          alert("No se pudo acceder a la cámara: " + err.message);
+        }
+      });
+    } else {
+      const elementos = document.querySelectorAll(".svg-escaner");
+      elementos.forEach((elemento) => {
+        elemento.classList.add("disabled");
+      });
+    }
   }
 
   manejarResultadoEscaneo(texto) {
