@@ -170,22 +170,28 @@ class GestorModerador {
             }
 
             const noProcesado =
-              fila[13] === true ||
-              fila[13] === 1 ||
-              fila[13] === "1" ||
-              String(fila[13]).toUpperCase() === "VERDADERO";
-
-            const oferta =
               fila[16] === true ||
               fila[16] === 1 ||
               fila[16] === "1" ||
               String(fila[16]).toUpperCase() === "VERDADERO";
 
+            const oferta =
+              fila[20] === true ||
+              fila[20] === 1 ||
+              fila[20] === "1" ||
+              String(fila[20]).toUpperCase() === "VERDADERO";
+
             const baja =
-              fila[17] === true ||
-              fila[17] === 1 ||
-              fila[17] === "1" ||
-              String(fila[17]).toUpperCase() === "VERDADERO";
+              fila[21] === true ||
+              fila[21] === 1 ||
+              fila[21] === "1" ||
+              String(fila[21]).toUpperCase() === "VERDADERO";
+
+            const tiene_existencia =
+              fila[15] === true ||
+              fila[15] === 1 ||
+              fila[15] === "1" ||
+              String(fila[15]).toUpperCase() === "VERDADERO";
 
             articulos.push({
               id_articulo: fila[0],
@@ -200,8 +206,12 @@ class GestorModerador {
               precio2: parseFloat(fila[9]) || 0,
               precio3: parseFloat(fila[10]) || 0,
               existencia: parseFloat(fila[12]) || 0,
-              abreviatura: fila[14]?.trim() ?? "",
-              ubicacion: fila[15]?.trim() ?? "",
+              minima_existencia: fila[13] || 0,
+              maxima_existencia: fila[14] || 0,
+              tiene_existencia,
+              unidad_medida: fila[18] ?? null,
+              abreviatura: fila[17]?.trim() ?? "",
+              ubicacion: fila[19]?.trim() ?? "",
               oferta,
               no_procesado: noProcesado,
               baja,
@@ -327,6 +337,7 @@ class GestorModerador {
 
   async actualizarCatalogo(archivo, id_empresa, hojasSeleccionadas) {
     const catalogo = await this.leerCatalogoExcel(archivo);
+    console.log(catalogo);
 
     const catalogoActualizacion = this.armarCatalogoActualizacion(
       catalogo,

@@ -83,35 +83,40 @@ class ArticuloRepositorio
   {
     try {
       $stmt = $this->pdo->prepare("
-            SELECT
-                a.id,
-                a.id_rubro,
-                a.id_marca,
-                m.nombre AS nombre_marca,
-                a.id_proveedor,
-                p.nombre AS nombre_proveedor,
-                a.codigo_proveedor,
-                a.existencia,
-                a.codigo_interno,
-                a.nombre,
-                a.precio1,
-                a.precio2,
-                a.precio3,
-                a.no_procesado,
-                a.oferta,
-                a.ubicacion,
-                a.video_url,
-                a.logo_url
-            FROM articulo a
-            LEFT JOIN marca m
-                ON a.id_marca = m.id
-                AND a.id_empresa = m.id_empresa
-            LEFT JOIN proveedor p
-                ON a.id_proveedor = p.id
-                AND a.id_empresa = p.id_empresa
-            WHERE a.id_empresa = :id_empresa
-            ORDER BY a.id_rubro ASC, a.nombre ASC
-        ");
+          SELECT
+              a.id,
+              a.id_rubro,
+              a.id_marca,
+              m.nombre AS nombre_marca,
+              a.id_proveedor,
+              p.nombre AS nombre_proveedor,
+              a.codigo_proveedor,
+              a.tiene_existencia,
+              a.existencia,
+              a.minima_existencia,
+              a.maxima_existencia,
+              a.codigo_interno,
+              a.nombre,
+              a.precio1,
+              a.precio2,
+              a.precio3,
+              a.unidad_medida,
+              a.no_procesado,
+              a.oferta,
+              a.ubicacion,
+              a.video_url,
+              a.logo_url,
+              DATE_FORMAT(a.actualizado_en, '%d/%m/%Y') AS actualizado_en
+          FROM articulo a
+          LEFT JOIN marca m
+              ON a.id_marca = m.id
+              AND a.id_empresa = m.id_empresa
+          LEFT JOIN proveedor p
+              ON a.id_proveedor = p.id
+              AND a.id_empresa = p.id_empresa
+          WHERE a.id_empresa = :id_empresa
+          ORDER BY a.id_rubro ASC, a.nombre ASC
+      ");
 
       $stmt->bindParam(':id_empresa', $id_empresa, PDO::PARAM_INT);
       $stmt->execute();
@@ -181,7 +186,12 @@ class ArticuloRepositorio
             :abreviatura$i,
             :ubicacion$i,
             :logo_url$i,
-            :video_url$i
+            :video_url$i,
+            :unidad_medida$i,
+            :tiene_existencia$i,
+            :minima_existencia$i,
+            :maxima_existencia$i,
+            DATE(CONVERT_TZ(NOW(), 'SYSTEM', '-03:00'))
         )";
 
       $params[":id$i"] = $a['id_articulo'];
@@ -209,50 +219,65 @@ class ArticuloRepositorio
 
       $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
       $params[":video_url$i"] = '';
+      $params[":unidad_medida$i"] = $a['unidad_medida'] ?: null;
+
+      $params[":tiene_existencia$i"] = !empty($a['tiene_existencia']) ? 1 : 0;
+      $params[":minima_existencia$i"] = (string) $a['minima_existencia'];
+      $params[":maxima_existencia$i"] = (string) $a['maxima_existencia'];
     }
 
     $sql = "
-        INSERT INTO articulo (
-            id,
-            id_rubro,
-            id_marca,
-            id_proveedor,
-            id_empresa,
-            nombre,
-            precio1,
-            precio2,
-            precio3,
-            existencia,
-            no_procesado,
-            oferta,
-            codigo_interno,
-            codigo_barra,
-            codigo_proveedor,
-            aparece_en_csv,
-            abreviatura,
-            ubicacion,
-            logo_url,
-            video_url
-        )
-        VALUES " . implode(',', $values) . "
-        ON DUPLICATE KEY UPDATE
-            id_rubro = VALUES(id_rubro),
-            id_marca = VALUES(id_marca),
-            id_proveedor = VALUES(id_proveedor),
-            nombre = VALUES(nombre),
-            precio1 = VALUES(precio1),
-            precio2 = VALUES(precio2),
-            precio3 = VALUES(precio3),
-            existencia = VALUES(existencia),
-            no_procesado = VALUES(no_procesado),
-            oferta = VALUES(oferta),
-            abreviatura = VALUES(abreviatura),
-            ubicacion = VALUES(ubicacion),
-            codigo_interno = VALUES(codigo_interno),
-            codigo_barra = VALUES(codigo_barra),
-            codigo_proveedor = VALUES(codigo_proveedor),
-            aparece_en_csv = 1;
-    ";
+      INSERT INTO articulo (
+          id,
+          id_rubro,
+          id_marca,
+          id_proveedor,
+          id_empresa,
+          nombre,
+          precio1,
+          precio2,
+          precio3,
+          existencia,
+          no_procesado,
+          oferta,
+          codigo_interno,
+          codigo_barra,
+          codigo_proveedor,
+          aparece_en_csv,
+          abreviatura,
+          ubicacion,
+          logo_url,
+          video_url,
+          unidad_medida,
+          tiene_existencia,
+          minima_existencia,
+          maxima_existencia,
+          actualizado_en
+      )
+      VALUES " . implode(',', $values) . "
+      ON DUPLICATE KEY UPDATE
+          id_rubro = VALUES(id_rubro),
+          id_marca = VALUES(id_marca),
+          id_proveedor = VALUES(id_proveedor),
+          nombre = VALUES(nombre),
+          precio1 = VALUES(precio1),
+          precio2 = VALUES(precio2),
+          precio3 = VALUES(precio3),
+          existencia = VALUES(existencia),
+          no_procesado = VALUES(no_procesado),
+          oferta = VALUES(oferta),
+          abreviatura = VALUES(abreviatura),
+          ubicacion = VALUES(ubicacion),
+          codigo_interno = VALUES(codigo_interno),
+          codigo_barra = VALUES(codigo_barra),
+          codigo_proveedor = VALUES(codigo_proveedor),
+          aparece_en_csv = 1,
+          unidad_medida = VALUES(unidad_medida),
+          tiene_existencia = VALUES(tiene_existencia),
+          minima_existencia = VALUES(minima_existencia),
+          maxima_existencia = VALUES(maxima_existencia),
+          actualizado_en = VALUES(actualizado_en);
+  ";
 
     try {
       $stmt = $this->pdo->prepare($sql);
@@ -320,10 +345,11 @@ class ArticuloRepositorio
     try {
       $stmt = $this->pdo->prepare(
         "UPDATE articulo
-                 SET nombre = :nombre,
-                    precio1 = :precio1,
-                    logo_url = :logo_url
-                 WHERE id = :id AND id_empresa = :id_empresa"
+       SET nombre = :nombre,
+           precio1 = :precio1,
+           logo_url = :logo_url,
+           actualizado_en = DATE(CONVERT_TZ(NOW(), 'SYSTEM', '-03:00'))
+       WHERE id = :id AND id_empresa = :id_empresa"
       );
 
       $stmt->bindParam(':id', $id, PDO::PARAM_INT);

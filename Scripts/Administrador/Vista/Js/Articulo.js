@@ -9,7 +9,10 @@ class ArticuloVista {
       id_proveedor,
       nombre_proveedor,
       codigo_proveedor,
+      tiene_existencia,
       existencia,
+      minima_existencia,
+      maxima_existencia,
       nombre,
       precio1,
       precio2,
@@ -17,6 +20,8 @@ class ArticuloVista {
       no_procesado,
       oferta,
       ubicacion = "",
+      unidad_medida,
+      actualizado_en = null,
       seleccionado = false,
       video_url = null,
       logo_url = null,
@@ -29,7 +34,10 @@ class ArticuloVista {
     this.marca = nombre_marca;
     this.proveedor = nombre_proveedor;
     this.codigo_proveedor = codigo_proveedor;
+    this.tiene_existencia = tiene_existencia;
     this.existencia = existencia;
+    this.minima_existencia = minima_existencia;
+    this.maxima_existencia = maxima_existencia;
     this.nombre = nombre;
     this.precio1 = precio1;
     this.precio2 = precio2;
@@ -38,6 +46,8 @@ class ArticuloVista {
     this.seleccionado = seleccionado;
     this.no_procesado = no_procesado;
     this.oferta = oferta;
+    this.unidad_medida = unidad_medida;
+    this.actualizado_en = actualizado_en;
     this.video_url = video_url;
     this.logo_url = logo_url;
     this.videoSVG = `<svg width="35px" height="35px" viewBox="3 3 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -70,6 +80,7 @@ class ArticuloVista {
     divArticulo.dataset.precio3 = this.precio3;
     divArticulo.dataset.no_procesado = this.no_procesado;
     divArticulo.dataset.codigo_barra = this.codigo_barra;
+    divArticulo.dataset.actualizado_en = this.actualizado_en;
 
     const infoContainer = document.createElement("div");
     infoContainer.classList.add("articulo-info");
@@ -133,6 +144,14 @@ class ArticuloVista {
       badgeOferta.classList.add("badge-oferta");
       badgeOferta.textContent = "%OFF";
       divArticulo.appendChild(badgeOferta);
+    }
+
+    if (this.actualizado_en) {
+      console.log(this.actualizado_en);
+      const badgeActualizado = document.createElement("div");
+      badgeActualizado.classList.add("badge-actualizado");
+      badgeActualizado.textContent = this.actualizado_en;
+      divArticulo.appendChild(badgeActualizado);
     }
 
     const logoContainer = document.createElement("div");

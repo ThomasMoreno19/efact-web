@@ -182,6 +182,16 @@ p.descripcion {
   pointer-events: none;
 }
 
+.badge-actualizado {
+  position: absolute;
+  bottom: 2px;
+  right: 5px;
+
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 10px;
+  font-weight: bold;
+}
+
 @media screen and (max-width: 600px) {
   .rubro img {
     height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
