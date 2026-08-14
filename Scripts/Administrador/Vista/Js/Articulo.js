@@ -73,6 +73,7 @@ class ArticuloVista {
   ) {
     const divArticulo = document.createElement("div");
     divArticulo.classList.add("articulo");
+    divArticulo.style.position = "relative";
     divArticulo.dataset.articuloId = this.id;
     divArticulo.dataset.nombre = this.nombre;
     divArticulo.dataset.precio1 = this.precio1;
@@ -92,17 +93,53 @@ class ArticuloVista {
     pNombre.id = "nombre-articulo";
     pNombre.textContent = this.nombre;
 
-    const pMarca = document.createElement("p");
+    const pMarca = document.createElement("span");
     pMarca.id = "marca-articulo";
     pMarca.classList.add("info-articulo");
     pMarca.textContent = this.marca;
 
-    if (esInterno) {
-      const pExistencia = document.createElement("p");
+    if (this.tiene_existencia) {
+      const pExistencia = document.createElement("span");
       pExistencia.id = "existencia-articulo";
       pExistencia.classList.add("info-articulo");
-      pExistencia.textContent = this.existencia;
+      pExistencia.textContent = this.existencia ?? "N/A";
+
+      const indicadorExistencia = document.createElement("span");
+      indicadorExistencia.style.position = "absolute";
+      indicadorExistencia.style.top = "5px";
+      indicadorExistencia.style.right = "5px";
+      indicadorExistencia.style.display = "inline-block";
+      indicadorExistencia.style.width = "15px";
+      indicadorExistencia.style.height = "15px";
+      indicadorExistencia.style.borderRadius = "50%";
+      indicadorExistencia.style.boxShadow = "0 0 0 1px rgba(0,0,0,0.15)";
+
+      const existenciaNumero = Number(this.existencia);
+      const minima = Number(this.minima_existencia);
+      const maxima = Number(this.maxima_existencia);
+
+      if (Number.isFinite(existenciaNumero) && existenciaNumero <= 0) {
+        indicadorExistencia.style.backgroundColor = "#e74c3c";
+      } else if (
+        Number.isFinite(existenciaNumero) &&
+        Number.isFinite(minima) &&
+        existenciaNumero > minima
+      ) {
+        indicadorExistencia.style.backgroundColor = "#2ecc71";
+      } else if (
+        Number.isFinite(minima) &&
+        Number.isFinite(maxima) &&
+        minima === maxima &&
+        Number.isFinite(existenciaNumero) &&
+        existenciaNumero >= minima
+      ) {
+        indicadorExistencia.style.backgroundColor = "#2ecc71";
+      } else {
+        indicadorExistencia.style.backgroundColor = "#f4b400";
+      }
+
       infoMarcaProv.appendChild(pExistencia);
+      divArticulo.appendChild(indicadorExistencia);
     }
 
     infoMarcaProv.appendChild(pMarca);
@@ -122,9 +159,37 @@ class ArticuloVista {
     pPrecio.id = "id-articulo";
     pPrecio.textContent = "$" + precioActual;
 
+    const valorUnidad = this.unidad_medida;
+    const textoUnidad = String(valorUnidad ?? "").trim();
+    const unidadEsNula =
+      textoUnidad === "" || valorUnidad === null || valorUnidad === undefined;
+    const mostrarUnidad = !unidadEsNula;
+    const precioYUnidad = document.createElement("div");
+    precioYUnidad.style.display = "flex";
+    precioYUnidad.style.flexDirection = "column";
+    precioYUnidad.style.alignItems = "flex-start";
+    precioYUnidad.style.flexShrink = "0";
+    precioYUnidad.style.minWidth = "0";
+    precioYUnidad.style.gap = "4px";
+    precioYUnidad.appendChild(pPrecio);
+
+    if (mostrarUnidad) {
+      const pUnidad = document.createElement("small");
+      pUnidad.classList.add("unidad-articulo");
+      pUnidad.textContent = "Medida: " + String(valorUnidad).trim();
+      pUnidad.style.whiteSpace = "nowrap";
+      pUnidad.style.display = "block";
+      pUnidad.style.overflow = "visible";
+      precioYUnidad.appendChild(pUnidad);
+    }
+
     const container2 = document.createElement("div");
     container2.classList.add("container");
-    container2.appendChild(pPrecio);
+    container2.style.display = "flex";
+    container2.style.alignItems = "center";
+    container2.style.justifyContent = "space-between";
+    container2.style.gap = "12px";
+    container2.appendChild(precioYUnidad);
 
     if (this.video_url) {
       const botonVideo = document.createElement("button");

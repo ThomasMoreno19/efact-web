@@ -188,13 +188,30 @@ p.descripcion {
   right: 5px;
 
   color: rgba(255, 255, 255, 0.5);
-  font-size: 10px;
+  font-size: 13px;
   font-weight: bold;
+}
+
+.unidad-articulo {
+  display: block;
+  font-size: 13px;
+  line-height: 1.2;
+  margin-top: 2px;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+.info-marca-prov {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  color: #ffffff8a;
 }
 
 @media screen and (max-width: 600px) {
   .rubro img {
-    height: 3em; /* Este valor se aplica solo en pantallas pequeñas */
+    height: 3em;
   }
 
   .articulo {
@@ -214,6 +231,18 @@ p.descripcion {
 
   p.descripcion {
     font-size: 15px;
+  }
+
+  .badge-actualizado {
+    font-size: 11px;
+  }
+
+  .unidad-articulo {
+    font-size: 10px;
+  }
+
+  .info-marca-prov {
+    font-size: 13px;
   }
 }
 
