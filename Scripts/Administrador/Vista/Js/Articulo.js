@@ -221,8 +221,7 @@ class ArticuloVista {
     const logoContainer = document.createElement("div");
     logoContainer.classList.add("articulo-logo");
 
-    // Se corrigió la condición lógica original para evitar inyectar "null" en el src
-    if (this.logo_url && this.logo_url !== "Archivos/Logos/Vacio.png") {
+    if (this.logo_url && this.logo_url !== "/Archivos/Logos/Vacio.png") {
       const img = document.createElement("img");
       img.src = this.logo_url;
       img.alt = this.nombre;
