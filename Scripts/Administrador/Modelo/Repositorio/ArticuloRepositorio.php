@@ -217,7 +217,7 @@ class ArticuloRepositorio
       $params[":codigo_barra$i"] = $a['codigo_barra'] ?: null;
       $params[":codigo_proveedor$i"] = $a['codigo_proveedor'] ?: null;
 
-      $params[":logo_url$i"] = 'Archivos/Logos/Vacio.png';
+      $params[":logo_url$i"] = '/Archivos/Logos/Vacio.png';
       $params[":video_url$i"] = '';
       $params[":unidad_medida$i"] = $a['unidad_medida'] ?: null;
 

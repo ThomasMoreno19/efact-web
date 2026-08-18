@@ -212,7 +212,6 @@ class ArticuloVista {
     }
 
     if (this.actualizado_en) {
-      console.log(this.actualizado_en);
       const badgeActualizado = document.createElement("div");
       badgeActualizado.classList.add("badge-actualizado");
       badgeActualizado.textContent = this.actualizado_en;
@@ -231,13 +230,11 @@ class ArticuloVista {
     } else {
       logoContainer.innerHTML = this.imagenSVG;
     }
-    // Asignación de evento para el modal de la imagen
     logoContainer.style.cursor = "pointer";
     logoContainer.addEventListener("click", (e) => {
       e.stopPropagation();
-      // Deberás implementar este método en la clase ArticuloVista
-      console.log("mostrarModalImagen", !esInterno);
-      this.mostrarModalImagen(this.logo_url, !esInterno);
+      const imagen = this.logo_url ? this.logo_url : this.imagenSVG;
+      this.mostrarModalImagen(imagen, !esInterno);
     });
     const contentGroup = document.createElement("div");
     contentGroup.classList.add("articulo-content");
@@ -736,8 +733,8 @@ class ArticuloVista {
           src="${srcFinal}"
           alt="Imagen"
           style="
-            max-width: 90%;
-            max-height: 250px;
+            max-width: 65%;
+            max-height: 200px;
             border-radius: 8px;
             object-fit: contain;
             margin:auto;
@@ -746,17 +743,30 @@ class ArticuloVista {
         />
       </div>
 
-      <h3 id="nombre-imagen" 
-        style="font-size: 20px; width: 95%; margin: auto; background: transparent;">
+      <h3 id="nombre-imagen"
+        style="font-size: 17px; width: 90%; margin: auto; background: transparent; font-weight: bold;">
         ${this.nombre}
       </h3>
 
       <div class="datos-articulo-modal">
-        <p><strong>Código:</strong> ${this.codigo_interno ?? "N/A"}</p>
-        <p><strong>Marca:</strong> ${this.marca ?? "N/A"}</p>
-        <p><strong>Proveedor:</strong> ${this.proveedor ?? "N/A"}</p>
-        ${!externo ? `<p><strong>Código proveedor:</strong> ${this.codigo_proveedor ?? "N/A"}</p>` : ""}
-        <p><strong>Existencia:</strong> ${this.existencia ?? "N/A"}</p>
+        <p><strong>Código:</strong> ${this.codigo_interno ?? "-"}</p>
+        <p><strong>Código de barra:</strong> ${this.codigo_barra ?? "-"}</p>
+        <p><strong>Unidad de medida:</strong> ${this.unidad_medida ?? "-"}</p>
+        <p><strong>Marca:</strong> ${this.marca ?? "-"}</p>
+        
+
+        ${
+          !externo
+            ? `
+        <p><strong>Proveedor:</strong> ${this.proveedor ?? "-"}</p>
+        <p><strong>Código proveedor:</strong> ${this.codigo_proveedor ?? "-"}</p>
+        <p><strong>Ubicación:</strong> ${this.ubicacion ?? "-"}</p>
+        <p><strong>Existencia:</strong> ${this.existencia ?? "-"}</p>
+          `
+            : ""
+        }
+
+        <p>Última actualización: ${this.actualizado_en ?? "-"}</p>
       </div>
 
       
