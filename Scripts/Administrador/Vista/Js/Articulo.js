@@ -764,8 +764,13 @@ class ArticuloVista {
           `
             : ""
         }
+        <div class="leyenda-existencia" style="margin: 10px 0; font-size: 12px;">
+          <p><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#2ecc71;margin-right:6px;"></span>Existencia por encima del mínimo</p>
+          <p><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#f4b400;margin-right:6px;"></span>Existencia baja (entre 0 y el mínimo)</p>
+          <p><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#e74c3c;margin-right:6px;"></span>Sin existencia (0 o menos)</p>
+        </div>
 
-        <p>Última actualización: ${this.actualizado_en ?? "-"}</p>
+        <p style="font-size: 12px; color: #ffffffac">Última actualización: ${this.actualizado_en ?? "-"}</p>
       </div>
 
       
