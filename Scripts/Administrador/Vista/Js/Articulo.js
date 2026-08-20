@@ -70,6 +70,7 @@ class ArticuloVista {
     imagenesEnArticulos = true,
     seleccionado = false,
     esInterno = false,
+    esModerador = false,
   ) {
     const divArticulo = document.createElement("div");
     divArticulo.classList.add("articulo");
@@ -77,9 +78,8 @@ class ArticuloVista {
     divArticulo.dataset.articuloId = this.id;
     divArticulo.dataset.nombre = this.nombre;
     divArticulo.dataset.precio1 = this.precio1;
-    divArticulo.dataset.precio2 = this.precio2;
-    divArticulo.dataset.precio3 = this.precio3;
     divArticulo.dataset.no_procesado = this.no_procesado;
+    divArticulo.dataset.existencia = this.existencia;
     divArticulo.dataset.codigo_barra = this.codigo_barra;
     divArticulo.dataset.actualizado_en = this.actualizado_en;
 
@@ -146,7 +146,7 @@ class ArticuloVista {
     infoContainer.appendChild(pNombre);
     infoContainer.appendChild(infoMarcaProv);
 
-    if (this.ubicacion && esInterno) {
+    if (this.ubicacion && (esInterno || esModerador)) {
       const pUbicacion = document.createElement("p");
       pUbicacion.id = "ubicacion-articulo";
       pUbicacion.classList.add("info-articulo");
@@ -233,24 +233,28 @@ class ArticuloVista {
     logoContainer.addEventListener("click", (e) => {
       e.stopPropagation();
       const imagen = this.logo_url ? this.logo_url : this.imagenSVG;
-      this.mostrarModalImagen(imagen, !esInterno);
+      this.mostrarModalImagen(imagen, !esInterno && !esModerador);
     });
     const contentGroup = document.createElement("div");
     contentGroup.classList.add("articulo-content");
     contentGroup.appendChild(container2);
 
     if (!this.no_procesado) {
-      divArticulo.addEventListener("click", () => {
-        const event = new CustomEvent("articuloSeleccionado", { detail: this });
-        document.dispatchEvent(event);
-        divArticulo.classList.toggle("seleccionado");
-        divArticulo.classList.remove("pulse");
-        void divArticulo.offsetWidth;
-        divArticulo.classList.add("pulse");
-        if (typeof window.gestorDeArticulosCallback === "function") {
-          window.gestorDeArticulosCallback(this);
-        }
-      });
+      if (!esInterno || (esInterno && this.tiene_existencia) || esModerador) {
+        divArticulo.addEventListener("click", () => {
+          const event = new CustomEvent("articuloSeleccionado", {
+            detail: this,
+          });
+          document.dispatchEvent(event);
+          divArticulo.classList.toggle("seleccionado");
+          divArticulo.classList.remove("pulse");
+          void divArticulo.offsetWidth;
+          divArticulo.classList.add("pulse");
+          if (typeof window.gestorDeArticulosCallback === "function") {
+            window.gestorDeArticulosCallback(this);
+          }
+        });
+      }
     } else if (this.no_procesado) {
       divArticulo.classList.add("no-procesado");
     }

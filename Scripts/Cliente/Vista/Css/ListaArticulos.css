@@ -463,9 +463,9 @@ p.descripcion {
   padding: 30px;
   border-radius: 10px;
   max-width: 80%;
-  max-height: 80%;
+  max-height: 95%;
   width: 300px;
-  height: 400px;
+  min-height: 400px;
   position: relative;
   animation: slideIn 0.3s ease-in-out;
   color: white;

@@ -34,7 +34,7 @@ class EmpresaVista {
   mostrarUna() {
     const divEmpresa = document.createElement("div");
     divEmpresa.classList.add("empresa");
-    divEmpresa.dataset.empresaId = this.id; //🤣😎
+    divEmpresa.dataset.empresaId = this.id;
     divEmpresa.style.backgroundImage = `url('${this.logo_url || "/Archivos/Logos/Vacio.png"}')`;
 
     const pNombre = document.createElement("p");
@@ -68,14 +68,16 @@ class EmpresaVista {
 
   async asignarIconoYPagina(texto) {
     try {
-      // Cambiar el título de la pestaña
+      let logo = this.logo_url || "/Archivos/Logos/Vacio.png";
+      if (this.logo_url === "Archivo/Logos/Vacio.png")
+        logo = "/Archivos/Logos/Vacio.png";
+
       document.title = `${this.nombre} ${texto}`;
 
-      // Crear nuevo favicon con el logo de la empresa
       const nuevoFavicon = document.createElement("link");
       nuevoFavicon.rel = "icon";
       nuevoFavicon.type = "image/png";
-      nuevoFavicon.href = this.logo_url || "/Archivos/Logos/Vacio.png";
+      nuevoFavicon.href = logo;
 
       document.head.appendChild(nuevoFavicon);
     } catch (error) {
@@ -368,7 +370,7 @@ class EmpresaVista {
       .addEventListener("click", () => {
         const modalQR = this.modalQRConfiguracion();
         document.querySelector(".lista-central").classList.add("hidden");
-        document.body.appendChild(modalQR); // Ensure modal is appended to the DOM
+        document.body.appendChild(modalQR);
       });
 
     return modalConfigurarEmpresa;
@@ -541,7 +543,6 @@ class EmpresaVista {
 
     const baseURL = window.location.origin;
 
-    // Eventos
     modalQR
       .querySelector("#qr-pagina-configuracion")
       .addEventListener("click", () => {
@@ -586,7 +587,6 @@ class EmpresaVista {
 
       contenedor.appendChild(canvas);
 
-      // Botón descargar
       const btnDescargar = document.createElement("button");
       btnDescargar.textContent = "Descargar QR";
       btnDescargar.classList.add("boton-descargar");
@@ -601,7 +601,6 @@ class EmpresaVista {
 
       contenedor.appendChild(btnDescargar);
 
-      // Link clickeable
       const link = document.createElement("a");
       link.href = url;
       link.textContent = url;

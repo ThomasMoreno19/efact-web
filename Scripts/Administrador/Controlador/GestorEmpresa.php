@@ -137,7 +137,7 @@ class GestorEmpresa
 
     try {
       // 3️⃣ Si hay imagen, la subimos y obtenemos la URL
-      $logo_url = 'Archivo/Logos/Vacio.png';
+      $logo_url = '/Archivos/Logos/Vacio.png';
 
       // 4️⃣ Crear la empresa en la base de datos
       $empresa = $this->empresaRepositorio->crear($nombre, $logo_url, $telefono, $ubicacion, $tieneCarrito, $deshabilitar_excel);

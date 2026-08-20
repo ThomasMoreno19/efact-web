@@ -497,6 +497,7 @@ class PantallaModerador {
           true,
           this.empresa.imagenesEnArticulos,
           estaSeleccionado,
+          false,
           true,
         ),
       );
@@ -608,6 +609,7 @@ class PantallaModerador {
           1,
           true,
           this.empresa.imagenesEnArticulos,
+          false,
           false,
           true,
         ),

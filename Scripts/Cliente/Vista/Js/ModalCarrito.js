@@ -76,7 +76,7 @@ class ModalCarrito {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"></path>
             </svg>
         </button>
-        <h2 id="titulo-modal-carrito">Carrito</h2>
+        <h2 id="titulo-modal-carrito">Movimiento de existencia</h2>
         <button id="cerrar-modal-carrito" class="boton-cerrar">&times;</button>
       </header>
 
@@ -151,7 +151,7 @@ class ModalCarrito {
 
     overlay.innerHTML = `
       <div class="modal-box">
-        <p>¿Desea eliminar todos los artículos del carrito?</p>
+        <p>¿Desea eliminar todos los artículos de Movimiento de existencia?</p>
         <div class="modal-actions">
           <button id="modal-cancelar">Cancelar</button>
           <button id="modal-confirmar">Eliminar</button>
@@ -427,7 +427,7 @@ class ModalCarrito {
     if (!articulos || articulos.length === 0) {
       cuerpo.innerHTML = `
         <div class="vacio">
-          El carrito está vacío.
+          No hay artículos para movimiento de existencia.
         </div>
       `;
       this.botonEnviar.classList.remove("boton-deshabilitado-horario");
@@ -709,8 +709,11 @@ class ModalCarrito {
           if (btnCant.classList.contains("mas") && articulo.cantidad < 99)
             articulo.cantidad = (Number(articulo.cantidad) || 0) + 1;
           else if (
-            btnCant.classList.contains("menos") &&
-            Number(articulo.cantidad) > 1
+            (btnCant.classList.contains("menos") &&
+              Number(articulo.cantidad) > 1) ||
+            (btnCant.classList.contains("menos") &&
+              Number(articulo.cantidad) > 0 &&
+              this.esInterno)
           )
             articulo.cantidad = Number(articulo.cantidad) - 1;
 
@@ -732,6 +735,19 @@ class ModalCarrito {
 
     this.botonSigPaso?.addEventListener("click", () => {
       if (this.botonSigPaso.desactivado) return;
+
+      if (this.esInterno) {
+        const articulos = this.carrito.mostrarArticulos();
+        const hayIgualExistencia = articulos.some(
+          (articulo) =>
+            Number(articulo.cantidad) === Number(articulo.existencia),
+        );
+        if (hayIgualExistencia) {
+          this.advertirCantidadIgualExistencia();
+          return;
+        }
+      }
+
       this.renderCarrito();
       window.history.pushState(
         { vista: "modal", paso: 2 },
@@ -747,6 +763,42 @@ class ModalCarrito {
         if (this.wrapper) this.wrapper.remove();
       });
     }
+  }
+
+  advertirCantidadIgualExistencia() {
+    const articulos = this.carrito.mostrarArticulos();
+    const articulosConflicto = articulos.filter(
+      (articulo) => Number(articulo.cantidad) === Number(articulo.existencia),
+    );
+
+    if (!articulosConflicto.length) return;
+
+    const modalPrevio = document.getElementById("modal-overlay");
+    if (modalPrevio) modalPrevio.remove();
+
+    const listaHtml = articulosConflicto
+      .map((a) => `<li>${a.nombre}</li>`)
+      .join("");
+
+    const modal = document.createElement("div");
+    modal.id = "modal-overlay";
+    modal.innerHTML = `
+    <div class="modal-box">
+      <p>
+        Los siguientes artículos no mantienen diferencia entre cantidad y existencia:
+      </p>
+      <ul style="text-align: left;">
+        ${listaHtml}
+      </ul>
+      <button id="cerrar-modal-existencia-igual">Cerrar</button>
+    </div>
+  `;
+
+    document.body.appendChild(modal);
+
+    modal
+      .querySelector("#cerrar-modal-existencia-igual")
+      .addEventListener("click", () => modal.remove());
   }
 
   alertaFueraHorario() {
@@ -836,7 +888,9 @@ class ModalCarrito {
       alert("El carrito está vacío.");
       return;
     }
-    var mensaje = this.esInterno ? "Movimiento de existencia" : "Pedido";
+    var mensaje = this.esInterno
+      ? "Movimiento de existencia\nLa cantidad ingresada representa la existencia real"
+      : "Pedido";
 
     mensaje += `\n\nNombre: ${this.datosPersonales.nombre}\n`;
     if (this.datosPersonales.observaciones)
@@ -851,12 +905,14 @@ class ModalCarrito {
       const nombre = String(a.nombre);
       const cant = String(a.cantidad);
       const precioUnitario = Number(this.carrito.eliminarPuntoPrecio(a.precio));
+      const existencia = Number(a.existencia);
       const obs = this.formatearObservacion(a.observaciones || []);
 
       mensaje += `#codi:${id}`;
       mensaje += ` #cant:${cant}`;
       if (!this.esInterno)
         mensaje += ` #subt:$${this.carrito.insertarPuntoPrecio(String(precioUnitario * a.cantidad))}`;
+      if (this.esInterno) mensaje += ` #exist:${existencia}`;
       mensaje += ` #desc:${nombre}`;
 
       if (obs.trim()) {

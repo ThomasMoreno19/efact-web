@@ -8,31 +8,29 @@ class Carrito {
       id: null,
       nombre: null,
       cantidad: 1,
+      existencia: null,
+      tiene_existencia: false,
       precio: null,
       precios: {},
     };
 
-    // 🔹 Caso 1: viene como objeto (ArticuloVista)
     if (articulo.nombre !== undefined) {
       copia.id = articulo.id;
       copia.nombre = articulo.nombre;
+      copia.existencia = articulo.existencia;
+      copia.tiene_existencia = articulo.tiene_existencia;
 
       copia.precios = {
         1: articulo.precio1,
-        2: articulo.precio2,
-        3: articulo.precio3,
       };
-    }
-
-    // 🔹 Caso 2: viene como DOM element
-    else {
+    } else {
       copia.id = articulo.dataset.articuloId;
       copia.nombre = articulo.dataset.nombre;
+      copia.existencia = articulo.dataset.existencia;
+      copia.tiene_existencia = articulo.dataset.tiene_existencia;
 
       copia.precios = {
         1: articulo.dataset.precio1,
-        2: articulo.dataset.precio2,
-        3: articulo.dataset.precio3,
       };
     }
 
