@@ -499,6 +499,8 @@ class PantallaModerador {
           estaSeleccionado,
           false,
           true,
+          this.empresa.toleranciaMinDias,
+          this.empresa.toleranciaMaxDias,
         ),
       );
     });
@@ -612,6 +614,8 @@ class PantallaModerador {
           false,
           false,
           true,
+          this.empresa.toleranciaMinDias,
+          this.empresa.toleranciaMaxDias,
         ),
       );
     }
@@ -1416,6 +1420,36 @@ class PantallaModerador {
       const pedidosFueraHorario =
         formData.get("pedidosFueraHorario") === "true";
       const incluirCodigoBarra = formData.get("incluirCodigoBarra") === "true";
+
+      const valorToleranciaMin = formData.get("toleranciaMinDias");
+      const valorToleranciaMax = formData.get("toleranciaMaxDias");
+
+      const toleranciaMinDias =
+        valorToleranciaMin === "" || valorToleranciaMin === null
+          ? null
+          : Number(valorToleranciaMin);
+
+      const toleranciaMaxDias =
+        valorToleranciaMax === "" || valorToleranciaMax === null
+          ? null
+          : Number(valorToleranciaMax);
+
+      if (toleranciaMinDias !== null && toleranciaMaxDias === null) {
+        alert(
+          "Si se define una tolerancia mínima, es obligatorio definir la tolerancia máxima.",
+        );
+        return;
+      }
+
+      if (
+        toleranciaMinDias !== null &&
+        toleranciaMaxDias !== null &&
+        toleranciaMaxDias <= toleranciaMinDias
+      ) {
+        alert("La tolerancia máxima debe ser mayor que la mínima.");
+        return;
+      }
+
       const usuario = formData.get("usuario");
       const contrasena = formData.get("contrasena");
       const contrasenaInternos = formData.get("contrasenaInternos");
@@ -1433,6 +1467,8 @@ class PantallaModerador {
           incluirHorarios,
           pedidosFueraHorario,
           incluirCodigoBarra,
+          toleranciaMinDias,
+          toleranciaMaxDias,
           contrasenaInternos,
           contrasenaExternos,
         );
@@ -1454,6 +1490,8 @@ class PantallaModerador {
           incluirHorarios,
           pedidosFueraHorario,
           incluirCodigoBarra,
+          toleranciaMinDias,
+          toleranciaMaxDias,
         );
         this.mostrarLista();
         modal.classList.add("hidden");

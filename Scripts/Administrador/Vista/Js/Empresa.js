@@ -10,6 +10,14 @@ class EmpresaVista {
     this.incluirHorarios = empresa.incluirHorarios ?? false;
     this.pedidosFueraHorario = empresa.pedidosFueraHorario ?? false;
     this.incluirCodigoBarra = empresa.incluirCodigoBarra ?? false;
+    this.toleranciaMinDias =
+      empresa.toleranciaMinDias != null
+        ? Number(empresa.toleranciaMinDias)
+        : null;
+    this.toleranciaMaxDias =
+      empresa.toleranciaMaxDias != null
+        ? Number(empresa.toleranciaMaxDias)
+        : null;
     this.logo_url = empresa.logo_url;
   }
 
@@ -21,6 +29,8 @@ class EmpresaVista {
     incluirHorarios,
     pedidosFueraHorario,
     incluirCodigoBarra,
+    toleranciaMinDias,
+    toleranciaMaxDias,
   ) {
     this.nombre = nombre;
     this.telefono = telefono;
@@ -29,6 +39,8 @@ class EmpresaVista {
     this.incluirHorarios = incluirHorarios;
     this.pedidosFueraHorario = pedidosFueraHorario;
     this.incluirCodigoBarra = incluirCodigoBarra;
+    this.toleranciaMinDias = toleranciaMinDias;
+    this.toleranciaMaxDias = toleranciaMaxDias;
   }
 
   mostrarUna() {
@@ -257,6 +269,10 @@ class EmpresaVista {
           <input type="text" id="nombre" name="nombre" value="${this.nombre}" required>
         </div>
         <div class="form-group">
+          <label for="imagen">Imagen</label>
+          <input type="file" id="imagen" name="imagen" accept="image/*">
+        </div>
+        <div class="form-group">
           <label for="telefono">Nro de telefono</label>
           <input type="text" id="telefono" name="telefono" value="${this.telefono}" maxlength=18 >
         </div>
@@ -280,10 +296,7 @@ class EmpresaVista {
         </div>
         <input type="hidden" name="tieneCarrito" id="tieneCarrito" value="${!!this.tieneCarrito}">
         <input type="hidden" name="deshabilitarExcel" id="deshabilitarExcel" value="${!!this.deshabilitarExcel}">
-        <div class="form-group">
-          <label for="imagen">Imagen</label>
-          <input type="file" id="imagen" name="imagen" accept="image/*">
-        </div>
+
         <div class="form-group">
           <label for="usuario">Usuario</label>
           <input type="text" id="usuario" name="usuario" value="${moderador.nombre}" required>
@@ -394,6 +407,10 @@ class EmpresaVista {
           <input type="text" id="nombre" name="nombre" value="${this.nombre}" required>
         </div>
         <div class="form-group">
+          <label for="imagen">Imagen</label>
+          <input type="file" id="imagen" name="imagen" accept="image/*">
+        </div>
+        <div class="form-group">
           <label for="telefono">Nro de telefono</label>
           <input type="text" id="telefono" name="telefono" value="${this.telefono}" maxlength=18>
         </div>
@@ -455,10 +472,32 @@ class EmpresaVista {
           id="incluirCodigoBarra"
           value="${!!this.incluirCodigoBarra}">
 
+        <text id="titulo-tolerancia" style="margin: 10px 0px; display: flex;">Tolerancia de actualización para artículos</text>
+
         <div class="form-group">
-          <label for="imagen">Imagen</label>
-          <input type="file" id="imagen" name="imagen" accept="image/*">
+          <label for="toleranciaMinDias">Tolerancia mínima (días)</label>
+          <input
+            type="number"
+            id="toleranciaMinDias"
+            name="toleranciaMinDias"
+            min="0"
+            step="1"
+            inputmode="numeric"
+            value="${this.toleranciaMinDias ?? ""}">
         </div>
+
+        <div class="form-group">
+          <label for="toleranciaMaxDias">Tolerancia máxima (días)</label>
+          <input
+            type="number"
+            id="toleranciaMaxDias"
+            name="toleranciaMaxDias"
+            min="0"
+            step="1"
+            inputmode="numeric"
+            value="${this.toleranciaMaxDias ?? ""}">
+        </div>
+
         <div class="form-group">
           <label for="usuario">Usuario</label>
           <input type="text" id="usuario" name="usuario" value="${moderador.nombre}" required>

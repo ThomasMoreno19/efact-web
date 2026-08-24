@@ -12,6 +12,7 @@ class Carrito {
       tiene_existencia: false,
       precio: null,
       precios: {},
+      consultarPrecio: false,
     };
 
     if (articulo.nombre !== undefined) {
@@ -19,6 +20,7 @@ class Carrito {
       copia.nombre = articulo.nombre;
       copia.existencia = articulo.existencia;
       copia.tiene_existencia = articulo.tiene_existencia;
+      copia.consultarPrecio = !!articulo.consultarPrecio;
 
       copia.precios = {
         1: articulo.precio1,
@@ -28,6 +30,7 @@ class Carrito {
       copia.nombre = articulo.dataset.nombre;
       copia.existencia = articulo.dataset.existencia;
       copia.tiene_existencia = articulo.dataset.tiene_existencia;
+      copia.consultarPrecio = articulo.dataset.consultarPrecio === "true";
 
       copia.precios = {
         1: articulo.dataset.precio1,
@@ -56,12 +59,14 @@ class Carrito {
   }
 
   obtenerTotal() {
-    const total = this.articulos.reduce(
-      (total, articulo) =>
+    const total = this.articulos.reduce((total, articulo) => {
+      if (articulo.consultarPrecio) return total;
+
+      return (
         total +
-        Number(this.eliminarPuntoPrecio(articulo.precio) * articulo.cantidad),
-      0,
-    );
+        Number(this.eliminarPuntoPrecio(articulo.precio) * articulo.cantidad)
+      );
+    }, 0);
     return this.insertarPuntoPrecio(total);
   }
 

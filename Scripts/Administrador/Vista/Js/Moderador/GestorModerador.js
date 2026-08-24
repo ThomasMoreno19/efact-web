@@ -738,6 +738,8 @@ class GestorModerador {
     incluirHorarios,
     pedidosFueraHorario,
     incluirCodigoBarra,
+    toleranciaMinDias,
+    toleranciaMaxDias,
     contrasenaInterno,
     contrasenaExterno,
   ) {
@@ -750,6 +752,8 @@ class GestorModerador {
       incluirHorarios: incluirHorarios,
       pedidosFueraHorario: pedidosFueraHorario,
       incluirCodigoBarra: incluirCodigoBarra,
+      toleranciaMinDias: toleranciaMinDias,
+      toleranciaMaxDias: toleranciaMaxDias,
     };
     if (contrasenaInterno) {
       bodyData.contrasenaInterno = contrasenaInterno;

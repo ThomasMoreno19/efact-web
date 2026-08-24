@@ -455,12 +455,21 @@ class ModalCarrito {
       if (typeof articulo.cantidad === "undefined") articulo.cantidad = 1;
       if (!articulo.observaciones) articulo.observaciones = ["", "", ""];
 
-      const precioBase = this.carrito.eliminarPuntoPrecio(articulo.precio);
+      const consultarPrecio = !!articulo.consultarPrecio;
 
-      const subtotal = precioBase * articulo.cantidad;
+      const precioBase = consultarPrecio
+        ? null
+        : this.carrito.eliminarPuntoPrecio(articulo.precio);
 
-      const precioFormateado = this.carrito.insertarPuntoPrecio(precioBase);
-      const subtotalFormateado = this.carrito.insertarPuntoPrecio(subtotal);
+      const subtotal = consultarPrecio ? null : precioBase * articulo.cantidad;
+
+      const precioDisplay = consultarPrecio
+        ? "Consultar"
+        : `$${this.carrito.insertarPuntoPrecio(precioBase)} c/u`;
+
+      const subtotalDisplay = consultarPrecio
+        ? "Consultar"
+        : `$${this.carrito.insertarPuntoPrecio(subtotal)}`;
 
       const bloque = document.createElement("div");
       bloque.classList.add("bloque-articulo");
@@ -472,7 +481,7 @@ class ModalCarrito {
             this.carritoSinPedidos ? ` style="flex-direction: column; >"` : ">"
           }
             <div class="col-nombre">${articulo.nombre}</div>
-            <div class="col-precio">$${precioFormateado} c/u</div>
+            <div class="col-precio">${precioDisplay}</div>
           </div>
 
           ${
@@ -507,7 +516,7 @@ class ModalCarrito {
 
         <div class="info-extra">
           <div class="subtotal-eliminar">
-            <div class="celda col-subtotal">$${subtotalFormateado}</div>
+            <div class="celda col-subtotal">${subtotalDisplay}</div>
             <button class="btn-eliminar" data-id="${articulo.id}">
               ${this.trashSVG}
             </button>
@@ -910,8 +919,13 @@ class ModalCarrito {
 
       mensaje += `#codi:${id}`;
       mensaje += ` #cant:${cant}`;
-      if (!this.esInterno)
-        mensaje += ` #subt:$${this.carrito.insertarPuntoPrecio(String(precioUnitario * a.cantidad))}`;
+      if (!this.esInterno) {
+        if (a.consultarPrecio) {
+          mensaje += ` #subt:consultar`;
+        } else {
+          mensaje += ` #subt:$${this.carrito.insertarPuntoPrecio(String(precioUnitario * a.cantidad))}`;
+        }
+      }
       if (this.esInterno) mensaje += ` #exist:${existencia}`;
       mensaje += ` #desc:${nombre}`;
 

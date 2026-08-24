@@ -846,6 +846,9 @@ class PantallaCliente {
           this.empresa.imagenesEnArticulos,
           estaSeleccionado,
           this.esInterno,
+          false,
+          this.empresa.toleranciaMinDias,
+          this.empresa.toleranciaMaxDias,
         ),
       );
     }
@@ -964,6 +967,9 @@ class PantallaCliente {
           this.empresa.imagenesEnArticulos,
           estaSeleccionado,
           this.esInterno,
+          false,
+          this.empresa.toleranciaMinDias,
+          this.empresa.toleranciaMaxDias,
         ),
       );
     });
@@ -981,72 +987,6 @@ class PantallaCliente {
       if (articulo.dataset.articuloId == id)
         articulo.classList.remove("seleccionado");
     });
-  }
-
-  removerClon(clon) {
-    const index = this.listaArticulosSeleccionados.findIndex((id) => {
-      if (id) return id === clon.dataset.articuloId;
-    });
-    if (index !== -1) this.listaArticulosSeleccionados.splice(index, 1);
-  }
-
-  /* Obtiene el container del rubro por su id */
-  obtenerContainerRubro(idRubro) {
-    return document.querySelector(
-      `.container-rubro[data-rubro-id="${idRubro}"]`,
-    );
-  }
-
-  /* Obtiene todos los artículos dentro de un container de rubro */
-  obtenerArticulosDeRubro(containerRubro) {
-    return Array.from(containerRubro.querySelectorAll(".articulo"));
-  }
-
-  /* Crea una lista plana a partir de artículos filtrados (no usa texto, reutiliza lógica) */
-  crearListaPlanaDesdeArticulos(articulosFiltrados, mensajeVacio) {
-    const listaPlana = document.createElement("div");
-    listaPlana.classList.add("lista-plana");
-
-    if (articulosFiltrados.length === 0) {
-      listaPlana.id = "lista-vacia";
-      listaPlana.textContent = mensajeVacio;
-      return listaPlana;
-    }
-
-    articulosFiltrados.forEach((a) => {
-      const clon = a.cloneNode(true);
-      if (clon.no_procesado)
-        clon.addEventListener("click", () => {
-          this.clonesSeleccionados.push(clon);
-          const id = Number(clon.dataset.articuloId);
-          if (!this.listaArticulosSeleccionados.includes(id)) {
-            clon.classList.add("seleccionado");
-            this.listaArticulosSeleccionados.push(
-              Number(clon.dataset.articuloId),
-            );
-            this.carrito.agregarArticulo(clon, 1);
-            this.seleccionarArticulo(id);
-          } else {
-            this.clonesSeleccionados = this.clonesSeleccionados.filter(
-              (c) => c.dataset.articuloId != id,
-            );
-            clon.classList.remove("seleccionado");
-            this.carrito.eliminarArticulo(id);
-            this.listaArticulosSeleccionados =
-              this.listaArticulosSeleccionados.filter((x) => x !== id);
-            this.sacarArticulo(id);
-          }
-          this.cantidadArticulosCarrito.textContent =
-            this.listaArticulosSeleccionados.length;
-          this.botonCarrito.classList.toggle(
-            "hidden",
-            this.listaArticulosSeleccionados.length === 0,
-          );
-        });
-      listaPlana.appendChild(clon);
-    });
-
-    return listaPlana;
   }
 
   volverAtras() {
@@ -1128,35 +1068,6 @@ class PantallaCliente {
     telefono.classList.add("copiable");
     telefono.removeEventListener("click", this.onClickTelefono);
     telefono.addEventListener("click", this.onClickTelefono);
-  }
-
-  normalizarTexto(texto) {
-    return texto
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-  }
-
-  cambiarHeaderPorRubro(nombreRubro, logoRubro) {
-    if (!this.headerOriginal) {
-      this.headerOriginal = {
-        titulo: this.tituloPagina.textContent,
-        logo: this.imagenHeader.src,
-      };
-    }
-    this.infoExtra.classList.add("hidden");
-
-    this.tituloPagina.textContent = nombreRubro;
-
-    if (logoRubro && logoRubro.trim() !== "") {
-      this.imagenHeader.src = logoRubro;
-      this.imagenHeader.style.transition =
-        "height 0.3s ease, transform 0.3s ease, opacity 0.8s ease";
-      this.imagenHeader.style.opacity = "0";
-      this.imagenHeader.onload = () => {
-        this.imagenHeader.style.opacity = "1";
-      };
-    }
   }
 
   articuloSeleccionado(articulo) {
@@ -1303,81 +1214,6 @@ class PantallaCliente {
     return;
   }
 
-  toSegments(diaIndex, apertura, cierre) {
-    const startMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(apertura);
-    let endMin = diaIndex * this.MINUTOS_DIA + this.timeToMinutes(cierre);
-
-    if (this.timeToMinutes(cierre) <= this.timeToMinutes(apertura)) {
-      endMin += this.MINUTOS_DIA;
-    }
-
-    return [{ start: startMin, end: endMin }];
-  }
-
-  overlap(a, b) {
-    return a.start < b.end && b.start < a.end;
-  }
-
-  formatearFechaCompleta(fechaISO) {
-    if (!fechaISO) return null;
-    const fecha = String(fechaISO).trim();
-    const partesNumericas = fecha.match(/\d+/g) || [];
-
-    if (partesNumericas.length === 3) {
-      const [a, b, c] = partesNumericas;
-      let dd = "";
-      let mm = "";
-      let yyyy = "";
-
-      if (a.length === 4) {
-        yyyy = a;
-        mm = b;
-        dd = c;
-      } else {
-        dd = a;
-        mm = b;
-        yyyy = c;
-      }
-
-      const ddNorm = String(parseInt(dd, 10)).padStart(2, "0");
-      const mmNorm = String(parseInt(mm, 10)).padStart(2, "0");
-      const yyyyNorm = String(parseInt(yyyy, 10)).padStart(4, "0");
-      if (!this.esFechaCompletaValida(ddNorm, mmNorm, yyyyNorm)) return null;
-      return `${ddNorm}/${mmNorm}/${yyyyNorm}`;
-    }
-
-    if (/^\d{8}$/.test(fecha)) {
-      const dd = fecha.slice(0, 2);
-      const mm = fecha.slice(2, 4);
-      const yyyy = fecha.slice(4, 8);
-      if (!this.esFechaCompletaValida(dd, mm, yyyy)) return null;
-      return `${dd}/${mm}/${yyyy}`;
-    }
-
-    return null;
-  }
-
-  esFechaCompletaValida(dia, mes, anio) {
-    const dd = Number(dia);
-    const mm = Number(mes);
-    const yyyy = Number(anio);
-    if (
-      !Number.isInteger(dd) ||
-      !Number.isInteger(mm) ||
-      !Number.isInteger(yyyy)
-    )
-      return false;
-    if (mm < 1 || mm > 12 || dd < 1 || dd > 31) return false;
-    if (yyyy < 1000 || yyyy > 9999) return false;
-
-    const fecha = new Date(yyyy, mm - 1, dd);
-    return (
-      fecha.getFullYear() === yyyy &&
-      fecha.getMonth() + 1 === mm &&
-      fecha.getDate() === dd
-    );
-  }
-
   timeToMinutes(hhmm) {
     const [h, m] = hhmm.split(":").map(Number);
     return h * 60 + m;
@@ -1391,34 +1227,6 @@ class PantallaCliente {
         ? `https://wa.me/${numero}`
         : `https://web.whatsapp.com/send?phone=${numero}`;
       window.open(url, "_blank");
-    });
-  }
-
-  modalConfirmacion(texto, callbackConfirmar) {
-    const modal = document.createElement("div");
-
-    modal.classList.add("modal");
-
-    modal.innerHTML = `
-      <div class="modal-box">
-        <p>${texto}</p>
-
-        <div class="modal-actions">
-          <button id="cancelar" class="boton-modal">Cancelar</button>
-          <button id="confirmar" class="boton-modal">Confirmar</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    modal.querySelector("#confirmar").addEventListener("click", () => {
-      callbackConfirmar();
-      modal.remove();
-    });
-
-    modal.querySelector("#cancelar").addEventListener("click", () => {
-      modal.remove();
     });
   }
 

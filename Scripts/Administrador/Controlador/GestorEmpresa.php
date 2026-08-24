@@ -240,6 +240,8 @@ class GestorEmpresa
     $incluirHorarios = $datos['incluirHorarios'];
     $pedidosFueraHorario = $datos['pedidosFueraHorario'];
     $incluirCodigoBarra = $datos['incluirCodigoBarra'];
+    $toleranciaMinDias = $this->normalizarDiasTolerancia($datos['toleranciaMinDias'] ?? null);
+    $toleranciaMaxDias = $this->normalizarDiasTolerancia($datos['toleranciaMaxDias'] ?? null);
     $contrasenaInterno = $datos['contrasenaInterno'] ?? null;
     $contrasenaExterno = $datos['contrasenaExterno'] ?? null;
 
@@ -249,9 +251,21 @@ class GestorEmpresa
       return;
     }
 
+    if ($toleranciaMinDias !== null && $toleranciaMaxDias === null) {
+      http_response_code(400);
+      echo json_encode(['error' => 'Si se define una tolerancia mínima, es obligatorio definir la tolerancia máxima.']);
+      return;
+    }
+
+    if ($toleranciaMinDias !== null && $toleranciaMaxDias !== null && $toleranciaMaxDias <= $toleranciaMinDias) {
+      http_response_code(400);
+      echo json_encode(['error' => 'La tolerancia máxima debe ser mayor que la mínima.']);
+      return;
+    }
+
 
     try {
-      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $imagenesEnArticulos, $incluirHorarios, $pedidosFueraHorario, $incluirCodigoBarra);
+      $empresaModificada = $this->empresaRepositorio->modificarParaModerador($id_empresa, $nombre, $ubicacion, $telefono, $imagenesEnArticulos, $incluirHorarios, $pedidosFueraHorario, $incluirCodigoBarra, $toleranciaMinDias, $toleranciaMaxDias);
 
       if ($contrasenaInterno !== null && $contrasenaInterno !== '') {
         $this->gestorInterno->modificar($id_empresa, $contrasenaInterno);
@@ -271,6 +285,21 @@ class GestorEmpresa
     }
   }
 
+
+  private function normalizarDiasTolerancia($valor): ?int
+  {
+    if ($valor === null || $valor === '') {
+      return null;
+    }
+
+    $entero = filter_var($valor, FILTER_VALIDATE_INT);
+
+    if ($entero === false) {
+      return null;
+    }
+
+    return $entero;
+  }
 
   private function modificarLogo(): void
   {

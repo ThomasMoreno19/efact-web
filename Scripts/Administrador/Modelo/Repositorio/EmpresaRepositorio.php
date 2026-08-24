@@ -34,6 +34,8 @@ class EmpresaRepositorio
         'incluirHorarios' => $data['incluirHorarios'],
         'pedidosFueraHorario' => $data['pedidosFueraHorario'],
         'incluirCodigoBarra' => $data['incluirCodigoBarra'],
+        'toleranciaMinDias' => $data['toleranciaMinDias'] ?? null,
+        'toleranciaMaxDias' => $data['toleranciaMaxDias'] ?? null,
       ];
     }
 
@@ -61,6 +63,8 @@ class EmpresaRepositorio
           'incluirHorarios' => $data['incluirHorarios'],
           'pedidosFueraHorario' => $data['pedidosFueraHorario'],
           'incluirCodigoBarra' => $data['incluirCodigoBarra'],
+          'toleranciaMinDias' => $data['toleranciaMinDias'] ?? null,
+          'toleranciaMaxDias' => $data['toleranciaMaxDias'] ?? null,
         ];
       }
     } catch (PDOException $e) {
@@ -105,7 +109,7 @@ class EmpresaRepositorio
     }
   }
 
-  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $imagenesEnArticulos, bool $incluirHorarios, bool $pedidosFueraHorario, bool $incluirCodigoBarra): bool
+  public function modificarParaModerador(int $id, string $nombre, string $ubicacion, string $telefono, bool $imagenesEnArticulos, bool $incluirHorarios, bool $pedidosFueraHorario, bool $incluirCodigoBarra, ?int $toleranciaMinDias, ?int $toleranciaMaxDias): bool
   {
     try {
       $sql = "UPDATE empresa
@@ -115,7 +119,9 @@ class EmpresaRepositorio
           imagenesEnArticulos = :imagenesEnArticulos,
           incluirHorarios = :incluirHorarios,
           pedidosFueraHorario = :pedidosFueraHorario,
-          incluirCodigoBarra = :incluirCodigoBarra";
+          incluirCodigoBarra = :incluirCodigoBarra,
+          toleranciaMinDias = :toleranciaMinDias,
+          toleranciaMaxDias = :toleranciaMaxDias";
 
       $sql .= " WHERE id = :id;";
 
@@ -129,6 +135,19 @@ class EmpresaRepositorio
       $stmt->bindParam(':incluirHorarios', $incluirHorarios, PDO::PARAM_BOOL);
       $stmt->bindParam(':pedidosFueraHorario', $pedidosFueraHorario, PDO::PARAM_BOOL);
       $stmt->bindParam(':incluirCodigoBarra', $incluirCodigoBarra, PDO::PARAM_BOOL);
+
+      if ($toleranciaMinDias === null) {
+        $stmt->bindValue(':toleranciaMinDias', null, PDO::PARAM_NULL);
+      } else {
+        $stmt->bindValue(':toleranciaMinDias', $toleranciaMinDias, PDO::PARAM_INT);
+      }
+
+      if ($toleranciaMaxDias === null) {
+        $stmt->bindValue(':toleranciaMaxDias', null, PDO::PARAM_NULL);
+      } else {
+        $stmt->bindValue(':toleranciaMaxDias', $toleranciaMaxDias, PDO::PARAM_INT);
+      }
+
       return $stmt->execute();
     } catch (PDOException $e) {
       error_log("Error al modificar la empresa: " . $e->getMessage());

@@ -50,6 +50,7 @@ class ArticuloVista {
     this.actualizado_en = actualizado_en;
     this.video_url = video_url;
     this.logo_url = logo_url;
+    this.consultarPrecio = false;
     this.videoSVG = `<svg width="35px" height="35px" viewBox="3 3 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M12 3C4.5885 3 3 4.5885 3 12C3 19.4115 4.5885 21 12 21C19.4115 21 21 19.4115 21 12C21 4.5885 19.4115 3 12 3ZM15.224 13.0171C16.011 12.5674 16.011 11.4326 15.224 10.9829L10.7817 8.44446C10.0992 8.05446 9.25 8.54727 9.25 9.33333L9.25 14.6667C9.25 15.4527 10.0992 15.9455 10.7817 15.5555L15.224 13.0171Z" fill="#ffffff"/>
       <path d="M3 12C3 4.5885 4.5885 3 12 3C19.4115 3 21 4.5885 21 12C21 19.4115 19.4115 21 12 21C4.5885 21 3 19.4115 3 12Z" stroke="#ffffff00" stroke-width="2"/>
@@ -71,6 +72,8 @@ class ArticuloVista {
     seleccionado = false,
     esInterno = false,
     esModerador = false,
+    toleranciaMinDias = null,
+    toleranciaMaxDias = null,
   ) {
     const divArticulo = document.createElement("div");
     divArticulo.classList.add("articulo");
@@ -157,7 +160,19 @@ class ArticuloVista {
     const precioActual = this[`precio${precio_activo}`] ?? this.precio1;
     const pPrecio = document.createElement("p");
     pPrecio.id = "id-articulo";
-    pPrecio.textContent = "$" + precioActual;
+
+    const diasDesdeActualizacion = this.calcularDiasDesdeActualizacion();
+    const estadoActualizacion = this.obtenerEstadoActualizacion(
+      diasDesdeActualizacion,
+      toleranciaMinDias,
+      toleranciaMaxDias,
+    );
+
+    this.consultarPrecio = estadoActualizacion === "vencido";
+    divArticulo.dataset.consultarPrecio = String(this.consultarPrecio);
+
+    pPrecio.textContent =
+      estadoActualizacion === "vencido" ? "Consultar" : "$" + precioActual;
 
     const valorUnidad = this.unidad_medida;
     const textoUnidad = String(valorUnidad ?? "").trim();
@@ -215,6 +230,27 @@ class ArticuloVista {
       const badgeActualizado = document.createElement("div");
       badgeActualizado.classList.add("badge-actualizado");
       badgeActualizado.textContent = this.actualizado_en;
+
+      if (estadoActualizacion === "vencido") {
+        badgeActualizado.style.color = "#e74c3c";
+        badgeActualizado.title = "consultar precio";
+        badgeActualizado.append(
+          this.crearIconoBadge(
+            "../../../../Archivos/Iconos/error.svg",
+            "Peligro",
+          ),
+        );
+      } else if (estadoActualizacion === "enRevision") {
+        badgeActualizado.style.color = "#f4b400";
+        badgeActualizado.title = "precio en revisión";
+        badgeActualizado.append(
+          this.crearIconoBadge(
+            "../../../../Archivos/Iconos/warning.svg",
+            "Advertencia",
+          ),
+        );
+      }
+
       divArticulo.appendChild(badgeActualizado);
     }
 
@@ -270,6 +306,76 @@ class ArticuloVista {
     }
 
     return divArticulo;
+  }
+
+  calcularDiasDesdeActualizacion() {
+    if (!this.actualizado_en) return null;
+
+    const partes = String(this.actualizado_en).split("/").map(Number);
+
+    if (partes.length !== 3 || partes.some((n) => Number.isNaN(n))) {
+      return null;
+    }
+
+    const [dd, mm, yyyy] = partes;
+    const fechaActualizacion = new Date(yyyy, mm - 1, dd);
+    fechaActualizacion.setHours(0, 0, 0, 0);
+
+    if (
+      fechaActualizacion.getFullYear() !== yyyy ||
+      fechaActualizacion.getMonth() + 1 !== mm ||
+      fechaActualizacion.getDate() !== dd
+    ) {
+      return null;
+    }
+
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+
+    const milisegundos = hoy.getTime() - fechaActualizacion.getTime();
+
+    return Math.floor(milisegundos / (1000 * 60 * 60 * 24));
+  }
+
+  obtenerEstadoActualizacion(
+    diasDesdeActualizacion,
+    toleranciaMinDias,
+    toleranciaMaxDias,
+  ) {
+    if (diasDesdeActualizacion === null) return null;
+
+    const hayMin =
+      toleranciaMinDias !== null && toleranciaMinDias !== undefined;
+    const hayMax =
+      toleranciaMaxDias !== null && toleranciaMaxDias !== undefined;
+
+    if (!hayMin && !hayMax) return null;
+
+    if (hayMax && diasDesdeActualizacion > toleranciaMaxDias) {
+      return "vencido";
+    }
+
+    if (
+      hayMin &&
+      diasDesdeActualizacion > toleranciaMinDias &&
+      (!hayMax || diasDesdeActualizacion < toleranciaMaxDias)
+    ) {
+      return "enRevision";
+    }
+
+    return null;
+  }
+
+  crearIconoBadge(src, alt) {
+    const icono = document.createElement("img");
+    icono.src = src;
+    icono.alt = alt;
+    icono.style.display = "inline-block";
+    icono.style.width = "14px";
+    icono.style.height = "14px";
+    icono.style.marginLeft = "3px";
+    icono.style.verticalAlign = "middle";
+    return icono;
   }
 
   modalModificar() {
