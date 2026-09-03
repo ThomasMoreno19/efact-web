@@ -80,6 +80,9 @@ class PantallaCliente {
     this.horarios = { horarios: [] };
     this.todosLosArticulos = [];
     this.todosLosRubros = [];
+    this.ofertasActuales = [];
+    this.indiceOfertas = 0;
+    this.tamanoLoteOfertas = 15;
     this.enVistaRubro = false;
     this.botonEscaner = document.getElementById("boton-escaner");
 
@@ -812,15 +815,23 @@ class PantallaCliente {
   }
 
   handleScroll() {
-    if (this.listaArticulos.classList.contains("hidden")) {
+    if (!this.listaArticulos.classList.contains("hidden")) {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 100
+      ) {
+        this.cargarSiguienteLote();
+      }
       return;
     }
 
-    if (
-      window.innerHeight + window.scrollY >=
-      document.documentElement.scrollHeight - 100
-    ) {
-      this.cargarSiguienteLote();
+    if (!this.listaOfertas.classList.contains("hidden")) {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 100
+      ) {
+        this.cargarSiguienteLoteOfertas();
+      }
     }
   }
 
@@ -954,11 +965,35 @@ class PantallaCliente {
       return palabras.every((palabra) => nombre.includes(palabra));
     });
 
-    ofertas.forEach((oferta) => {
+    this.ofertasActuales = ofertas;
+    this.indiceOfertas = 0;
+
+    if (ofertas.length === 0) {
+      this.listaOfertas.innerHTML = `
+      <p class="texto-vacio">
+        No se encontraron ofertas.
+      </p>
+    `;
+      return;
+    }
+
+    this.cargarSiguienteLoteOfertas();
+  }
+
+  cargarSiguienteLoteOfertas() {
+    const fin = Math.min(
+      this.indiceOfertas + this.tamanoLoteOfertas,
+      this.ofertasActuales.length,
+    );
+
+    for (let i = this.indiceOfertas; i < fin; i++) {
+      const oferta = this.ofertasActuales[i];
+
       const vista = new ArticuloVista(oferta);
-      const estaSeleccionado = this.listaArticulosSeleccionados.some((id) => {
-        if (id) return id === oferta.id;
-      });
+
+      const estaSeleccionado = this.listaArticulosSeleccionados.includes(
+        oferta.id,
+      );
 
       this.listaOfertas.appendChild(
         vista.mostrarUna(
@@ -972,7 +1007,9 @@ class PantallaCliente {
           this.empresa.toleranciaMaxDias,
         ),
       );
-    });
+    }
+
+    this.indiceOfertas = fin;
   }
 
   seleccionarArticulo(id) {
