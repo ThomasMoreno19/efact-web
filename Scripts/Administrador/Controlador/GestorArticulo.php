@@ -333,7 +333,7 @@ class GestorArticulo
     if ($archivos) {
       foreach ($archivos as $archivo) {
         if (file_exists($archivo)) {
-          @unlink($archivo); // el @ evita warnings si ya fue borrado
+          @unlink($archivo);
         }
       }
     }

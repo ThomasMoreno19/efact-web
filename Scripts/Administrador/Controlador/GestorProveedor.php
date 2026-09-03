@@ -130,6 +130,7 @@ class GestorProveedor
         $id_empresa
       );
     }
+    $this->borrarCacheTodos($id_empresa);
 
     return true;
   }

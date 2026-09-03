@@ -131,6 +131,7 @@ class GestorMarca
         $id_empresa
       );
     }
+    $this->borrarCacheTodos($id_empresa);
 
     return true;
   }

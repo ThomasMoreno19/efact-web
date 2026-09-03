@@ -190,6 +190,8 @@ class GestorRubro
       );
     }
 
+    $this->borrarCacheTodos($id_empresa);
+
     return true;
   }
 

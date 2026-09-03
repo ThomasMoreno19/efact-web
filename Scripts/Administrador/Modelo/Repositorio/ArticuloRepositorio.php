@@ -128,11 +128,39 @@ class ArticuloRepositorio
     }
   }
 
+  public function obtenerIdsValidos(int $id_empresa): array
+  {
+    $ids = ['proveedor' => [], 'rubro' => [], 'marca' => []];
+
+    foreach (['proveedor', 'rubro', 'marca'] as $tabla) {
+      $stmt = $this->pdo->prepare("SELECT id FROM $tabla WHERE id_empresa = :e");
+      $stmt->execute([':e' => $id_empresa]);
+      $ids[$tabla] = array_flip($stmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+
+    return $ids;
+  }
+
   public function crearListaCsv(array $articulos, int $id_empresa): array
   {
     if (empty($articulos)) {
       return [];
     }
+
+    $idsValidos = $this->obtenerIdsValidos($id_empresa);
+
+    foreach ($articulos as &$a) {
+      if (!isset($idsValidos['proveedor'][$a['id_proveedor'] ?? 0])) {
+        $a['id_proveedor'] = 0;
+      }
+      if (!isset($idsValidos['rubro'][$a['id_rubro'] ?? 0])) {
+        $a['id_rubro'] = 0;
+      }
+      if (!isset($idsValidos['marca'][$a['id_marca'] ?? 0])) {
+        $a['id_marca'] = 0;
+      }
+    }
+    unset($a);
 
     $unicos = [];
     $bajas = [];
@@ -290,7 +318,21 @@ class ArticuloRepositorio
 
       return $unicos;
     } catch (PDOException $e) {
-      throw $e;
+      $mensaje = $e->getMessage();
+
+      if (preg_match('/at row (\d+)/i', $mensaje, $coincidencias)) {
+        $indice = (int)$coincidencias[1] - 1;
+
+        if (isset($unicos[$indice])) {
+          $filaExcel = $unicos[$indice]['fila_excel'] ?? null;
+
+          if ($filaExcel !== null) {
+            $mensaje .= " | Fila del Excel: $filaExcel";
+          }
+        }
+      }
+
+      throw new PDOException($mensaje, (int)$e->getCode());
     }
   }
 
@@ -312,7 +354,6 @@ class ArticuloRepositorio
       }
     }
 
-    // Eliminar artículos
     if (!empty($idsBaja)) {
 
       $placeholders = implode(',', array_fill(0, count($idsBaja), '?'));
@@ -334,7 +375,6 @@ class ArticuloRepositorio
       $stmt->execute();
     }
 
-    // Insertar / Actualizar
     if (!empty($articulosAlta)) {
       $this->crearListaCsv($articulosAlta, $id_empresa);
     }

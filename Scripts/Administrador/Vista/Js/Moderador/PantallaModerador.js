@@ -79,6 +79,10 @@ class PantallaModerador {
     this.todosLosArticulos = [];
     this.arrayContainerRubro = [];
 
+    this.ofertasActuales = [];
+    this.indiceOfertas = 0;
+    this.tamanoLoteOfertas = 15;
+
     this.todosLosRubros = [];
     this.todasLasMarcas = [];
     this.todosLosProveedores = [];
@@ -485,25 +489,47 @@ class PantallaModerador {
       return palabras.every((palabra) => nombre.includes(palabra));
     });
 
-    ofertas.forEach((oferta) => {
+    this.ofertasActuales = ofertas;
+    this.indiceOfertas = 0;
+
+    if (ofertas.length === 0) {
+      this.listaOfertas.innerHTML = `
+      <p class="texto-vacio">
+        No se encontraron ofertas.
+      </p>
+    `;
+      return;
+    }
+
+    this.cargarSiguienteLoteOfertas();
+  }
+
+  cargarSiguienteLoteOfertas() {
+    const fin = Math.min(
+      this.indiceOfertas + this.tamanoLoteOfertas,
+      this.ofertasActuales.length,
+    );
+
+    for (let i = this.indiceOfertas; i < fin; i++) {
+      const oferta = this.ofertasActuales[i];
+
       const vista = new ArticuloVista(oferta);
-      const estaSeleccionado = this.listaArticulosSeleccionados.some((id) => {
-        if (id) return id === oferta.id;
-      });
 
       this.listaOfertas.appendChild(
         vista.mostrarUna(
           1,
           true,
           this.empresa.imagenesEnArticulos,
-          estaSeleccionado,
+          false,
           false,
           true,
           this.empresa.toleranciaMinDias,
           this.empresa.toleranciaMaxDias,
         ),
       );
-    });
+    }
+
+    this.indiceOfertas = fin;
   }
   actualizarArticulos() {
     this.articulosActuales = [];
@@ -583,15 +609,23 @@ class PantallaModerador {
   }
 
   handleScroll() {
-    if (this.listaArticulos.classList.contains("hidden")) {
+    if (!this.listaArticulos.classList.contains("hidden")) {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 100
+      ) {
+        this.cargarSiguienteLote();
+      }
       return;
     }
 
-    if (
-      window.innerHeight + window.scrollY >=
-      document.documentElement.scrollHeight - 100
-    ) {
-      this.cargarSiguienteLote();
+    if (!this.listaOfertas.classList.contains("hidden")) {
+      if (
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 100
+      ) {
+        this.cargarSiguienteLoteOfertas();
+      }
     }
   }
 
