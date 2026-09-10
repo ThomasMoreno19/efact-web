@@ -1,6 +1,7 @@
 <?php
 
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Repositorio/MarcaRepositorio.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Servicio/ServicioImagen.php';
 
 class GestorMarca
 {
@@ -183,52 +184,12 @@ class GestorMarca
 
   private function subirLogo(): void
   {
-    $id_empresa = $_POST['id_empresa'] ?? null;
-
-    if (!$id_empresa) {
+    try {
+      $resultado = (new ServicioImagen($this->pdo))->guardarArchivo((int)($_POST['id_empresa'] ?? 0), 'Marca', $_FILES['imagen'] ?? []);
+      echo json_encode(['url' => $resultado['url']]);
+    } catch (Throwable $e) {
       http_response_code(400);
-      echo json_encode(['error' => 'No se recibió el id_empresa.']);
-      return;
-    }
-
-    if (empty($_FILES['imagen']['tmp_name'])) {
-      http_response_code(400);
-      echo json_encode(['error' => 'No se ha enviado ningún archivo.']);
-      return;
-    }
-
-    // Carpeta base
-    $directorioBase = $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/Marca/';
-
-    // Carpeta de la empresa
-    $directorioDestino = $directorioBase . $id_empresa . '/';
-
-    // Crear la carpeta si no existe
-    if (!is_dir($directorioDestino)) {
-      if (!mkdir($directorioDestino, 0755, true)) {
-        http_response_code(500);
-        echo json_encode(['error' => 'No se pudo crear el directorio de la empresa.']);
-        return;
-      }
-    }
-
-    $nombreOriginal = basename($_FILES['imagen']['name']);
-    $nombreSinEspacios = str_replace(' ', '-', $nombreOriginal);
-    $nombreArchivo = uniqid() . '-' . $nombreSinEspacios;
-
-    $rutaDestino = $directorioDestino . $nombreArchivo;
-
-    if (move_uploaded_file($_FILES['imagen']['tmp_name'], $rutaDestino)) {
-
-      // Ruta que guardarás en la BD
-      $url = '/Archivos/Logos/Marca/' . $id_empresa . '/' . $nombreArchivo;
-
-      echo json_encode([
-        'url' => $url
-      ]);
-    } else {
-      http_response_code(500);
-      echo json_encode(['error' => 'Error al mover el archivo subido.']);
+      echo json_encode(['error' => $e->getMessage()]);
     }
   }
 

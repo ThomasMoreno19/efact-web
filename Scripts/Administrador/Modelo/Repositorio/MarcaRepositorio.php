@@ -228,6 +228,19 @@ class MarcaRepositorio
     return false;
   }
 
+  public function existeParaEmpresa(int $id, int $id_empresa): bool
+  {
+    $stmt = $this->pdo->prepare('SELECT 1 FROM marca WHERE id = :id AND id_empresa = :id_empresa LIMIT 1');
+    $stmt->execute([':id' => $id, ':id_empresa' => $id_empresa]);
+    return (bool)$stmt->fetchColumn();
+  }
+
+  public function actualizarLogo(int $id, int $id_empresa, string $logoUrl): bool
+  {
+    $stmt = $this->pdo->prepare('UPDATE marca SET logo_url = :logo_url WHERE id = :id AND id_empresa = :id_empresa');
+    return $stmt->execute([':logo_url' => $logoUrl, ':id' => $id, ':id_empresa' => $id_empresa]);
+  }
+
   public function eliminar(int $id, int $id_empresa): bool
   {
     try {

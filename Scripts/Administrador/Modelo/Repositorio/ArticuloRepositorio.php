@@ -245,7 +245,7 @@ class ArticuloRepositorio
       $params[":codigo_barra$i"] = $a['codigo_barra'] ?: null;
       $params[":codigo_proveedor$i"] = $a['codigo_proveedor'] ?: null;
 
-      $params[":logo_url$i"] = '/Archivos/Logos/Vacio.png';
+      $params[":logo_url$i"] = $a['logo_url'] ?? '/Archivos/Logos/Vacio.png';
       $params[":video_url$i"] = '';
       $params[":unidad_medida$i"] = $a['unidad_medida'] ?: null;
 
@@ -303,8 +303,9 @@ class ArticuloRepositorio
           unidad_medida = VALUES(unidad_medida),
           tiene_existencia = VALUES(tiene_existencia),
           minima_existencia = VALUES(minima_existencia),
-          maxima_existencia = VALUES(maxima_existencia),
-          actualizado_en = VALUES(actualizado_en);
+           maxima_existencia = VALUES(maxima_existencia),
+           logo_url = IF(VALUES(logo_url) = '/Archivos/Logos/Vacio.png', logo_url, VALUES(logo_url)),
+           actualizado_en = VALUES(actualizado_en);
   ";
 
     try {
@@ -405,6 +406,19 @@ class ArticuloRepositorio
       error_log("Error al guardar nueva articulo: " . $e->getMessage());
     }
     return false;
+  }
+
+  public function existeParaEmpresa(int $id, int $id_empresa): bool
+  {
+    $stmt = $this->pdo->prepare('SELECT 1 FROM articulo WHERE id = :id AND id_empresa = :id_empresa LIMIT 1');
+    $stmt->execute([':id' => $id, ':id_empresa' => $id_empresa]);
+    return (bool)$stmt->fetchColumn();
+  }
+
+  public function actualizarLogo(int $id, int $id_empresa, string $logoUrl): bool
+  {
+    $stmt = $this->pdo->prepare('UPDATE articulo SET logo_url = :logo_url WHERE id = :id AND id_empresa = :id_empresa');
+    return $stmt->execute([':logo_url' => $logoUrl, ':id' => $id, ':id_empresa' => $id_empresa]);
   }
 
   public function eliminarNoUtilizados(int $id_empresa): bool

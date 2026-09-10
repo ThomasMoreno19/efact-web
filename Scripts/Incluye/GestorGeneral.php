@@ -8,6 +8,7 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/Ges
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorRubro.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorMarca.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorProveedor.php';
+require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorImagen.php';
 require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Controlador/GestorInterno.php';
 
 
@@ -68,6 +69,11 @@ try {
 
     case 'proveedor':
       $controlador = new GestorProveedor($pdo);
+      $controlador->derivarURL($porcionURL);
+      break;
+
+    case 'imagen':
+      $controlador = new GestorImagen($pdo, new ServicioImagen($pdo));
       $controlador->derivarURL($porcionURL);
       break;
 
