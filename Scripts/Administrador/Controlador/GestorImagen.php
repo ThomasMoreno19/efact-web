@@ -25,6 +25,9 @@ class GestorImagen
         case 'cargar-lote':
           $this->cargarLote();
           break;
+        case 'borrar-lote':
+          $this->borrarLote();
+          break;
         default:
           http_response_code(404);
           echo json_encode(['error' => 'Acción de imagen no encontrada.']);
@@ -134,6 +137,23 @@ class GestorImagen
       $this->servicioImagen->invalidarCacheEmpresa($idEmpresa);
     }
     echo json_encode(['success' => true, 'subidas' => $subidas, 'reutilizadas' => $reutilizadas, 'errores' => $errores]);
+  }
+
+  private function borrarLote(): void
+  {
+    $datos = $this->obtenerJson();
+    $idEmpresa = (int)($datos['id_empresa'] ?? 0);
+    $registros = $datos['registros'] ?? [];
+
+    if ($idEmpresa <= 0 || !is_array($registros) || count($registros) > 2000) {
+      throw new InvalidArgumentException('El lote de borrado debe tener una empresa válida y hasta 2000 registros.');
+    }
+    if (!$this->servicioImagen->empresaExiste($idEmpresa)) {
+      throw new InvalidArgumentException('La empresa indicada no existe.');
+    }
+
+    $borradas = $this->servicioImagen->borrarLote($idEmpresa, $registros);
+    echo json_encode(['success' => true, 'borradas' => $borradas]);
   }
 
   private function archivoPorHash(string $hash): ?array

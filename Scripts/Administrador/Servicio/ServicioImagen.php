@@ -7,11 +7,13 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Administrador/Modelo/Reposito
 
 class ServicioImagen
 {
+  private const URL_IMAGEN_VACIA = '/Archivos/Logos/Vacio.png';
+
   private const TIPOS = [
-    'Articulo' => ['tabla' => 'articulo', 'id' => 'id_articulo'],
-    'Marca' => ['tabla' => 'marca', 'id' => 'id_marca'],
-    'Rubro' => ['tabla' => 'rubro', 'id' => 'id_rubro'],
-    'Proveedor' => ['tabla' => 'proveedor', 'id' => 'id_proveedor'],
+    'Articulo' => ['tabla' => 'articulo', 'id' => 'id'],
+    'Marca' => ['tabla' => 'marca', 'id' => 'id'],
+    'Rubro' => ['tabla' => 'rubro', 'id' => 'id'],
+    'Proveedor' => ['tabla' => 'proveedor', 'id' => 'id'],
   ];
   private const MIME_EXTENSIONES = [
     'image/jpeg' => 'jpg',
@@ -180,6 +182,104 @@ class ServicioImagen
     };
   }
 
+  public function borrarLote(int $idEmpresa, array $registros): int
+  {
+    $validos = [];
+    $claves = [];
+
+    foreach ($registros as $registro) {
+      if (!is_array($registro)) {
+        throw new InvalidArgumentException('Registro de borrado de imagen inválido.');
+      }
+
+      $tipo = $this->validarTipo((string)($registro['tipo'] ?? ''));
+      $id = (int)($registro['id_registro'] ?? 0);
+      $fila = (int)($registro['fila_excel'] ?? 0);
+      if ($id <= 0 || $fila <= 0) {
+        throw new InvalidArgumentException(
+          "Fila del Excel: {$fila} | El registro marcado para borrar tiene datos inválidos."
+        );
+      }
+      if (!$this->registroPerteneceEmpresa($tipo, $id, $idEmpresa)) {
+        throw new InvalidArgumentException(
+          "Fila del Excel: {$fila} | El registro {$id} de {$tipo} no existe para la empresa indicada."
+        );
+      }
+
+      $clave = $tipo . ':' . $id;
+      if (isset($claves[$clave])) {
+        continue;
+      }
+      $claves[$clave] = true;
+      $validos[] = ['tipo' => $tipo, 'id' => $id];
+    }
+
+    if (empty($validos)) {
+      return 0;
+    }
+
+    $imagenesParaLimpiar = [];
+    $this->pdo->beginTransaction();
+    try {
+      foreach ($validos as $registro) {
+        $configuracion = self::TIPOS[$registro['tipo']];
+        $tabla = $configuracion['tabla'];
+        $idColumna = $configuracion['id'];
+
+        $stmt = $this->pdo->prepare(
+          "SELECT logo_url FROM {$tabla} WHERE {$idColumna} = :id AND id_empresa = :id_empresa FOR UPDATE"
+        );
+        $stmt->execute([
+          ':id' => $registro['id'],
+          ':id_empresa' => $idEmpresa,
+        ]);
+        $logoUrl = $stmt->fetchColumn();
+        if ($logoUrl === false) {
+          throw new RuntimeException(
+            "El registro {$registro['id']} de {$registro['tipo']} ya no existe para la empresa indicada."
+          );
+        }
+
+        $stmt = $this->pdo->prepare(
+          "UPDATE {$tabla}
+           SET logo_url = :logo_url
+           WHERE {$idColumna} = :id AND id_empresa = :id_empresa"
+        );
+        $stmt->execute([
+          ':logo_url' => self::URL_IMAGEN_VACIA,
+          ':id' => $registro['id'],
+          ':id_empresa' => $idEmpresa,
+        ]);
+
+        $ruta = $this->rutaImagenLocal($registro['tipo'], $idEmpresa, (string)$logoUrl);
+        if ($ruta !== null) {
+          $imagenesParaLimpiar[$ruta] = [
+            'tipo' => $registro['tipo'],
+            'url' => (string)$logoUrl,
+          ];
+        }
+      }
+      $this->pdo->commit();
+    } catch (Throwable $e) {
+      if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+      }
+      throw $e;
+    }
+
+    foreach ($imagenesParaLimpiar as $ruta => $imagen) {
+      if ($this->imagenTieneReferencias($imagen['tipo'], $idEmpresa, $imagen['url'])) {
+        continue;
+      }
+      if (is_file($ruta) && !unlink($ruta)) {
+        throw new RuntimeException('No se pudo eliminar un archivo de imagen sin referencias.');
+      }
+    }
+
+    $this->invalidarCacheEmpresa($idEmpresa);
+    return count($validos);
+  }
+
   public function invalidarCacheEmpresa(int $idEmpresa): void
   {
     $cacheDir = $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cache/';
@@ -202,6 +302,36 @@ class ServicioImagen
   private function directorioEmpresa(int $idEmpresa, string $tipo): string
   {
     return $_SERVER['DOCUMENT_ROOT'] . '/Archivos/Logos/' . $tipo . '/' . $idEmpresa . '/';
+  }
+
+  private function rutaImagenLocal(string $tipo, int $idEmpresa, string $url): ?string
+  {
+    $prefijo = '/Archivos/Logos/' . $tipo . '/' . $idEmpresa . '/';
+    if (!str_starts_with($url, $prefijo)) {
+      return null;
+    }
+
+    $archivo = substr($url, strlen($prefijo));
+    if ($archivo === '' || basename($archivo) !== $archivo || str_contains($archivo, '..')) {
+      return null;
+    }
+
+    return $this->directorioEmpresa($idEmpresa, $tipo) . $archivo;
+  }
+
+  private function imagenTieneReferencias(string $tipo, int $idEmpresa, string $url): bool
+  {
+    $configuracion = self::TIPOS[$tipo];
+    $stmt = $this->pdo->prepare(
+      "SELECT 1 FROM {$configuracion['tabla']}
+       WHERE id_empresa = :id_empresa AND logo_url = :logo_url
+       LIMIT 1"
+    );
+    $stmt->execute([
+      ':id_empresa' => $idEmpresa,
+      ':logo_url' => $url,
+    ]);
+    return $stmt->fetchColumn() !== false;
   }
 
   private function obtenerUrlPorHash(int $idEmpresa, string $tipo, string $hash): ?string
