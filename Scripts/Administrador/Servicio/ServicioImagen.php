@@ -280,6 +280,96 @@ class ServicioImagen
     return count($validos);
   }
 
+  public function limpiarLote(
+    int $idEmpresa,
+    string $tipo,
+    array $idsProcesados,
+    array $idsConImagen
+  ): array {
+    $tipo = $this->validarTipo($tipo);
+    if ($idEmpresa <= 0) {
+      throw new InvalidArgumentException('El id_empresa es inválido.');
+    }
+
+    $idsProcesados = $this->normalizarIds($idsProcesados);
+    $idsConImagen = $this->normalizarIds($idsConImagen);
+    $procesados = array_fill_keys($idsProcesados, true);
+    foreach ($idsConImagen as $id) {
+      if (!isset($procesados[$id])) {
+        throw new InvalidArgumentException(
+          'Un registro con imagen no pertenece al conjunto procesado.'
+        );
+      }
+    }
+
+    $idsSinImagen = array_values(array_diff($idsProcesados, $idsConImagen));
+    $configuracion = self::TIPOS[$tipo];
+    $tabla = $configuracion['tabla'];
+    $idColumna = $configuracion['id'];
+    $registrosLimpiados = 0;
+
+    if (!empty($idsSinImagen)) {
+      $parametros = [':id_empresa' => $idEmpresa];
+      $placeholders = [];
+      foreach ($idsSinImagen as $indice => $id) {
+        $parametro = ':id_' . $indice;
+        $placeholders[] = $parametro;
+        $parametros[$parametro] = $id;
+      }
+      $listaIds = implode(', ', $placeholders);
+
+      $this->pdo->beginTransaction();
+      try {
+        $stmt = $this->pdo->prepare(
+          "SELECT {$idColumna}, logo_url
+           FROM {$tabla}
+           WHERE id_empresa = :id_empresa
+             AND {$idColumna} IN ({$listaIds})
+           FOR UPDATE"
+        );
+        $stmt->execute($parametros);
+        $filas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($filas as $fila) {
+          $logoUrl = trim((string)($fila['logo_url'] ?? ''));
+          if ($logoUrl !== '' && $logoUrl !== self::URL_IMAGEN_VACIA) {
+            $registrosLimpiados++;
+          }
+        }
+
+        $stmt = $this->pdo->prepare(
+          "UPDATE {$tabla}
+           SET logo_url = :logo_url
+           WHERE id_empresa = :id_empresa
+             AND {$idColumna} IN ({$listaIds})"
+        );
+        $stmt->execute([
+          ':logo_url' => self::URL_IMAGEN_VACIA,
+          ...$parametros,
+        ]);
+        $this->pdo->commit();
+      } catch (Throwable $e) {
+        if ($this->pdo->inTransaction()) {
+          $this->pdo->rollBack();
+        }
+        throw $e;
+      }
+    }
+
+    $archivosEliminados = $this->limpiarArchivosSinReferencias(
+      $tipo,
+      $idEmpresa,
+    );
+    if ($registrosLimpiados > 0 || $archivosEliminados > 0) {
+      $this->invalidarCacheEmpresa($idEmpresa);
+    }
+
+    return [
+      'registros_limpiados' => $registrosLimpiados,
+      'archivos_eliminados' => $archivosEliminados,
+    ];
+  }
+
   public function invalidarCacheEmpresa(int $idEmpresa): void
   {
     $cacheDir = $_SERVER['DOCUMENT_ROOT'] . '/Scripts/Cache/';
@@ -332,6 +422,77 @@ class ServicioImagen
       ':logo_url' => $url,
     ]);
     return $stmt->fetchColumn() !== false;
+  }
+
+  private function normalizarIds(array $ids): array
+  {
+    $normalizados = [];
+    foreach ($ids as $valor) {
+      if (
+        !is_int($valor)
+        && !(is_string($valor) && preg_match('/^\d+$/', trim($valor)))
+      ) {
+        throw new InvalidArgumentException('Los IDs de registros son inválidos.');
+      }
+
+      $id = (int)$valor;
+      if ($id <= 0) {
+        throw new InvalidArgumentException('Los IDs de registros son inválidos.');
+      }
+      $normalizados[$id] = $id;
+    }
+
+    return array_values($normalizados);
+  }
+
+  private function limpiarArchivosSinReferencias(string $tipo, int $idEmpresa): int
+  {
+    $configuracion = self::TIPOS[$tipo];
+    $stmt = $this->pdo->prepare(
+      "SELECT logo_url
+       FROM {$configuracion['tabla']}
+       WHERE id_empresa = :id_empresa"
+    );
+    $stmt->execute([':id_empresa' => $idEmpresa]);
+
+    $referencias = [];
+    foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $url) {
+      $url = trim((string)$url);
+      if ($url !== '') {
+        $referencias[$url] = true;
+      }
+    }
+
+    $directorio = $this->directorioEmpresa($idEmpresa, $tipo);
+    if (!is_dir($directorio)) {
+      return 0;
+    }
+
+    $eliminados = 0;
+    foreach (glob($directorio . '*') ?: [] as $ruta) {
+      if (!is_file($ruta)) {
+        continue;
+      }
+
+      $extension = strtolower(pathinfo($ruta, PATHINFO_EXTENSION));
+      if (!in_array($extension, self::EXTENSIONES_PERMITIDAS, true)) {
+        continue;
+      }
+
+      $url = $this->urlPorArchivo($idEmpresa, $tipo, basename($ruta));
+      if (isset($referencias[$url])) {
+        continue;
+      }
+
+      if (!unlink($ruta)) {
+        throw new RuntimeException(
+          'No se pudo eliminar un archivo de imagen sin referencias.'
+        );
+      }
+      $eliminados++;
+    }
+
+    return $eliminados;
   }
 
   private function obtenerUrlPorHash(int $idEmpresa, string $tipo, string $hash): ?string

@@ -28,6 +28,9 @@ class GestorImagen
         case 'borrar-lote':
           $this->borrarLote();
           break;
+        case 'limpiar-lote':
+          $this->limpiarLote();
+          break;
         default:
           http_response_code(404);
           echo json_encode(['error' => 'Acción de imagen no encontrada.']);
@@ -154,6 +157,42 @@ class GestorImagen
 
     $borradas = $this->servicioImagen->borrarLote($idEmpresa, $registros);
     echo json_encode(['success' => true, 'borradas' => $borradas]);
+  }
+
+  private function limpiarLote(): void
+  {
+    $datos = $this->obtenerJson();
+    $idEmpresa = (int)($datos['id_empresa'] ?? 0);
+    $tipo = (string)($datos['tipo'] ?? '');
+    $idsProcesados = $datos['ids_procesados'] ?? [];
+    $idsConImagen = $datos['ids_con_imagen'] ?? [];
+
+    if (
+      $idEmpresa <= 0
+      || !is_array($idsProcesados)
+      || !is_array($idsConImagen)
+      || count($idsProcesados) > 2000
+      || count($idsConImagen) > 2000
+    ) {
+      throw new InvalidArgumentException(
+        'El lote de limpieza debe tener una empresa válida y hasta 2000 registros.'
+      );
+    }
+    if (!$this->servicioImagen->empresaExiste($idEmpresa)) {
+      throw new InvalidArgumentException('La empresa indicada no existe.');
+    }
+
+    $resultado = $this->servicioImagen->limpiarLote(
+      $idEmpresa,
+      $tipo,
+      $idsProcesados,
+      $idsConImagen,
+    );
+    echo json_encode([
+      'success' => true,
+      'registros_limpiados' => $resultado['registros_limpiados'],
+      'archivos_eliminados' => $resultado['archivos_eliminados'],
+    ]);
   }
 
   private function archivoPorHash(string $hash): ?array
